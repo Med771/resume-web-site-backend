@@ -24,3 +24,15 @@ management:
   endpoint:
     health:
       show-details: always
+
+
+swagger:
+  title: "Resume API"
+  description: "Документация API"
+  version: "0.0.1"
+
+  servers:
+    - url: "http://localhost:8080"
+      description: "Local Dev Server"
+    - url: "https://api.example.com"
+      description: "Production Server"
