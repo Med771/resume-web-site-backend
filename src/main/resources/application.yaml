@@ -16,3 +16,11 @@ app:
     max-history: 7
     rotation-pattern: "logs/app.%d{yyyy-MM-dd}.gz"
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
