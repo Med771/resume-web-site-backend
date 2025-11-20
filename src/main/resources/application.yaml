@@ -1,3 +1,18 @@
 spring:
   application:
     name: resume-web-site-backend
+
+logging:
+  level:
+    root: INFO
+    ru.ai.sin: INFO
+
+  file:
+    name: logs/app.log
+
+app:
+  logging:
+    pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+    max-history: 7
+    rotation-pattern: "logs/app.%d{yyyy-MM-dd}.gz"
+
