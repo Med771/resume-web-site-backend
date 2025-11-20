@@ -1,0 +1,37 @@
+package ru.ai.sin.exception;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import ru.ai.sin.exception.models.ApiException;
+import ru.ai.sin.exception.models.ErrorResponse;
+
+@Slf4j
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    private static final Counter businessErrors = Metrics.counter("business_errors_total");
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
+        log.error("Api error: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
+
+        businessErrors.increment();
+
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
+        log.error("Unexpected error:", ex);
+
+        return ResponseEntity
+                .status(500)
+                .body(new ErrorResponse("INTERNAL_ERROR", "Unexpected error occurred"));
+    }
+}
