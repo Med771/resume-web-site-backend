@@ -22,7 +22,6 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
-
 logging:
   level:
     root: INFO
@@ -45,7 +44,6 @@ management:
   endpoint:
     health:
       show-details: always
-
 
 swagger:
   title: "Resume API"
