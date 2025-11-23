@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -15,9 +16,26 @@ import ru.ai.sin.exception.models.ErrorResponse;
 public class GlobalExceptionHandler {
     private static final Counter businessErrors = Metrics.counter("business_errors_total");
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        log.error(
+                "Bad Request error: code={}, status={}, msg={}",
+                ex.getBody().getTitle(), ex.getStatusCode(), ex.getMessage()
+        );
+
+        businessErrors.increment();
+
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(new ErrorResponse(ex.getBody().getTitle(), ex.getMessage()));
+    }
+
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
-        log.error("Api error: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
+        log.error(
+                "Api error: code={}, status={}, msg={}",
+                ex.getCode(), ex.getStatus(), ex.getMessage()
+        );
 
         businessErrors.increment();
 
