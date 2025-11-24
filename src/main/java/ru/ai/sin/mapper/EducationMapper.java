@@ -6,7 +6,7 @@ import ru.ai.sin.dto.education.GetEducationRes;
 import ru.ai.sin.dto.education.MergeEducationReq;
 import ru.ai.sin.entity.EducationEnt;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EducationMapper {
 
     // ---------------- AddEducationReq -> Entity ----------------

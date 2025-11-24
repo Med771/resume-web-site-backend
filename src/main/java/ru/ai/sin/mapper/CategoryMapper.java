@@ -7,7 +7,7 @@ import ru.ai.sin.dto.category.GetCategoryRes;
 import ru.ai.sin.dto.category.MergeCategoryReq;
 import ru.ai.sin.entity.CategoryEnt;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryMapper {
     // ---------------- AddCategoryReq -> Entity ----------------
     @Mapping(target = "id", ignore = true)

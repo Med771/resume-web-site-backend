@@ -6,7 +6,7 @@ import ru.ai.sin.dto.skill.GetSkillRes;
 import ru.ai.sin.dto.skill.MergeSkillReq;
 import ru.ai.sin.entity.SkillEnt;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SkillMapper {
 
     // ---------------- AddSkillReq -> Entity ----------------

@@ -6,7 +6,7 @@ import ru.ai.sin.dto.company.GetCompanyRes;
 import ru.ai.sin.dto.company.MergeCompanyReq;
 import ru.ai.sin.entity.CompanyEnt;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CompanyMapper {
 
     // ---------------- AddCompanyReq -> Entity ----------------
