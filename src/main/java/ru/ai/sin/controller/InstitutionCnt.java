@@ -30,7 +30,7 @@ public class InstitutionCnt {
 
     @GetMapping(path = "/aboutGetByStudentId")
     public ResponseEntity<GetAboutStudentInstitutionRes> aboutGetByStudentId(
-            @RequestParam long id) {
+            @RequestParam UUID id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 

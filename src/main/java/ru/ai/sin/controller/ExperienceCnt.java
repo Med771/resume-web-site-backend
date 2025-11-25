@@ -26,7 +26,7 @@ public class ExperienceCnt {
 
     @GetMapping(path = "/aboutGetByStudentId")
     public ResponseEntity<GetAboutStudentRes> aboutGetByStudentId(
-            @RequestParam long id) {
+            @RequestParam UUID id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
