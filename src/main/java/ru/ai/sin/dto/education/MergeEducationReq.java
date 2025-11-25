@@ -8,8 +8,6 @@ import ru.ai.sin.dto.skill.GetSkillRes;
 import java.util.List;
 
 public record MergeEducationReq(
-        long id,
-
         @NotBlank
         @Size(min = 1, max = 255, message = "Institution must be less than 255 characters")
         String institution,
@@ -19,6 +17,5 @@ public record MergeEducationReq(
         String additionalInfo,
 
         @NotNull
-        List<GetSkillRes> skills
-) {
+        List<Long> skillsIds) {
 }

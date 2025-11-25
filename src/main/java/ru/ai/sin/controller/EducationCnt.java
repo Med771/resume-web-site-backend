@@ -7,27 +7,41 @@ import ru.ai.sin.dto.education.AddEducationReq;
 import ru.ai.sin.dto.education.GetEducationRes;
 import ru.ai.sin.dto.education.MergeEducationReq;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/admin/education")
 public class EducationCnt {
 
-    @GetMapping(path = "getById")
-    public ResponseEntity<GetEducationRes> getById(@RequestParam long id) {
+    @GetMapping(path = "/getById")
+    public ResponseEntity<GetEducationRes> getById(
+            @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PostMapping(path = "create")
-    public ResponseEntity<GetEducationRes> create(@RequestBody AddEducationReq educationReq) {
+    @GetMapping(path = "/getAll")
+    public ResponseEntity<List<GetEducationRes>> getAll(
+            @RequestParam long page,
+            @RequestParam long size) {
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PostMapping(path = "/create")
+    public ResponseEntity<GetEducationRes> create(
+            @RequestBody AddEducationReq educationReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PutMapping(path = "merge")
-    public ResponseEntity<GetEducationRes> merge(@RequestBody MergeEducationReq educationReq) {
+    @PutMapping(path = "/merge")
+    public ResponseEntity<GetEducationRes> merge(
+            @RequestParam long id,
+            @RequestBody MergeEducationReq educationReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @DeleteMapping(path = "deleteById")
-    public ResponseEntity<GetEducationRes> deleteById(@RequestParam long id) {
+    @DeleteMapping(path = "/deleteById")
+    public ResponseEntity<GetEducationRes> deleteById(
+            @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }

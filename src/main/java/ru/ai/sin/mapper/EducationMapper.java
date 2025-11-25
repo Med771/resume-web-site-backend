@@ -24,8 +24,10 @@ public interface EducationMapper {
 
     // ---------------- MergeSkillReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "skills", ignore = true)
     @Mapping(target = "education", ignore = true)
     void updateEntityFromDto(MergeEducationReq dto, @MappingTarget EducationEnt entity);
 }
