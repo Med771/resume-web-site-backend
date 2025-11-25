@@ -12,6 +12,12 @@ import java.util.UUID;
 @RequestMapping(path = "/admin/experience")
 public class ExperienceCnt {
 
+    @GetMapping(path = "getById")
+    public ResponseEntity<GetExperienceRes> getById(
+            @RequestParam long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
     @GetMapping(path = "/aboutGetByCompanyId")
     public ResponseEntity<GetAboutCompanyRes> aboutGetByCompanyId(
             @RequestParam long id) {
@@ -39,15 +45,15 @@ public class ExperienceCnt {
     }
 
     @PostMapping(path = "/createExperience")
-    public ResponseEntity<AddExperienceReq> createExperience(
-            ) {
+    public ResponseEntity<GetExperienceRes> createExperience(
+            @RequestBody AddExperienceReq experienceReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PutMapping(path = "/mergeExperience")
-    public ResponseEntity<AddExperienceReq> mergeExperience(
-        @RequestParam(defaultValue = "-1") long id
-        ) {
+    public ResponseEntity<GetExperienceRes> mergeExperience(
+            @RequestParam(defaultValue = "-1") long id,
+            @RequestBody AddExperienceReq experienceReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
