@@ -21,8 +21,8 @@ public class EducationCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<GetEducationRes>> getAll(
-            @RequestParam long page,
-            @RequestParam long size) {
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -34,7 +34,7 @@ public class EducationCnt {
 
     @PutMapping(path = "/merge")
     public ResponseEntity<GetEducationRes> merge(
-            @RequestParam long id,
+            @RequestParam(defaultValue = "-1") long id,
             @RequestBody MergeEducationReq educationReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

@@ -21,8 +21,8 @@ public class SkillCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<GetSkillRes>> getAll(
-            @RequestParam long page,
-            @RequestParam long size) {
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -34,7 +34,7 @@ public class SkillCnt {
 
     @PutMapping(path = "/merge")
     public ResponseEntity<GetSkillRes> merge(
-            @RequestParam long id,
+            @RequestParam(defaultValue = "-1") long id,
             @RequestBody MergeSkillReq skillReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

@@ -21,8 +21,8 @@ public class CompanyCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<GetCompanyRes>> getAll(
-            @RequestParam long page,
-            @RequestParam long size) {
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -34,7 +34,7 @@ public class CompanyCnt {
 
     @PutMapping(path = "/merge")
     public ResponseEntity<GetCompanyRes> merge(
-            @RequestParam long id,
+            @RequestParam(defaultValue = "-1") long id,
             @RequestBody MergeCompanyReq companyReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

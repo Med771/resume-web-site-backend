@@ -34,7 +34,7 @@ public class PortfolioCnt {
 
     @PutMapping(path = "/merge")
     public ResponseEntity<GetPortfolioRes> merge(
-            @RequestParam long id,
+            @RequestParam(defaultValue = "-1") long id,
             @RequestBody MergePortfolioReq portfolioReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

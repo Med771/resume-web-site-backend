@@ -23,8 +23,8 @@ public class SpecialityCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<GetSpecialityRes>> getAll(
-            @RequestParam long page,
-            @RequestParam long size) {
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -36,7 +36,7 @@ public class SpecialityCnt {
 
     @PutMapping(path = "/merge")
     public ResponseEntity<GetSpecialityRes> merge(
-            @RequestParam long id,
+            @RequestParam(defaultValue = "-1") long id,
             @RequestBody MergeSpecialityReq specialityReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
