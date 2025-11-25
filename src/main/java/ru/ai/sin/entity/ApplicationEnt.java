@@ -25,7 +25,7 @@ public class ApplicationEnt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "chat_id", unique = true)
+    @Column(name = "chat_id", unique = true, length = 32)
     private String chatId;
 
     @Column(name = "history_path", unique = true)
