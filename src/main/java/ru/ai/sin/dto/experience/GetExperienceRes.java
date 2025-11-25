@@ -5,8 +5,6 @@ import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.StudentEnt;
 
 public record GetExperienceRes(
-        long id,
-
         @NotNull
         CompanyEnt company,
 
