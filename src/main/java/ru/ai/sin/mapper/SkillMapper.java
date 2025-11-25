@@ -11,9 +11,9 @@ public interface SkillMapper {
 
     // ---------------- AddSkillReq -> Entity ----------------
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     SkillEnt toEntity(AddSkillReq dto);
 
     // ---------------- Entity -> GetSkillRes ----------------
@@ -23,8 +23,9 @@ public interface SkillMapper {
 
     // ---------------- MergeSkillReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     void updateEntityFromDto(MergeSkillReq dto, @MappingTarget SkillEnt entity);
 }
