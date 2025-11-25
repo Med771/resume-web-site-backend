@@ -17,7 +17,7 @@ import ru.ai.sin.entity.model.TimeStamped;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EducationStudentEnt {
+public class InstitutionEnt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

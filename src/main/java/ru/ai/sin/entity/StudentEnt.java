@@ -69,7 +69,7 @@ public class StudentEnt {
     private List<PortfolioEnt> portfolio = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<EducationStudentEnt> education = new ArrayList<>();
+    private List<InstitutionEnt> education = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<ExperienceEnt> companies = new ArrayList<>();
