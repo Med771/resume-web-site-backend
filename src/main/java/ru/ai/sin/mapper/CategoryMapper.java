@@ -11,8 +11,8 @@ import ru.ai.sin.entity.CategoryEnt;
 public interface CategoryMapper {
     // ---------------- AddCategoryReq -> Entity ----------------
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "skills", ignore = true)
     CategoryEnt toEntity(AddCategoryReq dto);
 
@@ -23,8 +23,9 @@ public interface CategoryMapper {
 
     // ---------------- MergeCategoryReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "skills", ignore = true)
     void updateEntityFromDto(MergeCategoryReq dto, @MappingTarget CategoryEnt entity);
 }

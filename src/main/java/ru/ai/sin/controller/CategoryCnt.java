@@ -10,27 +10,41 @@ import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.GetCompanyRes;
 import ru.ai.sin.dto.company.MergeCompanyReq;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/admin/category")
 public class CategoryCnt {
 
     @GetMapping(path = "getById")
-    public ResponseEntity<GetCategoryRes> getById(@RequestParam long id) {
+    public ResponseEntity<GetCategoryRes> getById(
+            @RequestParam long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping(path = "/getAll")
+    public ResponseEntity<List<GetCategoryRes>> getAll(
+            @RequestParam long page,
+            @RequestParam long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PostMapping(path = "create")
-    public ResponseEntity<GetCategoryRes> create(@RequestBody AddCategoryReq categoryReq) {
+    public ResponseEntity<GetCategoryRes> create(
+            @RequestBody AddCategoryReq categoryReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @PutMapping(path = "merge")
-    public ResponseEntity<GetCategoryRes> merge(@RequestBody MergeCategoryReq categoryReq) {
+    public ResponseEntity<GetCategoryRes> merge(
+            @RequestParam long id,
+            @RequestBody MergeCategoryReq categoryReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @DeleteMapping(path = "deleteById")
-    public ResponseEntity<GetCategoryRes> deleteById(@RequestParam long id) {
+    public ResponseEntity<GetCategoryRes> deleteById(
+            @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }
