@@ -36,5 +36,5 @@ public class CompanyEnt {
     private TimeStamped timestamps = new TimeStamped();
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<CompanyStudentEnt> students = new ArrayList<>();
+    private List<ExperienceEnt> students = new ArrayList<>();
 }

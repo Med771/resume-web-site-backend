@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyStudentEnt {
+public class ExperienceEnt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
