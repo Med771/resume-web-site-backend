@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.entity.converter.ResultEnumConverter;
+import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.model.TimeStamped;
 
 @Entity
@@ -32,7 +33,7 @@ public class ApplicationEnt {
 
     @Column(name = "result", length = 32)
     @Convert(converter = ResultEnumConverter.class)
-    private ResultEnumConverter result;
+    private ResultEnum result;
 
     @Column(name = "result_message")
     private String resultMessage;
