@@ -11,9 +11,9 @@ public interface CompanyMapper {
 
     // ---------------- AddCompanyReq -> Entity ----------------
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "students", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     CompanyEnt toEntity(AddCompanyReq dto);
 
     // ---------------- Entity -> GetCompanyRes ----------------
@@ -23,8 +23,9 @@ public interface CompanyMapper {
 
     // ---------------- MergeCompanyReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "students", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     void updateEntityFromDto(MergeCompanyReq dto, @MappingTarget CompanyEnt entity);
 }
