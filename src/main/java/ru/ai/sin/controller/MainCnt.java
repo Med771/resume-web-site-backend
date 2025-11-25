@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/admin/main")
 public class MainCnt {
 
-    @GetMapping(path = "status")
+    @GetMapping(path = "/status")
     public HttpStatus status() {
         return HttpStatus.OK;
     }

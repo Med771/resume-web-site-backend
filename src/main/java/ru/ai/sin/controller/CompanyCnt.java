@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping(path = "/admin/company")
 public class CompanyCnt {
 
-    @GetMapping(path = "getById")
+    @GetMapping(path = "/getById")
     public ResponseEntity<GetCompanyRes> getById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -26,20 +26,20 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PostMapping(path = "create")
+    @PostMapping(path = "/create")
     public ResponseEntity<GetCompanyRes> create(
             @RequestBody AddCompanyReq companyReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PutMapping(path = "merge")
+    @PutMapping(path = "/merge")
     public ResponseEntity<GetCompanyRes> merge(
             @RequestParam long id,
             @RequestBody MergeCompanyReq companyReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @DeleteMapping(path = "deleteById")
+    @DeleteMapping(path = "/deleteById")
     public ResponseEntity<GetCompanyRes> deleteById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);

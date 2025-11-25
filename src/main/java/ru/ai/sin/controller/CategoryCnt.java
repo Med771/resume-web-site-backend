@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping(path = "/admin/category")
 public class CategoryCnt {
 
-    @GetMapping(path = "getById")
+    @GetMapping(path = "/getById")
     public ResponseEntity<GetCategoryRes> getById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
@@ -29,20 +29,20 @@ public class CategoryCnt {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PostMapping(path = "create")
+    @PostMapping(path = "/create")
     public ResponseEntity<GetCategoryRes> create(
             @RequestBody AddCategoryReq categoryReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PutMapping(path = "merge")
+    @PutMapping(path = "/merge")
     public ResponseEntity<GetCategoryRes> merge(
             @RequestParam long id,
             @RequestBody MergeCategoryReq categoryReq) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @DeleteMapping(path = "deleteById")
+    @DeleteMapping(path = "/deleteById")
     public ResponseEntity<GetCategoryRes> deleteById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
