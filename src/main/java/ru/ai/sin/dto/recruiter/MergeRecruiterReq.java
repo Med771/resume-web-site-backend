@@ -2,13 +2,7 @@ package ru.ai.sin.dto.recruiter;
 
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 public record MergeRecruiterReq(
-        @NotNull
-        UUID id,
-
         @NotBlank
         @Size(min = 1, max = 255, message = "Company name must be less than 255 characters")
         String companyName,

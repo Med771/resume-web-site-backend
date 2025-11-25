@@ -31,6 +31,7 @@ public interface RecruiterMapper {
 
     // ---------------- MergeRecruiterReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "userInformation.passwordHash", ignore = true)
     @Mapping(target = "contactInformation.telegramUserId", ignore = true)
