@@ -17,7 +17,6 @@ public interface SpecialityMapper {
     SpecialityEnt toEntity(AddSpecialityReq dto);
 
     // ---------------- Entity -> GetSpecialityRes ----------------
-    @Mapping(target = "skills", ignore = true)
     @Mapping(source = "timestamps.createdAt", target = "createdAt")
     @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
     GetSpecialityRes toGetRes(SpecialityEnt entity);
