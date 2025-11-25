@@ -23,14 +23,6 @@ public class ExperienceEnt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private CompanyEnt company;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private StudentEnt student;
-
     @Column(nullable = false)
     private String position;
 
@@ -47,4 +39,12 @@ public class ExperienceEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private CompanyEnt company;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private StudentEnt student;
 }
