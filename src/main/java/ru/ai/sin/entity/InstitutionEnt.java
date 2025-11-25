@@ -23,14 +23,6 @@ public class InstitutionEnt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "education_id")
-    private EducationEnt education;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private StudentEnt student;
-
     @Column(name = "start_year", nullable = false)
     @Min(1900)
     @Max(2100)
@@ -43,4 +35,12 @@ public class InstitutionEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    @ManyToOne
+    @JoinColumn(name = "education_id")
+    private EducationEnt education;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private StudentEnt student;
 }
