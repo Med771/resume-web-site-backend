@@ -65,6 +65,10 @@ public class StudentEnt {
     @Embedded
     private ContactInformation contactInformation = new ContactInformation();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "speciality_id")
+    private SpecialityEnt speciality;
+
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<PortfolioEnt> portfolio = new ArrayList<>();
 

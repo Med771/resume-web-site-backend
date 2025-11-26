@@ -3,7 +3,7 @@ package ru.ai.sin.dto.category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import ru.ai.sin.dto.skill.GetSkillRes;
+import ru.ai.sin.dto.skill.SkillDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,5 +21,5 @@ public record GetCategoryRes(
         LocalDateTime updatedAt,
 
         @NotNull
-        List<GetSkillRes> skills) {
+        List<SkillDTO> skills) {
 }

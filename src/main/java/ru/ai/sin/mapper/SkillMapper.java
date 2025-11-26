@@ -2,7 +2,7 @@ package ru.ai.sin.mapper;
 
 import org.mapstruct.*;
 import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.GetSkillRes;
+import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.dto.skill.MergeSkillReq;
 import ru.ai.sin.entity.SkillEnt;
 
@@ -19,7 +19,7 @@ public interface SkillMapper {
     // ---------------- Entity -> GetSkillRes ----------------
     @Mapping(source = "timestamps.createdAt", target = "createdAt")
     @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
-    GetSkillRes toGetRes(SkillEnt entity);
+    SkillDTO toGetRes(SkillEnt entity);
 
     // ---------------- MergeSkillReq -> Entity ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

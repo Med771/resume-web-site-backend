@@ -1,46 +1,48 @@
 package ru.ai.sin.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SkillDTO;
-import ru.ai.sin.dto.skill.MergeSkillReq;
+import ru.ai.sin.dto.student.StudentCardDTO;
+import ru.ai.sin.dto.student.StudentDTO;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/admin/skill")
-public class SkillCnt {
+@RequiredArgsConstructor
+@RequestMapping(path = "/admin/student")
+public class StudentCnt {
 
     @GetMapping(path = "/getById")
-    public ResponseEntity<SkillDTO> getById(
+    public ResponseEntity<StudentDTO> getById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
+    @GetMapping(path = "/getCards")
+    public ResponseEntity<List<StudentCardDTO>> getCards(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size) {
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
     @GetMapping(path = "/getAll")
-    public ResponseEntity<List<SkillDTO>> getAll(
+    public ResponseEntity<List<StudentDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<SkillDTO> create(
-            @RequestBody AddSkillReq skillReq) {
+    public ResponseEntity<StudentDTO> create() {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PutMapping(path = "/merge")
-    public ResponseEntity<SkillDTO> merge(
-            @RequestParam(defaultValue = "-1") long id,
-            @RequestBody MergeSkillReq skillReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
+    @PostMapping(path = "/")
 
     @DeleteMapping(path = "/deleteById")
-    public ResponseEntity<SkillDTO> deleteById(
+    public ResponseEntity<StudentDTO> deleteById(
             @RequestParam long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
