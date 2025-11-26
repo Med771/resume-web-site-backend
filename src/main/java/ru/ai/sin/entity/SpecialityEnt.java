@@ -28,13 +28,13 @@ public class SpecialityEnt {
     @Column(unique = true, length = 128)
     private String name;
 
+    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
+    private Boolean isActive = true;
+
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "speciality_id")
     private List<SkillEnt> skills = new ArrayList<>();
-
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
-    private Boolean isActive = true;
 }

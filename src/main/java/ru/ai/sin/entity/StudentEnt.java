@@ -65,12 +65,16 @@ public class StudentEnt {
     @Embedded
     private ContactInformation contactInformation = new ContactInformation();
 
-    @OneToMany(mappedBy = "student")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "speciality_id")
+    private SpecialityEnt speciality;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<PortfolioEnt> portfolio = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<EducationStudentEnt> education = new ArrayList<>();
+    private List<InstitutionEnt> education = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<CompanyStudentEnt> companies = new ArrayList<>();
+    private List<ExperienceEnt> companies = new ArrayList<>();
 }

@@ -12,24 +12,16 @@ import ru.ai.sin.entity.model.TimeStamped;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "companies_students")
+@Table(name = "experiences")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyStudentEnt {
+public class ExperienceEnt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private CompanyEnt company;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private StudentEnt student;
 
     @Column(nullable = false)
     private String position;
@@ -47,4 +39,12 @@ public class CompanyStudentEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private CompanyEnt company;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private StudentEnt student;
 }

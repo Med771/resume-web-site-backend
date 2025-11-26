@@ -15,7 +15,7 @@ import lombok.*;
 public class ContactInformation {
 
     @Column(name = "phone_number", length = 32)
-    @Pattern(regexp = "\\+?\\d{1,15}", message = "Phone number must contain 1-15 digits and optional + at start")
+    @Pattern(regexp = "\\+?\\d{1,32}", message = "Phone number must contain 1-32 digits and optional + at start")
     private String phoneNumber;
 
     @Column(name = "telegram_username", length = 32)

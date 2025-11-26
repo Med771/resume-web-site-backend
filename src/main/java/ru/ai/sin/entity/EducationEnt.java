@@ -43,7 +43,7 @@ public class EducationEnt {
     private TimeStamped timestamps = new TimeStamped();
 
     @OneToMany(mappedBy = "education", fetch = FetchType.LAZY)
-    private List<EducationStudentEnt> education = new ArrayList<>();
+    private List<InstitutionEnt> education = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "education_id")

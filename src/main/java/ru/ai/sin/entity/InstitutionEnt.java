@@ -11,25 +11,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.entity.model.TimeStamped;
 
 @Entity
-@Table(name = "educations_students")
+@Table(name = "institution")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EducationStudentEnt {
+public class InstitutionEnt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "education_id")
-    private EducationEnt education;
-
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private StudentEnt student;
 
     @Column(name = "start_year", nullable = false)
     @Min(1900)
@@ -43,4 +35,12 @@ public class EducationStudentEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    @ManyToOne
+    @JoinColumn(name = "education_id")
+    private EducationEnt education;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private StudentEnt student;
 }
