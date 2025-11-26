@@ -17,8 +17,6 @@ public interface SkillMapper {
     SkillEnt toEntity(AddSkillReq dto);
 
     // ---------------- Entity -> GetSkillRes ----------------
-    @Mapping(source = "timestamps.createdAt", target = "createdAt")
-    @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
     SkillDTO toGetRes(SkillEnt entity);
 
     // ---------------- MergeSkillReq -> Entity ----------------
