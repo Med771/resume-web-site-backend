@@ -65,7 +65,7 @@ public class StudentEnt {
     @Embedded
     private ContactInformation contactInformation = new ContactInformation();
 
-    @OneToMany(mappedBy = "student")
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<PortfolioEnt> portfolio = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
