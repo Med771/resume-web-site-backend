@@ -12,7 +12,7 @@ import ru.ai.sin.entity.model.TimeStamped;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "companies_students")
+@Table(name = "experiences")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter

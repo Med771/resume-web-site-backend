@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.entity.model.TimeStamped;
 
 @Entity
-@Table(name = "educations_students")
+@Table(name = "institution")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
