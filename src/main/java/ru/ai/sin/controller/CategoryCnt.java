@@ -6,9 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.category.AddCategoryReq;
 import ru.ai.sin.dto.category.GetCategoryRes;
 import ru.ai.sin.dto.category.MergeCategoryReq;
-import ru.ai.sin.dto.company.AddCompanyReq;
-import ru.ai.sin.dto.company.GetCompanyRes;
-import ru.ai.sin.dto.company.MergeCompanyReq;
 
 import java.util.List;
 
