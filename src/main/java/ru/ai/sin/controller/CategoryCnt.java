@@ -56,7 +56,7 @@ public class CategoryCnt {
         return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
     }
 
-    @PostMapping(path = "setSkillsById")
+    @PostMapping(path = "/setSkillsById")
     public ResponseEntity<CategoryDTO> setSkillsById(
             @RequestParam long id,
             @RequestBody SetCategorySkillsReq setCategorySkillsReq) {
