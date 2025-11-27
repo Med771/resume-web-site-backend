@@ -2,7 +2,12 @@ package ru.ai.sin.dto.recruiter;
 
 import jakarta.validation.constraints.*;
 
-public record MergeRecruiterReq(
+import java.util.UUID;
+
+public record RecruiterDTO(
+        @NotNull
+        UUID id,
+
         @NotBlank
         @Size(min = 1, max = 255, message = "Company name must be less than 255 characters")
         String companyName,
@@ -23,6 +28,8 @@ public record MergeRecruiterReq(
         String phoneNumber,
 
         @Size(min = 1, max = 32, message = "Telegram username must be less than 32 characters")
-        String telegramUsername
-) {
+        String telegramUsername,
+
+        @Size(min = 1, max = 32, message = "Telegram user id must be less than 32 characters")
+        String telegramUserId) {
 }

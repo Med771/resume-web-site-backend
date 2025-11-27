@@ -17,7 +17,7 @@ import ru.ai.sin.entity.model.UserInformation;
 import java.util.UUID;
 
 @Entity
-@Table(name = "employees")
+@Table(name = "recruters")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter

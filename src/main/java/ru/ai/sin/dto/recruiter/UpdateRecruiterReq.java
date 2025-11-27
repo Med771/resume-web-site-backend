@@ -2,13 +2,7 @@ package ru.ai.sin.dto.recruiter;
 
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-public record GetRecruiterRes(
-        @NotNull
-        UUID id,
-
+public record UpdateRecruiterReq(
         @NotBlank
         @Size(min = 1, max = 255, message = "Company name must be less than 255 characters")
         String companyName,
@@ -29,13 +23,6 @@ public record GetRecruiterRes(
         String phoneNumber,
 
         @Size(min = 1, max = 32, message = "Telegram username must be less than 32 characters")
-        String telegramUsername,
-
-        @Size(min = 1, max = 32, message = "Telegram user id must be less than 32 characters")
-        String telegramUserId,
-
-        @NotNull
-        LocalDateTime createdAt,
-        @NotNull
-        LocalDateTime updatedAt) {
+        String telegramUsername
+) {
 }
