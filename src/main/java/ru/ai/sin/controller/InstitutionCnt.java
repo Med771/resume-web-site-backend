@@ -1,81 +1,81 @@
 package ru.ai.sin.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.institution.AddInstitutionReq;
 import ru.ai.sin.dto.institution.GetAboutEducationRes;
-import ru.ai.sin.dto.institution.GetAboutStudentInstitutionRes;
-import ru.ai.sin.dto.institution.GetInstitutionRes;
+import ru.ai.sin.dto.institution.GetAboutStudentRes;
+import ru.ai.sin.dto.institution.InstitutionDTO;
+import ru.ai.sin.service.impl.InstitutionService;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "/admin/institution")
+@RequiredArgsConstructor
+@RequestMapping(path = "/institution")
 public class InstitutionCnt {
 
+    private final InstitutionService institutionService;
+
     @GetMapping(path = "/getById")
-    public ResponseEntity<GetInstitutionRes> getById(
+    public ResponseEntity<InstitutionDTO> getById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        InstitutionDTO institutionDTO = institutionService.getById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
-    @GetMapping(path = "/aboutGetByEducationId")
-    public ResponseEntity<GetAboutEducationRes> aboutGetByEducationId(
+    @GetMapping(path = "/getByEducationId")
+    public ResponseEntity<GetAboutEducationRes> getByEducationId(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        GetAboutEducationRes getAboutEducationRes = institutionService.getByEducationId(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getAboutEducationRes);
     }
 
-    @GetMapping(path = "/aboutGetByStudentId")
-    public ResponseEntity<GetAboutStudentInstitutionRes> aboutGetByStudentId(
+    @GetMapping(path = "/getByStudentId")
+    public ResponseEntity<GetAboutStudentRes> getByStudentId(
             @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        GetAboutStudentRes getAboutStudentRes = institutionService.getByStudentId(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentRes);
     }
 
-    @GetMapping(path = "/aboutEducationAll")
-    public ResponseEntity<List<GetAboutEducationRes>> aboutGetEducationAll(
-            @RequestParam long page,
-            @RequestParam long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @GetMapping(path = "/aboutStudentsAll")
-    public ResponseEntity<List<GetAboutStudentInstitutionRes>> aboutGetStudentAll(
+    @GetMapping(path = "/getAll")
+    public ResponseEntity<List<InstitutionDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        List<InstitutionDTO> institutionDTOs = institutionService.getAll(page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(institutionDTOs);
     }
 
-    @PostMapping(path = "/createInstitution")
-    public ResponseEntity<GetInstitutionRes> createInstitution(
+    @PostMapping(path = "/create")
+    public ResponseEntity<InstitutionDTO> create(
             @RequestBody AddInstitutionReq institutionReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        InstitutionDTO institutionDTO = institutionService.create(institutionReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
-    @PutMapping(path = "/mergeInstitution")
-    public ResponseEntity<GetInstitutionRes> mergeInstitution(
-            @RequestParam(defaultValue = "-1") long id,
+    @PutMapping(path = "/update")
+    public ResponseEntity<InstitutionDTO> update(
+            @RequestParam long id,
             @RequestBody AddInstitutionReq institutionReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        InstitutionDTO institutionDTO = institutionService.update(id, institutionReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
-    public ResponseEntity<GetInstitutionRes> deleteById(
+    public ResponseEntity<InstitutionDTO> deleteById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
+        InstitutionDTO institutionDTO = institutionService.deleteById(id);
 
-    @DeleteMapping(path = "/deleteByEducationId")
-    public ResponseEntity<?> deleteByEducationId(
-            @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @DeleteMapping(path = "/deleteByStudentId")
-    public ResponseEntity<?> deleteByStudentId(
-            @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 }
