@@ -13,7 +13,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ApplicationServiceImpl implements ApplicationService {
+public class ApplicationServImpl implements ApplicationService {
 
     private final ApplicationRepo applicationRepo;
 
