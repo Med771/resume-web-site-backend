@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-public record GetCompanyRes(
+public record CompanyDTO(
         long id,
 
         @NotBlank
@@ -14,7 +14,5 @@ public record GetCompanyRes(
         String name,
 
         @NotNull
-        LocalDateTime createdAt,
-        @NotNull
-        LocalDateTime updatedAt) {
+        List<Long> experiencesId) {
 }

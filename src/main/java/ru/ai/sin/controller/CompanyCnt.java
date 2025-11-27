@@ -20,8 +20,8 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @GetMapping(path = "/getByName")
-    public ResponseEntity<CompanyDTO> getByName(
+    @GetMapping(path = "/getAllByName")
+    public ResponseEntity<List<CompanyDTO>> getAllByName(
             @RequestBody CompanyNameDTO companyNameDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
@@ -39,8 +39,8 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PostMapping(path = "/setName")
-    public ResponseEntity<CompanyDTO> setName(
+    @PostMapping(path = "/setNameById")
+    public ResponseEntity<CompanyDTO> setNameById(
             @RequestParam long id,
             @RequestBody CompanyNameDTO companyNameDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
