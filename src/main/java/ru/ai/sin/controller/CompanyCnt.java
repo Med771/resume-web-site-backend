@@ -52,7 +52,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(companyDTO);
     }
 
-    @PostMapping(path = "/setNameById")
+    @PutMapping(path = "/setNameById")
     public ResponseEntity<CompanyDTO> setNameById(
             @RequestParam long id,
             @RequestBody CompanyNameDTO companyNameDTO) {

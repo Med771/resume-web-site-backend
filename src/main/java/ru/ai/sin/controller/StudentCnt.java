@@ -67,7 +67,7 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
-    @PostMapping(path = "update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> update(
             @RequestPart("id") UUID id,
             @RequestPart("avatarFile") MultipartFile multipartFile,

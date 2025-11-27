@@ -41,7 +41,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
     }
 
-    @PostMapping(path = "/setInstitutionById")
+    @PutMapping(path = "/setInstitutionById")
     public ResponseEntity<EducationDTO> setInstitutionById(
             @RequestParam long id,
             @RequestBody SetInstitutionReq setInstitutionReq) {
@@ -50,7 +50,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
-    @PostMapping(path = "/setAdditionalInfoById")
+    @PutMapping(path = "/setAdditionalInfoById")
     public ResponseEntity<EducationDTO> setAdditionalInfoById(
             @RequestParam long id,
             @RequestBody SetEducationInfoReq setEducationInfoReq) {
@@ -59,7 +59,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
-    @PostMapping(path = "/setSkillsById")
+    @PutMapping(path = "/setSkillsById")
     public ResponseEntity<EducationDTO> setSkillsById(
             @RequestParam long id,
             @RequestBody SetEducationSkillsReq setEducationSkillsReq) {

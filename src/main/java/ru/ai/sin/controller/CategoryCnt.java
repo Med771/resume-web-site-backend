@@ -47,7 +47,7 @@ public class CategoryCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryDTO);
     }
 
-    @PostMapping(path = "/setNameById")
+    @PutMapping(path = "/setNameById")
     public ResponseEntity<CategoryDTO> setNameById(
             @RequestParam long id,
             @RequestBody SetCategoryNameReq  setCategoryNameReq) {
@@ -56,7 +56,7 @@ public class CategoryCnt {
         return ResponseEntity.status(HttpStatus.OK).body(categoryDTO);
     }
 
-    @PostMapping(path = "/setSkillsById")
+    @PutMapping(path = "/setSkillsById")
     public ResponseEntity<CategoryDTO> setSkillsById(
             @RequestParam long id,
             @RequestBody SetCategorySkillsReq setCategorySkillsReq) {

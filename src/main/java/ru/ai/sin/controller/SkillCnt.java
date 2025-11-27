@@ -45,7 +45,7 @@ public class SkillCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
     }
 
-    @PostMapping(path = "/setNameById")
+    @PutMapping(path = "/setNameById")
     public ResponseEntity<SkillDTO> setNameById(
             @RequestParam long id,
             @RequestBody SetSkillNameReq setSkillNameReq) {

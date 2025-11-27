@@ -53,7 +53,7 @@ public class ApplicationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setChatIdById")
+    @PutMapping(path = "/setChatIdById")
     public ResponseEntity<ApplicationDTO> setChatIdById(
             @RequestParam long id,
             @RequestBody SetChatIdReq setChatIdReq) {
@@ -62,7 +62,7 @@ public class ApplicationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setResultById")
+    @PutMapping(path = "/setResultById")
     public ResponseEntity<ApplicationDTO> setResultById(
             @RequestParam long id,
             @RequestBody SetResultReq setResultReq) {
@@ -71,7 +71,7 @@ public class ApplicationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setHistoryById")
+    @PutMapping(path = "/setHistoryById")
     public ResponseEntity<ApplicationDTO> setHistoryById(
             @RequestParam long id,
             @RequestBody SetHistoryReq setHistoryReq) {

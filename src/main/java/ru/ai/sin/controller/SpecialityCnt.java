@@ -48,7 +48,7 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
     }
 
-    @PostMapping(path = "/setNameById")
+    @PutMapping(path = "/setNameById")
     public ResponseEntity<SpecialityDTO> setNameById(
             @RequestParam long id,
             @RequestBody SetSpecialityNameReq setSpecialityNameReq) {
@@ -57,7 +57,7 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
     }
 
-    @PostMapping(path = "/setSkillsById")
+    @PutMapping(path = "/setSkillsById")
     public ResponseEntity<SpecialityDTO> setSkillsById(
             @RequestParam long id,
             @RequestBody SetSpecialitySkillsReq setSpecialitySkillsReq) {
