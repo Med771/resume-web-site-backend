@@ -3,14 +3,17 @@ package ru.ai.sin.dto.category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import ru.ai.sin.dto.skill.SkillDTO;
 
 import java.util.List;
 
-public record MergeCategoryReq(
+public record CategoryDTO(
+        long id,
+
         @NotBlank
         @Size(min = 1, max = 255, message = "Name must be less than 255 characters")
         String name,
 
         @NotNull
-        List<Long> skillsIds) {
+        List<SkillDTO> skills) {
 }
