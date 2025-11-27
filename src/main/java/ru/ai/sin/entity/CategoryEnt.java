@@ -35,6 +35,7 @@ public class CategoryEnt {
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private List<SkillEnt> skills = new ArrayList<>();
 }
