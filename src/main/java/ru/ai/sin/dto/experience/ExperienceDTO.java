@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.StudentEnt;
 
-public record GetExperienceRes(
+public record ExperienceDTO(
         @NotNull
         CompanyEnt company,
 
