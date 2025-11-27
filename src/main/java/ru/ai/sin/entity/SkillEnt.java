@@ -31,9 +31,4 @@ public class SkillEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private CategoryEnt category;
-
 }
