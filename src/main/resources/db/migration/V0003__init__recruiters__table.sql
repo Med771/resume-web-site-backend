@@ -1,4 +1,4 @@
-CREATE TABLE employees
+CREATE TABLE recruiters
 (
     id                UUID                 NOT NULL,
     company_name      VARCHAR(255)         NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE employees
     phone_number      VARCHAR(16),
     telegram_username VARCHAR(32),
     telegram_user_id  VARCHAR(16),
-    CONSTRAINT pk_employees PRIMARY KEY (id)
+    CONSTRAINT pk_recruiters PRIMARY KEY (id)
 );
 
-ALTER TABLE employees
-    ADD CONSTRAINT uc_employees_telegram_user UNIQUE (telegram_user_id);
+ALTER TABLE recruiters
+    ADD CONSTRAINT uc_recruiters_telegram_user UNIQUE (telegram_user_id);

@@ -23,5 +23,5 @@ public record EducationDTO(
         List<UUID> studentIds,
 
         @NotNull
-        List<SkillDTO> skills) {
+        List<SkillDTO> skillsIds) {
 }
