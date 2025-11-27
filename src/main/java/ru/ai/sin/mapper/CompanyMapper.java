@@ -9,7 +9,5 @@ public interface CompanyMapper {
 
     // ---------------- Entity -> CompanyDTO ----------------
     @Mapping(target = "experiencesId", ignore = true)
-    @Mapping(source = "timestamps.createdAt", target = "createdAt")
-    @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
-    CompanyDTO toGetRes(CompanyEnt entity);
+    CompanyDTO toDTO(CompanyEnt entity);
 }

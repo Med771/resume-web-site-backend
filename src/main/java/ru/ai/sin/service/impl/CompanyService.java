@@ -20,6 +20,6 @@ public interface CompanyService {
 
     CompanyDTO setNameById(long id,CompanyNameDTO companyNameDTO);
 
-     // ---------- DELETE METHODS ----------
+    // ---------- DELETE METHODS ----------
     CompanyDTO deleteById(long id);
 }

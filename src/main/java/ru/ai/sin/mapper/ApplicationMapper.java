@@ -8,6 +8,7 @@ import ru.ai.sin.entity.ApplicationEnt;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ApplicationMapper {
+
     // ---------------- ApplicationEnt -> ApplicationDTO ----------------
     @Mapping(target = "recruiterId", source = "recruiter.id")
     @Mapping(target = "studentId", source = "student.id")

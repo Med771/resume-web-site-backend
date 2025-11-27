@@ -30,18 +30,18 @@ public class CompanyCnt {
     @GetMapping(path = "/getAllByName")
     public ResponseEntity<List<CompanyDTO>> getAllByName(
             @RequestBody CompanyNameDTO companyNameDTO) {
-        List<CompanyDTO> companyDTOS = companyService.getAllByName(companyNameDTO);
+        List<CompanyDTO> companyDTOs = companyService.getAllByName(companyNameDTO);
 
-        return ResponseEntity.status(HttpStatus.OK).body(companyDTOS);
+        return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<CompanyDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size) {
-        List<CompanyDTO> companyDTOS = companyService.getAll(page, size);
+        List<CompanyDTO> companyDTOs = companyService.getAll(page, size);
 
-        return ResponseEntity.status(HttpStatus.OK).body(companyDTOS);
+        return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
 
     @PostMapping(path = "/create")
