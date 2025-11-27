@@ -10,9 +10,9 @@ CREATE TABLE employees
     password_hash     VARCHAR(128),
     created_at        TIMESTAMP WITHOUT TIME ZONE,
     updated_at        TIMESTAMP WITHOUT TIME ZONE,
-    phone_number      VARCHAR(32),
+    phone_number      VARCHAR(16),
     telegram_username VARCHAR(32),
-    telegram_user_id  VARCHAR(32),
+    telegram_user_id  VARCHAR(16),
     CONSTRAINT pk_employees PRIMARY KEY (id)
 );
 
