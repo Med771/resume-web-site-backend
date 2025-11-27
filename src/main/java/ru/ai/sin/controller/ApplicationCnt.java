@@ -27,7 +27,15 @@ public class ApplicationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @GetMapping(path = "getAll")
+    @GetMapping(path = "getHistoryById")
+    public ResponseEntity<GetHistoryRes> getHistoryById(
+            @RequestParam long id) {
+        GetHistoryRes getHistoryRes = applicationService.getHistoryById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getHistoryRes);
+    }
+
+    @PostMapping(path = "getAll")
     public ResponseEntity<List<ApplicationDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size,
@@ -35,14 +43,6 @@ public class ApplicationCnt {
         List<ApplicationDTO> applicationDTOList = applicationService.getAll(page, size, getApplicationFilterReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(applicationDTOList);
-    }
-
-    @GetMapping(path = "getHistoryById")
-    public ResponseEntity<GetHistoryRes> getHistoryById(
-            @RequestParam long id) {
-        GetHistoryRes getHistoryRes = applicationService.getHistoryById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(getHistoryRes);
     }
 
     @PostMapping(path = "/create")

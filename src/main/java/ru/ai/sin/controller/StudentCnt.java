@@ -39,16 +39,6 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
 
-    @GetMapping(path = "/getAllByFilters")
-    public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size,
-            @RequestBody GetStudentFilterReq getStudentFilterReq) {
-        List<StudentCardDTO> studentCardDTOs = studentService.getAllByFilters(page, size, getStudentFilterReq);
-
-        return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
-    }
-
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<StudentDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
@@ -56,6 +46,16 @@ public class StudentCnt {
         List<StudentDTO> studentDTOs = studentService.getAll(page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTOs);
+    }
+
+    @PostMapping(path = "/getAllByFilters")
+    public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size,
+            @RequestBody GetStudentFilterReq getStudentFilterReq) {
+        List<StudentCardDTO> studentCardDTOs = studentService.getAllByFilters(page, size, getStudentFilterReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
 
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

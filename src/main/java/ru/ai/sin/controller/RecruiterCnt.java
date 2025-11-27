@@ -37,7 +37,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
 
-    @GetMapping(path = "/getAllByName")
+    @PostMapping(path = "/getAllByName")
     public ResponseEntity<List<RecruiterDTO>> getAllByName(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size,

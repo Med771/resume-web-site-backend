@@ -5,6 +5,7 @@ CREATE TABLE skills
     is_active     BOOLEAN DEFAULT TRUE                    NOT NULL,
     created_at    TIMESTAMP WITHOUT TIME ZONE,
     updated_at    TIMESTAMP WITHOUT TIME ZONE,
+    category_id   BIGINT,
     education_id  BIGINT,
     speciality_id BIGINT,
     CONSTRAINT pk_skills PRIMARY KEY (id)
@@ -12,6 +13,9 @@ CREATE TABLE skills
 
 ALTER TABLE skills
     ADD CONSTRAINT uc_skills_name UNIQUE (name);
+
+ALTER TABLE skills
+    ADD CONSTRAINT FK_SKILLS_ON_CATEGORY FOREIGN KEY (category_id) REFERENCES categories (id);
 
 ALTER TABLE skills
     ADD CONSTRAINT FK_SKILLS_ON_EDUCATION FOREIGN KEY (education_id) REFERENCES education (id);
