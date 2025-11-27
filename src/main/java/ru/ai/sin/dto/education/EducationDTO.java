@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import ru.ai.sin.dto.skill.SkillDTO;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-public record GetEducationRes(
+public record EducationDTO(
         long id,
 
         @NotBlank
@@ -20,9 +20,7 @@ public record GetEducationRes(
         String additionalInfo,
 
         @NotNull
-        LocalDateTime createdAt,
-        @NotNull
-        LocalDateTime updatedAt,
+        List<UUID> studentIds,
 
         @NotNull
         List<SkillDTO> skills) {

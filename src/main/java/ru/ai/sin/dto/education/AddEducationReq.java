@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
+import java.util.UUID;
 
 public record AddEducationReq(
-
         @NotBlank
         @Size(min = 1, max = 255, message = "Institution must be less than 2000 characters")
         String institution,
@@ -17,5 +17,8 @@ public record AddEducationReq(
         String additionalInfo,
 
         @NotNull
-        List<Long> skillsIds) {
+        List<Long> skillsIds,
+
+        @NotNull
+        List<UUID> studentIds) {
 }
