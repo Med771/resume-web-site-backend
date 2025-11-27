@@ -1,18 +1,16 @@
 package ru.ai.sin.dto.student;
 
-import jakarta.validation.constraints.*;
-import ru.ai.sin.dto.skill.SkillDTO;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import ru.ai.sin.entity.model.BusynessEnum;
 import ru.ai.sin.entity.model.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
-public record StudentDTO(
-        @NotNull
-        UUID id,
-
+public record AddStudentReq(
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
         String city,
 
@@ -25,15 +23,16 @@ public record StudentDTO(
         @Size(max = 2000, message = "Additional info must be less than 2000 characters")
         String bio,
 
-        String imagePath,
-
         @NotNull
         CourseEnum course,
 
         @NotNull
         BusynessEnum busyness,
 
+        @NotNull
         String firstName,
+
+        @NotNull
         String lastName,
 
         @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
@@ -48,9 +47,8 @@ public record StudentDTO(
         @Size(min = 1, max = 255, message = "Telegram Username must be less than 255 characters")
         String telegramUsername,
 
-        @NotNull
-        String speciality,
+        long specialityId,
 
         @NotNull
-        List<SkillDTO> skills) {
+        List<Long> skillsIds) {
 }
