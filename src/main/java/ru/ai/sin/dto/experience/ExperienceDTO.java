@@ -4,12 +4,14 @@ import jakarta.validation.constraints.NotNull;
 import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.StudentEnt;
 
+import java.util.UUID;
+
 public record ExperienceDTO(
         @NotNull
-        CompanyEnt company,
+        UUID companyId,
 
         @NotNull
-        StudentEnt student,
+        UUID studentId,
 
         @NotNull
         ExperienceRes experience) {

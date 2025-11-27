@@ -4,10 +4,11 @@ import jakarta.validation.constraints.NotNull;
 import ru.ai.sin.entity.StudentEnt;
 
 import java.util.List;
+import java.util.UUID;
 
 public record GetAboutStudentRes(
         @NotNull
-        StudentEnt student,
+        UUID studentId,
 
         @NotNull
         List<GetStudentExperienceRes> companyExperiences) {
