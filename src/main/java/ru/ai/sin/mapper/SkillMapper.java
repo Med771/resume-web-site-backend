@@ -17,5 +17,5 @@ public interface SkillMapper {
     SkillEnt toEntity(AddSkillReq dto);
 
     // ---------------- Entity -> GetSkillRes ----------------
-    SkillDTO toGetRes(SkillEnt entity);
+    SkillDTO toDTO(SkillEnt entity);
 }

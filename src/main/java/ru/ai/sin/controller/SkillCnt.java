@@ -30,8 +30,8 @@ public class SkillCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<SkillDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         List<SkillDTO> skillDTOs = skillService.getAll(page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTOs);
