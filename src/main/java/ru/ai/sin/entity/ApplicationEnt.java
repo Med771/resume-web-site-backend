@@ -44,11 +44,11 @@ public class ApplicationEnt {
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id")
     private RecruiterEnt recruiter;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
     private StudentEnt student;
 }

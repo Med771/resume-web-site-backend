@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import ru.ai.sin.dto.experience.AddExperienceReq;
 import ru.ai.sin.dto.experience.ExperienceRes;
-import ru.ai.sin.dto.experience.GetExperienceRes;
+import ru.ai.sin.dto.experience.ExperienceDTO;
 import ru.ai.sin.entity.ExperienceEnt;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -20,13 +20,9 @@ public interface ExperienceMapper {
     ExperienceEnt toEntity(AddExperienceReq dto);
 
     // ---------------- ExperienceEnt -> GetExperienceRes ----------------
-    @Mapping(source = "timestamps.createdAt", target = "experience.createdAt")
-    @Mapping(source = "timestamps.updatedAt", target = "experience.updatedAt")
-    GetExperienceRes toGetRes(ExperienceEnt entity);
+    ExperienceDTO toGetRes(ExperienceEnt entity);
 
-    // ---------------- ExperienceEnt ->  ----------------
-    @Mapping(source = "timestamps.createdAt", target = "createdAt")
-    @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
+    // ---------------- ExperienceEnt -> ExperienceRes ----------------
     ExperienceRes toRes(ExperienceEnt entity);
 
     // ---------------- AddExperienceReq -> ExperienceEnt ----------------

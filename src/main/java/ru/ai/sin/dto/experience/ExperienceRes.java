@@ -21,10 +21,5 @@ public record ExperienceRes(
         LocalDate startDate,
 
         @NotNull
-        LocalDate endDate,
-
-        @NotNull
-        LocalDateTime createdAt,
-        @NotNull
-        LocalDateTime updatedAt) {
+        LocalDate endDate) {
 }

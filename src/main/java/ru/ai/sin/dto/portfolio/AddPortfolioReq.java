@@ -3,6 +3,8 @@ package ru.ai.sin.dto.portfolio;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 public record AddPortfolioReq(
         @NotBlank
         @Size(min = 1, max = 255, message = "Name must be less than 255 characters")
@@ -12,5 +14,7 @@ public record AddPortfolioReq(
         String link,
 
         @Size(max = 2000, message = "Additional info must be less than 2000 characters")
-        String additionalInfo) {
+        String additionalInfo,
+
+        UUID studentId) {
 }

@@ -5,89 +5,102 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import ru.ai.sin.dto.application.*;
+import ru.ai.sin.service.impl.ApplicationService;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/admin/application")
+@RequestMapping(path = "/application")
 public class ApplicationCnt {
+
+    private final ApplicationService applicationService;
 
     @GetMapping(path = "/getById")
     public ResponseEntity<ApplicationDTO> getById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
+        ApplicationDTO applicationDTO = applicationService.getById(id);
 
-    @GetMapping(path = "/getByRecruitId")
-    public ResponseEntity<List<ApplicationDTO>> getByRecruitId(
-            @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @GetMapping(path = "/getByStudentId")
-    public ResponseEntity<List<ApplicationDTO>> getByStudentId(
-            @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @GetMapping(path = "getAll")
-    public ResponseEntity<List<ApplicationDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
     @GetMapping(path = "getHistoryById")
-    public ResponseEntity<?> getHistoryById(
+    public ResponseEntity<GetHistoryRes> getHistoryById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        GetHistoryRes getHistoryRes = applicationService.getHistoryById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getHistoryRes);
+    }
+
+    @PostMapping(path = "getAll")
+    public ResponseEntity<List<ApplicationDTO>> getAll(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size,
+            @RequestBody GetApplicationFilterReq getApplicationFilterReq) {
+        List<ApplicationDTO> applicationDTOList = applicationService.getAll(page, size, getApplicationFilterReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTOList);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<ApplicationDTO> create(
             @RequestBody AddApplicationReq applicationReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.create(applicationReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setChatIdById")
+    @PutMapping(path = "/setChatIdById")
     public ResponseEntity<ApplicationDTO> setChatIdById(
             @RequestParam long id,
             @RequestBody SetChatIdReq setChatIdReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.setChatIdById(id, setChatIdReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setResultById")
+    @PutMapping(path = "/setResultById")
     public ResponseEntity<ApplicationDTO> setResultById(
             @RequestParam long id,
             @RequestBody SetResultReq setResultReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.setResultById(id, setResultReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
-    @PostMapping(path = "/setHistoryById")
+    @PutMapping(path = "/setHistoryById")
     public ResponseEntity<ApplicationDTO> setHistoryById(
             @RequestParam long id,
             @RequestBody SetHistoryReq setHistoryReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.setHistoryById(id, setHistoryReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<ApplicationDTO> deleteById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
     @DeleteMapping(path = "/deleteByRecruitId")
     public ResponseEntity<ApplicationDTO> deleteByRecruitId(
             @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.deleteByRecruitId(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 
     @DeleteMapping(path = "/deleteByStudentId")
     public ResponseEntity<ApplicationDTO> deleteByStudentId(
             @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ApplicationDTO applicationDTO = applicationService.deleteByStudentId(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(applicationDTO);
     }
 }

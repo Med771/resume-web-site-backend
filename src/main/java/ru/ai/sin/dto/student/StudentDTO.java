@@ -52,11 +52,5 @@ public record StudentDTO(
         String speciality,
 
         @NotNull
-        List<SkillDTO> skills,
-
-        @NotNull
-        List<?> education,
-
-        @NotNull
-        List<?> portfolio) {
+        List<SkillDTO> skills) {
 }

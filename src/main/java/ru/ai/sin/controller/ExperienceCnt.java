@@ -1,77 +1,81 @@
 package ru.ai.sin.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.experience.*;
+import ru.ai.sin.service.impl.ExperienceService;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "/admin/experience")
+@RequiredArgsConstructor
+@RequestMapping(path = "/experience")
 public class ExperienceCnt {
 
-    @GetMapping(path = "getById")
-    public ResponseEntity<GetExperienceRes> getById(
+    private final ExperienceService experienceService;
+
+    @GetMapping(path = "/getById")
+    public ResponseEntity<ExperienceDTO> getById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ExperienceDTO experienceDTO = experienceService.getById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
     @GetMapping(path = "/aboutGetByCompanyId")
     public ResponseEntity<GetAboutCompanyRes> aboutGetByCompanyId(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size,
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        GetAboutCompanyRes getAboutCompanyResDTO = experienceService.getAboutCompanyById(id, page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getAboutCompanyResDTO);
     }
 
     @GetMapping(path = "/aboutGetByStudentId")
     public ResponseEntity<GetAboutStudentRes> aboutGetByStudentId(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size,
             @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        GetAboutStudentRes getAboutStudentResDTO = experienceService.getAboutStudentById(id, page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentResDTO);
     }
 
-    @GetMapping(path = "/aboutCompanyAll")
-    public ResponseEntity<List<GetAboutCompanyRes>> aboutGetCompanyAll(
-            @RequestParam long page,
-            @RequestParam long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @GetMapping(path = "/aboutStudentsAll")
-    public ResponseEntity<List<GetStudentExperienceRes>> aboutGetStudentAll(
+    @GetMapping(path = "/getAll")
+    public ResponseEntity<List<ExperienceDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        List<ExperienceDTO> experienceDTOs = experienceService.getAll(page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(experienceDTOs);
     }
 
-    @PostMapping(path = "/createExperience")
-    public ResponseEntity<GetExperienceRes> createExperience(
+    @PostMapping(path = "/create")
+    public ResponseEntity<ExperienceDTO> create(
             @RequestBody AddExperienceReq experienceReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ExperienceDTO experienceDTO = experienceService.create(experienceReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
-    @PutMapping(path = "/mergeExperience")
-    public ResponseEntity<GetExperienceRes> mergeExperience(
+    @PutMapping(path = "/update")
+    public ResponseEntity<ExperienceDTO> update(
             @RequestParam(defaultValue = "-1") long id,
             @RequestBody AddExperienceReq experienceReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        ExperienceDTO experienceDTO = experienceService.update(id, experienceReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
-    public ResponseEntity<GetExperienceRes> deleteById(
+    public ResponseEntity<ExperienceDTO> deleteById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
+        ExperienceDTO experienceDTO = experienceService.deleteById(id);
 
-    @DeleteMapping(path = "/deleteByCompanyId")
-    public ResponseEntity<GetCompanyExperienceRes> deleteByCompanyId(
-            @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
-    @DeleteMapping(path = "/deleteByStudentId")
-    public ResponseEntity<GetStudentExperienceRes> deleteByStudentId(
-            @RequestParam UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 }

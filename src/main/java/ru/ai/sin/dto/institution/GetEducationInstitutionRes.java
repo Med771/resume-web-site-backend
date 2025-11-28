@@ -1,13 +1,13 @@
 package ru.ai.sin.dto.institution;
 
 import jakarta.validation.constraints.NotNull;
-import ru.ai.sin.entity.StudentEnt;
 
 import java.util.List;
+import java.util.UUID;
 
 public record GetEducationInstitutionRes(
         @NotNull
-        StudentEnt student,
+        UUID studentId,
 
         @NotNull
         List<InstitutionRes> studentInstitution) {

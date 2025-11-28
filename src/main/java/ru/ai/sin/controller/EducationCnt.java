@@ -1,47 +1,78 @@
 package ru.ai.sin.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.ai.sin.dto.education.AddEducationReq;
-import ru.ai.sin.dto.education.GetEducationRes;
-import ru.ai.sin.dto.education.MergeEducationReq;
+import ru.ai.sin.dto.education.*;
+import ru.ai.sin.service.impl.EducationService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/admin/education")
+@RequiredArgsConstructor
+@RequestMapping(path = "/education")
 public class EducationCnt {
 
+    private final EducationService educationService;
+
     @GetMapping(path = "/getById")
-    public ResponseEntity<GetEducationRes> getById(
+    public ResponseEntity<EducationDTO> getById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        EducationDTO educationDTO = educationService.getById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @GetMapping(path = "/getAll")
-    public ResponseEntity<List<GetEducationRes>> getAll(
+    public ResponseEntity<List<EducationDTO>> getAll(
             @RequestParam(defaultValue = "0") long page,
             @RequestParam(defaultValue = "10") long size) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        List<EducationDTO> educationDTOs = educationService.getAll(page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<GetEducationRes> create(
+    public ResponseEntity<EducationDTO> create(
             @RequestBody AddEducationReq educationReq) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+        EducationDTO educationDTO = educationService.create(educationReq);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
     }
 
-    @PutMapping(path = "/merge")
-    public ResponseEntity<GetEducationRes> merge(
-            @RequestParam(defaultValue = "-1") long id,
-            @RequestBody MergeEducationReq educationReq) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+    @PutMapping(path = "/setInstitutionById")
+    public ResponseEntity<EducationDTO> setInstitutionById(
+            @RequestParam long id,
+            @RequestBody SetInstitutionReq setInstitutionReq) {
+        EducationDTO educationDTO = educationService.setInstitutionById(id, setInstitutionReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
+    }
+
+    @PutMapping(path = "/setAdditionalInfoById")
+    public ResponseEntity<EducationDTO> setAdditionalInfoById(
+            @RequestParam long id,
+            @RequestBody SetEducationInfoReq setEducationInfoReq) {
+        EducationDTO educationDTO = educationService.setAdditionalInfoById(id, setEducationInfoReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
+    }
+
+    @PutMapping(path = "/setSkillsById")
+    public ResponseEntity<EducationDTO> setSkillsById(
+            @RequestParam long id,
+            @RequestBody SetEducationSkillsReq setEducationSkillsReq) {
+        EducationDTO educationDTO = educationService.setSkillsById(id, setEducationSkillsReq);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
-    public ResponseEntity<GetEducationRes> deleteById(
+    public ResponseEntity<EducationDTO> deleteById(
             @RequestParam long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        EducationDTO educationDTO = educationService.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 }
