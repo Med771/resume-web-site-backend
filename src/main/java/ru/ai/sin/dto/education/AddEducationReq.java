@@ -17,8 +17,5 @@ public record AddEducationReq(
         String additionalInfo,
 
         @NotNull
-        List<Long> skillsIds,
-
-        @NotNull
-        List<UUID> studentIds) {
+        List<Long> skillsIds) {
 }

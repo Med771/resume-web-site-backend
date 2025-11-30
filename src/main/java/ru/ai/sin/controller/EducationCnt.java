@@ -26,8 +26,8 @@ public class EducationCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<EducationDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         List<EducationDTO> educationDTOs = educationService.getAll(page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
@@ -44,8 +44,8 @@ public class EducationCnt {
     @PutMapping(path = "/setInstitutionById")
     public ResponseEntity<EducationDTO> setInstitutionById(
             @RequestParam long id,
-            @RequestBody SetInstitutionReq setInstitutionReq) {
-        EducationDTO educationDTO = educationService.setInstitutionById(id, setInstitutionReq);
+            @RequestBody SetEducationInstitutionReq setEducationInstitutionReq) {
+        EducationDTO educationDTO = educationService.setInstitutionById(id, setEducationInstitutionReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
