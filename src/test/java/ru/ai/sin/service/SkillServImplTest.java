@@ -58,7 +58,7 @@ class SkillServImplTest {
         SkillEnt ent = new SkillEnt(1L, "Java", true, null);
         SkillDTO dto = new SkillDTO(1L, "Java");
 
-        when(skillRepo.findByName("Java")).thenReturn(Optional.empty());
+        when(skillRepo.findByNameIgnoreCase("Java")).thenReturn(Optional.empty());
         when(skillMapper.toEntity(req)).thenReturn(ent);
         when(skillRepo.save(ent)).thenReturn(ent);
         when(skillMapper.toDTO(ent)).thenReturn(dto);
@@ -74,7 +74,7 @@ class SkillServImplTest {
         SkillEnt existing = new SkillEnt(1L, "Java", false, null);
         SkillDTO dto = new SkillDTO(1L, "Java");
 
-        when(skillRepo.findByName("Java")).thenReturn(Optional.of(existing));
+        when(skillRepo.findByNameIgnoreCase("Java")).thenReturn(Optional.of(existing));
         when(skillRepo.save(existing)).thenReturn(existing);
         when(skillMapper.toDTO(existing)).thenReturn(dto);
 

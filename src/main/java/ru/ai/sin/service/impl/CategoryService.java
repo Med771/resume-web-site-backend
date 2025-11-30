@@ -12,7 +12,7 @@ public interface CategoryService {
     // ---------- GET METHODS ----------
     CategoryDTO getById(Long id);
 
-    List<CategoryDTO> getAll(long page, long size);
+    List<CategoryDTO> getAll(int page, int size);
 
     // ---------- POST METHODS ----------
     CategoryDTO create(AddCategoryReq addCategoryReq);

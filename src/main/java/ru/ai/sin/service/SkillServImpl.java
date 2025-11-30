@@ -51,7 +51,7 @@ public class SkillServImpl implements SkillService {
     @Override
     @Transactional
     public SkillDTO create(AddSkillReq addSkillReq) {
-        Optional<SkillEnt> optSkillEnt = skillRepo.findByName(addSkillReq.name());
+        Optional<SkillEnt> optSkillEnt = skillRepo.findByNameIgnoreCase(addSkillReq.name());
 
         SkillEnt skillEnt;
 
