@@ -11,6 +11,7 @@ import ru.ai.sin.dto.category.SetCategoryNameReq;
 import ru.ai.sin.dto.category.SetCategorySkillsReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.CategoryEnt;
+import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.mapper.CategoryMapper;
 import ru.ai.sin.mapper.SkillMapper;
@@ -64,24 +65,25 @@ public class CategoryServImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDTO create(AddCategoryReq addCategoryReq) {
+        CategoryEnt categoryEnt;
+
         Optional<CategoryEnt> optCategoryEnt = categoryRepo.findByNameIgnoreCase(addCategoryReq.name());
 
-        CategoryEnt categoryEnt;
+        List<SkillEnt> skillEntList = skillRepo.findAllByIdIn(addCategoryReq.skillsIds());
+        List<SkillDTO> skillDTOs = skillEntList.stream().map(skillMapper::toDTO).toList();
 
         if (optCategoryEnt.isPresent()) {
             categoryEnt = optCategoryEnt.get();
 
             categoryEnt.setIsActive(true);
-
-
         }
         else {
             categoryEnt = categoryMapper.toEntity(addCategoryReq);
         }
 
-        categoryEnt = categoryRepo.save(categoryEnt);
+        categoryEnt.setSkills(skillEntList);
 
-        List<SkillDTO> skillDTOs = categoryEnt.getSkills().stream().map(skillMapper::toDTO).toList();
+        categoryEnt = categoryRepo.save(categoryEnt);
 
         return categoryMapper.toDto(categoryEnt, skillDTOs);
     }
@@ -109,11 +111,12 @@ public class CategoryServImpl implements CategoryService {
                 () -> new BadRequestException("Failed find by id")
         );
 
+        List<SkillEnt> skillEntList = skillRepo.findAllByIdIn(setCategorySkillsReq.skillsIds());
+        List<SkillDTO> skillDTOs = skillEntList.stream().map(skillMapper::toDTO).toList();
 
+        categoryEnt.setSkills(skillEntList);
 
         categoryEnt = categoryRepo.save(categoryEnt);
-
-        List<SkillDTO> skillDTOs = categoryEnt.getSkills().stream().map(skillMapper::toDTO).toList();
 
         return categoryMapper.toDto(categoryEnt, skillDTOs);
     }

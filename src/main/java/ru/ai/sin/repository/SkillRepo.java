@@ -14,4 +14,6 @@ public interface SkillRepo extends JpaRepository<SkillEnt, Long> {
     Optional<SkillEnt> findByNameIgnoreCase(String name);
 
     List<SkillEnt> findAllByIsActiveTrue(PageRequest pageRequest);
+
+    List<SkillEnt> findAllByIdIn(List<Long> ids);
 }
