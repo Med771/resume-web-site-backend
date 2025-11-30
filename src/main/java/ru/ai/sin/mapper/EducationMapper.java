@@ -7,7 +7,6 @@ import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.EducationEnt;
 
 import java.util.List;
-import java.util.UUID;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EducationMapper {
