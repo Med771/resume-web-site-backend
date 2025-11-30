@@ -19,9 +19,9 @@ import ru.ai.sin.repository.CategoryRepo;
 import ru.ai.sin.repository.SkillRepo;
 import ru.ai.sin.service.impl.CategoryService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,7 +32,7 @@ public class CategoryServImpl implements CategoryService {
     private final SkillRepo skillRepo;
 
     private final CategoryMapper categoryMapper;
-    private final SkillMapper  skillMapper;
+    private final SkillMapper skillMapper;
 
     @Override
     public CategoryDTO getById(Long id) {
@@ -69,8 +69,8 @@ public class CategoryServImpl implements CategoryService {
 
         Optional<CategoryEnt> optCategoryEnt = categoryRepo.findByNameIgnoreCase(addCategoryReq.name());
 
-        List<SkillEnt> skillEntList = skillRepo.findAllByIdIn(addCategoryReq.skillsIds());
-        List<SkillDTO> skillDTOs = skillEntList.stream().map(skillMapper::toDTO).toList();
+        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addCategoryReq.skillsIds());
+        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
 
         if (optCategoryEnt.isPresent()) {
             categoryEnt = optCategoryEnt.get();
@@ -81,7 +81,7 @@ public class CategoryServImpl implements CategoryService {
             categoryEnt = categoryMapper.toEntity(addCategoryReq);
         }
 
-        categoryEnt.setSkills(skillEntList);
+        categoryEnt.setSkills(skillEntSet);
 
         categoryEnt = categoryRepo.save(categoryEnt);
 
@@ -111,10 +111,10 @@ public class CategoryServImpl implements CategoryService {
                 () -> new BadRequestException("Failed find by id")
         );
 
-        List<SkillEnt> skillEntList = skillRepo.findAllByIdIn(setCategorySkillsReq.skillsIds());
-        List<SkillDTO> skillDTOs = skillEntList.stream().map(skillMapper::toDTO).toList();
+        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(setCategorySkillsReq.skillsIds());
+        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
 
-        categoryEnt.setSkills(skillEntList);
+        categoryEnt.setSkills(skillEntSet);
 
         categoryEnt = categoryRepo.save(categoryEnt);
 

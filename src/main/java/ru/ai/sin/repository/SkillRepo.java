@@ -6,6 +6,7 @@ import ru.ai.sin.entity.SkillEnt;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface SkillRepo extends JpaRepository<SkillEnt, Long> {
 
@@ -13,7 +14,7 @@ public interface SkillRepo extends JpaRepository<SkillEnt, Long> {
 
     Optional<SkillEnt> findByNameIgnoreCase(String name);
 
-    List<SkillEnt> findAllByIsActiveTrue(PageRequest pageRequest);
+    Set<SkillEnt> findAllByIsActiveTrue(PageRequest pageRequest);
 
-    List<SkillEnt> findAllByIdIn(List<Long> ids);
+    Set<SkillEnt> findAllByIdIn(List<Long> ids);
 }

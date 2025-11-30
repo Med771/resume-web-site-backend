@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
-        log.error("Unexpected error: {}", ex.getMessage());
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
 
         return ResponseEntity
                 .status(500)
