@@ -11,17 +11,25 @@ import java.util.UUID;
 public interface RecruiterService {
 
     // ---------- GET METHODS ----------
-    RecruiterDTO getById(UUID id);
+    RecruiterDTO getById(
+            UUID id);
 
-    List<RecruiterDTO> getAll(long page, long size);
-    List<RecruiterDTO> getAllByName(long page, long size, GetRecruiterNameReq getRecruiterNameReq);
+    List<RecruiterDTO> getAll(
+            int pageRecruiterNumber, int pageRecruiterSize);
+    List<RecruiterDTO> getAllByName(
+            int pageRecruiterNumber, int pageRecruiterSize,
+            GetRecruiterNameReq getRecruiterNameReq);
 
     // ---------- POST METHODS ----------
-    RecruiterDTO create(AddRecruiterReq addRecruiterReq);
+    RecruiterDTO create(
+            AddRecruiterReq addRecruiterReq);
 
     // ---------- PUT METHODS ----------
-    RecruiterDTO update(UUID id, UpdateRecruiterReq updateRecruiterReq);
+    RecruiterDTO update(
+            UUID id,
+            UpdateRecruiterReq updateRecruiterReq);
 
     // ---------- DELETE METHODS ----------
-    RecruiterDTO deleteById(UUID id);
+    RecruiterDTO deleteById(
+            UUID id);
 }

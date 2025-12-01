@@ -9,15 +9,21 @@ import ru.ai.sin.entity.RecruiterEnt;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RecruiterMapper {
 
-    // ---------------- AddRecruiterReq -> Entity ----------------
+    // ---------------- AddRecruiterReq -> RecruiterEnt ----------------
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "userInformation.passwordHash", ignore = true)
     @Mapping(target = "contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "userInformation.firstName", source = "firstName")
+    @Mapping(target = "userInformation.lastName", source = "lastName")
+    @Mapping(target = "userInformation.username", source = "username")
+    @Mapping(target = "userInformation.email", source = "email")
+    @Mapping(target = "contactInformation.phoneNumber", source = "phoneNumber")
+    @Mapping(target = "contactInformation.telegramUsername", source = "telegramUsername")
     RecruiterEnt toEntity(AddRecruiterReq dto);
 
-    // ---------------- Entity -> RecruiterDTO ----------------
+    // ---------------- RecruiterEnt -> RecruiterDTO ----------------
     @Mapping(source = "userInformation.firstName", target = "firstName")
     @Mapping(source = "userInformation.lastName", target = "lastName")
     @Mapping(source = "userInformation.username", target = "username")
@@ -27,7 +33,7 @@ public interface RecruiterMapper {
     @Mapping(source = "contactInformation.telegramUserId", target = "telegramUserId")
     RecruiterDTO toDTO(RecruiterEnt entity);
 
-    // ---------------- MergeRecruiterReq -> Entity ----------------
+    // ---------------- UpdateRecruiterReq -> RecruiterEnt ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "isActive", ignore = true)
