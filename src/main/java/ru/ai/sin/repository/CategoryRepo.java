@@ -10,12 +10,12 @@ import java.util.Optional;
 
 public interface CategoryRepo extends CrudRepository<CategoryEnt, Long> {
 
-    @EntityGraph(attributePaths = {"skills"})
+    @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<CategoryEnt> findByIdAndIsActiveTrue(Long id);
 
-    @EntityGraph(attributePaths = {"skills"})
+    @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<CategoryEnt> findByNameIgnoreCase(String name);
 
-    @EntityGraph(attributePaths = {"skills"})
+    @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
     List<CategoryEnt> findAllByIsActiveTrue(PageRequest pageRequest);
 }
