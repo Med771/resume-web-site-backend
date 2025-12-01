@@ -10,16 +10,22 @@ import java.util.List;
 public interface SpecialityService {
 
     // ---------- GET METHODS ----------
-    SpecialityDTO getById(Long id);
+    SpecialityDTO getById(
+            long id);
 
-    List<SpecialityDTO> getAll(long page, long size);
-
-    // ---------- POST METHODS ----------
-    SpecialityDTO create(AddSpecialityReq addSpecialityReq);
-
-    SpecialityDTO setNameById(Long id, SetSpecialityNameReq  setSpecialityNameReq);
-    SpecialityDTO setSkillsById(Long id, SetSpecialitySkillsReq setSpecialitySkillsReq);
+    List<SpecialityDTO> getAll(
+            int pageSpecialityNumber, int pageSpecialitySize);
 
     // ---------- POST METHODS ----------
-    SpecialityDTO deleteById(Long id);
+    SpecialityDTO create(
+            AddSpecialityReq addSpecialityReq);
+
+    SpecialityDTO setNameById(
+            long id, SetSpecialityNameReq  setSpecialityNameReq);
+    SpecialityDTO setSkillsById(
+            long id, SetSpecialitySkillsReq setSpecialitySkillsReq);
+
+    // ---------- POST METHODS ----------
+    SpecialityDTO deleteById(
+            long id);
 }
