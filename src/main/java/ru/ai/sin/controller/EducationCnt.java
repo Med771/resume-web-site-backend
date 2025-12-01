@@ -18,24 +18,35 @@ public class EducationCnt {
 
     @GetMapping(path = "/getById")
     public ResponseEntity<EducationDTO> getById(
-            @RequestParam long id) {
-        EducationDTO educationDTO = educationService.getById(id);
+            @RequestParam long id,
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        EducationDTO educationDTO = educationService.getById(
+                id,
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<EducationDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<EducationDTO> educationDTOs = educationService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageEducationNumber,
+            @RequestParam(defaultValue = "10") int sizeEducationSize,
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        List<EducationDTO> educationDTOs = educationService.getAll(
+                pageEducationNumber, sizeEducationSize,
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<EducationDTO> create(
-            @RequestBody AddEducationReq educationReq) {
+            @RequestBody AddEducationReq educationReq
+    ) {
         EducationDTO educationDTO = educationService.create(educationReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
@@ -44,8 +55,14 @@ public class EducationCnt {
     @PutMapping(path = "/setInstitutionById")
     public ResponseEntity<EducationDTO> setInstitutionById(
             @RequestParam long id,
-            @RequestBody SetEducationInstitutionReq setEducationInstitutionReq) {
-        EducationDTO educationDTO = educationService.setInstitutionById(id, setEducationInstitutionReq);
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize,
+            @RequestBody SetEducationInstitutionReq setEducationInstitutionReq
+    ) {
+        EducationDTO educationDTO = educationService.setInstitutionById(
+                id,
+                pageInstitutionNumber, pageInstitutionSize,
+                setEducationInstitutionReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
@@ -53,8 +70,14 @@ public class EducationCnt {
     @PutMapping(path = "/setAdditionalInfoById")
     public ResponseEntity<EducationDTO> setAdditionalInfoById(
             @RequestParam long id,
-            @RequestBody SetEducationInfoReq setEducationInfoReq) {
-        EducationDTO educationDTO = educationService.setAdditionalInfoById(id, setEducationInfoReq);
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize,
+            @RequestBody SetEducationInfoReq setEducationInfoReq
+    ) {
+        EducationDTO educationDTO = educationService.setAdditionalInfoById(
+                id,
+                pageInstitutionNumber, pageInstitutionSize,
+                setEducationInfoReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
@@ -62,16 +85,27 @@ public class EducationCnt {
     @PutMapping(path = "/setSkillsById")
     public ResponseEntity<EducationDTO> setSkillsById(
             @RequestParam long id,
-            @RequestBody SetEducationSkillsReq setEducationSkillsReq) {
-        EducationDTO educationDTO = educationService.setSkillsById(id, setEducationSkillsReq);
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize,
+            @RequestBody SetEducationSkillsReq setEducationSkillsReq
+    ) {
+        EducationDTO educationDTO = educationService.setSkillsById(
+                id,
+                pageInstitutionNumber, pageInstitutionSize,
+                setEducationSkillsReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<EducationDTO> deleteById(
-            @RequestParam long id) {
-        EducationDTO educationDTO = educationService.deleteById(id);
+            @RequestParam long id,
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        EducationDTO educationDTO = educationService.deleteById(
+                id,
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
