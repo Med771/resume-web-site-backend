@@ -90,7 +90,7 @@ public class CategoryServImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDTO setNameById(Long id, SetCategoryNameReq setCategoryNameReq) {
+    public CategoryDTO setNameById(long id, SetCategoryNameReq setCategoryNameReq) {
         CategoryEnt categoryEnt = categoryRepo.findByIdAndIsActiveTrue(id).orElseThrow(
                 () -> new BadRequestException("Failed find by id")
         );
@@ -106,7 +106,7 @@ public class CategoryServImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDTO setSkillsById(Long id, SetCategorySkillsReq setCategorySkillsReq) {
+    public CategoryDTO setSkillsById(long id, SetCategorySkillsReq setCategorySkillsReq) {
         CategoryEnt categoryEnt = categoryRepo.findByIdAndIsActiveTrue(id).orElseThrow(
                 () -> new BadRequestException("Failed find by id")
         );
