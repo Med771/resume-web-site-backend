@@ -88,7 +88,7 @@ public class SpecialityServImpl implements SpecialityService {
 
         specialityEnt.setSkills(skillEntSet);
 
-        specialityRepo.save(specialityEnt);
+        specialityEnt = specialityRepo.save(specialityEnt);
 
         return specialityMapper.toDTO(specialityEnt, skillDTOs);
     }

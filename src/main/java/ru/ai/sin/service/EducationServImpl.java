@@ -106,7 +106,7 @@ public class EducationServImpl implements EducationService {
 
         educationEnt.setSkills(skillEntSet);
 
-        educationRepo.save(educationEnt);
+        educationEnt = educationRepo.save(educationEnt);
 
         List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
 
