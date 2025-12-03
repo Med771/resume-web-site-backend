@@ -4,10 +4,11 @@ import org.mapstruct.*;
 import ru.ai.sin.dto.company.CompanyDTO;
 import ru.ai.sin.entity.CompanyEnt;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CompanyMapper {
 
-    // ---------------- Entity -> CompanyDTO ----------------
-    @Mapping(target = "experiencesId", ignore = true)
-    CompanyDTO toDTO(CompanyEnt entity);
+    // ---------------- CompanyEnt -> CompanyDTO ----------------
+    CompanyDTO toDTO(CompanyEnt entity, List<Long> experiencesIds);
 }

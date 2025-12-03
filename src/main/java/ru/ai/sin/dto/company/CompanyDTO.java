@@ -14,5 +14,5 @@ public record CompanyDTO(
         String name,
 
         @NotNull
-        List<Long> experiencesId) {
+        List<Long> experiencesIds) {
 }
