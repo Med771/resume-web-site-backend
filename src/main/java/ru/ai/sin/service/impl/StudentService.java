@@ -9,16 +9,27 @@ import java.util.UUID;
 public interface StudentService {
 
     // ---------- GET METHODS ----------
-    StudentDTO getById(UUID id);
+    StudentDTO getById(
+            UUID id);
 
-    List<StudentCardDTO> getAllCards(long page, long size);
-    List<StudentCardDTO> getAllByFilters(long page, long size, GetStudentFilterReq getStudentFilterReq);
-    List<StudentDTO> getAll(long page, long size);
+    List<StudentCardDTO> getAllCards(
+            int pageStudentNumber, int pageStudentSize);
+    List<StudentCardDTO> getAllByFilters(
+            int pageStudentNumber, int pageStudentSize,
+            GetStudentFilterReq getStudentFilterReq);
+    List<StudentDTO> getAll(
+            int pageStudentNumber, int pageStudentSize);
 
     // ---------- POST METHODS ----------
-    StudentDTO create(MultipartFile multipartFile, AddStudentReq  addStudentReq);
-    StudentDTO update(UUID id, MultipartFile multipartFile, UpdateStudentReq updateStudentReq);
+    StudentDTO create(
+            MultipartFile multipartFile,
+            AddStudentReq  addStudentReq);
+    StudentDTO update(
+            UUID id,
+            MultipartFile multipartFile,
+            UpdateStudentReq updateStudentReq);
 
     // ---------- DELETE METHODS ----------
-    StudentDTO deleteById(UUID id);
+    StudentDTO deleteById(
+            UUID id);
 }

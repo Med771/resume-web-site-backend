@@ -1,5 +1,7 @@
 package ru.ai.sin.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ public class StudentCnt {
 
     private final StudentService studentService;
 
+    private final ObjectMapper objectMapper;
+
     @GetMapping(path = "/getById")
     public ResponseEntity<StudentDTO> getById(
             @RequestParam UUID id) {
@@ -32,28 +36,28 @@ public class StudentCnt {
 
     @GetMapping(path = "/getAllCards")
     public ResponseEntity<List<StudentCardDTO>> getAllCards(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<StudentCardDTO> studentCardDTOs = studentService.getAllCards(page, size);
+            @RequestParam(defaultValue = "0") int pageStudentNumber,
+            @RequestParam(defaultValue = "10") int pageStudentSize) {
+        List<StudentCardDTO> studentCardDTOs = studentService.getAllCards(pageStudentNumber, pageStudentSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<StudentDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<StudentDTO> studentDTOs = studentService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageStudentNumber,
+            @RequestParam(defaultValue = "10") int pageStudentSize) {
+        List<StudentDTO> studentDTOs = studentService.getAll(pageStudentNumber, pageStudentSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTOs);
     }
 
     @PostMapping(path = "/getAllByFilters")
     public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size,
+            @RequestParam(defaultValue = "0") int pageStudentNumber,
+            @RequestParam(defaultValue = "10") int pageStudentSize,
             @RequestBody GetStudentFilterReq getStudentFilterReq) {
-        List<StudentCardDTO> studentCardDTOs = studentService.getAllByFilters(page, size, getStudentFilterReq);
+        List<StudentCardDTO> studentCardDTOs = studentService.getAllByFilters(pageStudentNumber, pageStudentSize, getStudentFilterReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
@@ -61,7 +65,11 @@ public class StudentCnt {
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> create(
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @RequestPart("profileData") AddStudentReq addStudentReq) {
+            @RequestPart(value = "profileData")
+            String profileData
+    ) throws JsonProcessingException {
+        AddStudentReq addStudentReq = objectMapper.readValue(profileData, AddStudentReq.class);
+
         StudentDTO studentDTO = studentService.create(multipartFile, addStudentReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
@@ -71,7 +79,7 @@ public class StudentCnt {
     public ResponseEntity<StudentDTO> update(
             @RequestPart("id") UUID id,
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @RequestPart("profileData")UpdateStudentReq updateStudentReq) {
+            @RequestPart(value = "profileData", required = false)UpdateStudentReq updateStudentReq) {
         StudentDTO studentDTO = studentService.update(id, multipartFile, updateStudentReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
