@@ -27,7 +27,6 @@ public class ExperienceEnt {
     private String position;
 
     @Column(name = "additional_info", columnDefinition = "TEXT")
-    @Basic(fetch = FetchType.LAZY)
     @Size(max = 2000, message = "Additional info must be less than 2000 characters")
     private String additionalInfo;
 
@@ -40,11 +39,11 @@ public class ExperienceEnt {
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private CompanyEnt company;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
     private StudentEnt student;
 }
