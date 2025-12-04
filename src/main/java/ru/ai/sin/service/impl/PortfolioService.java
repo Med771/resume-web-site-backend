@@ -9,15 +9,23 @@ import java.util.UUID;
 public interface PortfolioService {
 
     // ---------- GET METHODS ----------
-    PortfolioDTO getById(long id);
+    PortfolioDTO getById(
+            long id);
 
-    List<PortfolioDTO> getAll(long page, long size);
-    List<PortfolioDTO> getAllByStudentId(UUID studentId,  long page, long size);
+    List<PortfolioDTO> getAll(
+            int pagePortfolioNumber, int pagePortfolioSize);
+    List<PortfolioDTO> getAllByStudentId(
+            UUID studentId,
+            int pagePortfolioNumber, int pagePortfolioSize);
 
     // ---------- POST METHODS ----------
-    PortfolioDTO create(AddPortfolioReq  addPortfolioReq);
-    PortfolioDTO update(long id, AddPortfolioReq  addPortfolioReq);
+    PortfolioDTO create(
+            AddPortfolioReq  addPortfolioReq);
+    PortfolioDTO update(
+            long id,
+            AddPortfolioReq  addPortfolioReq);
 
     // ---------- DELETE METHODS ----------
-    PortfolioDTO deleteById(long id);
+    PortfolioDTO deleteById(
+            long id);
 }
