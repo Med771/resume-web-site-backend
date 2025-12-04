@@ -37,7 +37,8 @@ public class StudentCnt {
     @GetMapping(path = "/getAllCards")
     public ResponseEntity<List<StudentCardDTO>> getAllCards(
             @RequestParam(defaultValue = "0") int pageStudentNumber,
-            @RequestParam(defaultValue = "10") int pageStudentSize) {
+            @RequestParam(defaultValue = "10") int pageStudentSize
+    ) {
         List<StudentCardDTO> studentCardDTOs = studentService.getAllCards(pageStudentNumber, pageStudentSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
@@ -46,7 +47,8 @@ public class StudentCnt {
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<StudentDTO>> getAll(
             @RequestParam(defaultValue = "0") int pageStudentNumber,
-            @RequestParam(defaultValue = "10") int pageStudentSize) {
+            @RequestParam(defaultValue = "10") int pageStudentSize
+    ) {
         List<StudentDTO> studentDTOs = studentService.getAll(pageStudentNumber, pageStudentSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTOs);
@@ -56,7 +58,8 @@ public class StudentCnt {
     public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
             @RequestParam(defaultValue = "0") int pageStudentNumber,
             @RequestParam(defaultValue = "10") int pageStudentSize,
-            @RequestBody GetStudentFilterReq getStudentFilterReq) {
+            @RequestBody GetStudentFilterReq getStudentFilterReq
+    ) {
         List<StudentCardDTO> studentCardDTOs = studentService.getAllByFilters(pageStudentNumber, pageStudentSize, getStudentFilterReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
@@ -65,8 +68,7 @@ public class StudentCnt {
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> create(
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @RequestPart(value = "profileData")
-            String profileData
+            @RequestPart(value = "profileData") String profileData
     ) throws JsonProcessingException {
         AddStudentReq addStudentReq = objectMapper.readValue(profileData, AddStudentReq.class);
 
@@ -79,7 +81,10 @@ public class StudentCnt {
     public ResponseEntity<StudentDTO> update(
             @RequestPart("id") UUID id,
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @RequestPart(value = "profileData", required = false)UpdateStudentReq updateStudentReq) {
+            @RequestPart(value = "profileData") String profileData
+    ) throws JsonProcessingException {
+        UpdateStudentReq updateStudentReq = objectMapper.readValue(profileData, UpdateStudentReq.class);
+
         StudentDTO studentDTO = studentService.update(id, multipartFile, updateStudentReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
@@ -87,7 +92,8 @@ public class StudentCnt {
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<StudentDTO> deleteById(
-            @RequestParam UUID id) {
+            @RequestParam UUID id
+    ) {
         StudentDTO studentDTO = studentService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTO);

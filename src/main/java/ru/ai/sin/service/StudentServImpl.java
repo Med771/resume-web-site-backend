@@ -7,17 +7,22 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.dto.student.*;
+import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.helper.FileHelper;
+import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.mapper.StudentMapper;
+import ru.ai.sin.repository.SkillRepo;
 import ru.ai.sin.repository.SpecialityRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.StudentService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -27,12 +32,15 @@ public class StudentServImpl implements StudentService {
 
     private final StudentRepo studentRepo;
     private final SpecialityRepo specialityRepo;
+    private final SkillRepo skillRepo;
 
     private final StudentMapper studentMapper;
+    private final SkillMapper skillMapper;
 
     private final FileHelper fileHelper;
 
     @Override
+    @Transactional
     public StudentDTO getById(
             UUID id
     ) {
@@ -42,12 +50,14 @@ public class StudentServImpl implements StudentService {
             throw new BadRequestException("Failed to find student by id " + id);
         }
 
-        // TODO: add all skills
+        List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                .stream().map(skillMapper::toDTO).toList();
 
-        return studentMapper.toDTO(studentEnt, List.of());
+        return studentMapper.toDTO(studentEnt, skillDTOList);
     }
 
     @Override
+    @Transactional
     public List<StudentCardDTO> getAllCards(
             int pageStudentNumber, int pageStudentSize
     ) {
@@ -57,7 +67,10 @@ public class StudentServImpl implements StudentService {
 
         return studentEntList.stream()
                 .map(studentEnt -> {
-                    return studentMapper.toCardDTO(studentEnt, List.of());
+                    List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                            .stream().map(skillMapper::toDTO).toList();
+
+                    return studentMapper.toCardDTO(studentEnt, skillDTOList);
                 }).toList();
     }
 
@@ -79,7 +92,10 @@ public class StudentServImpl implements StudentService {
 
         return studentEntList.stream()
                 .map(studentEnt -> {
-                    return studentMapper.toDTO(studentEnt, List.of());
+                    List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                            .stream().map(skillMapper::toDTO).toList();
+
+                    return studentMapper.toDTO(studentEnt, skillDTOList);
                 }).toList();
     }
 
@@ -96,7 +112,10 @@ public class StudentServImpl implements StudentService {
             throw new BadRequestException("Failed to find speciality with id " + addStudentReq.specialityId());
         }
 
+        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addStudentReq.skillsIds());
+
         studentEnt.setSpeciality(specialityEnt);
+        studentEnt.getSkills().addAll(skillEntSet);
 
         studentEnt = studentRepo.save(studentEnt);
 
@@ -107,8 +126,12 @@ public class StudentServImpl implements StudentService {
 
             studentRepo.save(studentEnt);
 
-            return studentMapper.toDTO(studentEnt, List.of());
+            List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                    .stream().map(skillMapper::toDTO).toList();
+
+            return studentMapper.toDTO(studentEnt, skillDTOList);
         }
+
         studentRepo.delete(studentEnt);
 
         throw new BadRequestException("Failed to save student with id " + studentEnt.getId());
@@ -123,11 +146,33 @@ public class StudentServImpl implements StudentService {
     ) {
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
 
-        // TODO: add logic
+        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(updateStudentReq.specialityId());
 
-        studentRepo.save(studentEnt);
+        if (specialityEnt == null) {
+            throw new BadRequestException("Failed to find speciality with id " + updateStudentReq.specialityId());
+        }
 
-        return studentMapper.toDTO(studentEnt, List.of());
+        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(updateStudentReq.skillsIds());
+
+        studentEnt.setSpeciality(specialityEnt);
+        studentEnt.getSkills().addAll(skillEntSet);
+
+        studentMapper.updateEntityFromDto(updateStudentReq, studentEnt);
+
+        String filePath = fileHelper.saveFile(multipartFile, studentEnt.getId().toString());
+
+        if (filePath != null) {
+            studentEnt.setImagePath(filePath);
+
+            studentRepo.save(studentEnt);
+
+            List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                    .stream().map(skillMapper::toDTO).toList();
+
+            return studentMapper.toDTO(studentEnt, skillDTOList);
+        }
+
+        throw new BadRequestException("Failed to save student with id " + studentEnt.getId());
     }
 
     @Override
@@ -141,6 +186,9 @@ public class StudentServImpl implements StudentService {
 
         studentRepo.save(studentEnt);
 
-        return studentMapper.toDTO(studentEnt, List.of());
+        List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                .stream().map(skillMapper::toDTO).toList();
+
+        return studentMapper.toDTO(studentEnt, skillDTOList);
     }
 }

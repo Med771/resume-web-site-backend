@@ -36,18 +36,6 @@ public record StudentDTO(
         String firstName,
         String lastName,
 
-        @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
-        String username,
-
-        @Email(message = "Email should be valid")
-        String email,
-
-        @Pattern(regexp = "\\+?\\d{1,32}", message = "Phone number must contain 1-32 digits and optional + at start")
-        String phoneNumber,
-
-        @Size(min = 1, max = 255, message = "Telegram Username must be less than 255 characters")
-        String telegramUsername,
-
         @NotNull
         String speciality,
 

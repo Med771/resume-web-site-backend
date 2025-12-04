@@ -1,6 +1,7 @@
 package ru.ai.sin.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,19 @@ public class MainCnt {
     public ResponseEntity<byte[]> getPhoto(@PathVariable("image_path") String image_path) {
         byte[] bytes = mainService.getFileContent(image_path);
 
-        return ResponseEntity.ok().body(bytes);
+        String contentType = "image/jpeg";
+
+        if (image_path.endsWith(".png")) {
+            contentType = "image/png";
+        } else if (image_path.endsWith(".gif")) {
+            contentType = "image/gif";
+        } else if (image_path.endsWith(".webp")) {
+            contentType = "image/webp";
+        }
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .body(bytes);
     }
 }

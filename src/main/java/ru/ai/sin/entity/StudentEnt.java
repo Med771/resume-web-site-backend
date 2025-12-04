@@ -13,9 +13,7 @@ import ru.ai.sin.entity.converter.CourseEnumConverter;
 import ru.ai.sin.entity.model.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "students")
@@ -68,6 +66,10 @@ public class StudentEnt {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "speciality_id")
     private SpecialityEnt speciality;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private Set<SkillEnt> skills = new HashSet<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<PortfolioEnt> portfolio = new ArrayList<>();
