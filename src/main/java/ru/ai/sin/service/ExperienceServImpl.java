@@ -11,6 +11,7 @@ import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
 import ru.ai.sin.repository.CompanyRepo;
 import ru.ai.sin.repository.ExperienceRepo;
@@ -30,6 +31,7 @@ public class ExperienceServImpl implements ExperienceService {
     private final StudentRepo studentRepo;
 
     private final ExperienceMapper experienceMapper;
+    private final CompanyMapper companyMapper;
 
     @Override
     public ExperienceDTO getById(
@@ -75,7 +77,7 @@ public class ExperienceServImpl implements ExperienceService {
 
         List<GetStudentExperienceRes> getStudentExperienceRes = experienceEntList.stream()
                 .map(experienceEnt -> new GetStudentExperienceRes(
-                        experienceEnt.getStudent().getId(),
+                        companyMapper.toRes(experienceEnt.getCompany()),
                         experienceMapper.toRes(experienceEnt)
                 )).toList();
 

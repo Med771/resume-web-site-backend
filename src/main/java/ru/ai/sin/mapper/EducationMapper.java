@@ -3,6 +3,7 @@ package ru.ai.sin.mapper;
 import org.mapstruct.*;
 import ru.ai.sin.dto.education.AddEducationReq;
 import ru.ai.sin.dto.education.EducationDTO;
+import ru.ai.sin.dto.education.EducationRes;
 import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.EducationEnt;
 
@@ -21,4 +22,7 @@ public interface EducationMapper {
 
     // ---------------- EducationEnt -> EducationDTO ----------------
     EducationDTO toDTO(EducationEnt entity, List<Long> institutionsIds, List<SkillDTO> skillsIds);
+
+    // ---------------- EducationEnt -> EducationRes ----------------
+    EducationRes toRes(EducationEnt entity);
 }

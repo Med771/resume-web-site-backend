@@ -11,6 +11,7 @@ import ru.ai.sin.entity.EducationEnt;
 import ru.ai.sin.entity.InstitutionEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.mapper.InstitutionMapper;
 import ru.ai.sin.repository.EducationRepo;
 import ru.ai.sin.repository.InstitutionRepo;
@@ -30,6 +31,7 @@ public class InstitutionServImpl implements InstitutionService {
     private final StudentRepo studentRepo;
 
     private final InstitutionMapper institutionMapper;
+    private final EducationMapper educationMapper;
 
     @Override
     public InstitutionDTO getById(
@@ -74,7 +76,7 @@ public class InstitutionServImpl implements InstitutionService {
 
         List<GetStudentInstitutionRes> getStudentInstitutionResList = institutionEntList.stream()
                 .map(institutionEnt -> new GetStudentInstitutionRes(
-                        institutionEnt.getEducation().getId(),
+                        educationMapper.toRes(institutionEnt.getEducation()),
                         institutionMapper.toRes(institutionEnt)
                 )).toList();
 
