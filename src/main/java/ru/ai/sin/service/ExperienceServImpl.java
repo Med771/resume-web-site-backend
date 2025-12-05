@@ -126,11 +126,16 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     @Override
+    @Transactional
     public ExperienceDTO update(
             long id,
             AddExperienceReq addExperienceReq
     ) {
         ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
+
+        if (experienceEnt == null) {
+            throw new BadRequestException("Failed to find experience by id " + id);
+        }
 
         experienceMapper.updateEntityFromDto(addExperienceReq, experienceEnt);
 
