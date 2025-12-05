@@ -11,16 +11,25 @@ import java.util.UUID;
 public interface InstitutionService {
 
     // ---------- GET METHODS ----------
-    InstitutionDTO getById(long id);
+    InstitutionDTO getById(
+            long id);
 
-    GetAboutEducationRes getByEducationId(long id);
-    GetAboutStudentRes getByStudentId(UUID id);
+    GetAboutEducationRes getByEducationId(
+            long id,
+            int pageInstitutionNumber, int pageInstitutionSize);
+    GetAboutStudentRes getByStudentId(
+            UUID id,
+            int pageInstitutionNumber, int pageInstitutionSize);
 
-    List<InstitutionDTO> getAll(long page, long size);
+    List<InstitutionDTO> getAll(
+            int pageInstitutionNumber, int pageInstitutionSize);
 
     // ---------- POST METHODS ----------
-    InstitutionDTO create(AddInstitutionReq  addInstitutionReq);
-    InstitutionDTO update(long id, AddInstitutionReq addInstitutionReq);
+    InstitutionDTO create(
+            AddInstitutionReq addInstitutionReq);
+    InstitutionDTO update(
+            long id,
+            AddInstitutionReq addInstitutionReq);
 
     // ---------- DELETE METHODS ----------
     InstitutionDTO deleteById(long id);
