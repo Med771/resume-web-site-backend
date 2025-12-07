@@ -36,6 +36,9 @@ app:
     max-history: 7
     rotation-pattern: "logs/app.%d{yyyy-MM-dd}.gz"
 
+  file:
+    path: file
+
 management:
   endpoints:
     web:

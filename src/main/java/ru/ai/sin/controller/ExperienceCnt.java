@@ -19,44 +19,55 @@ public class ExperienceCnt {
 
     @GetMapping(path = "/getById")
     public ResponseEntity<ExperienceDTO> getById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         ExperienceDTO experienceDTO = experienceService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
-    @GetMapping(path = "/aboutGetByCompanyId")
+    @GetMapping(path = "/aboutGetByCompanyId"
+    )
     public ResponseEntity<GetAboutCompanyRes> aboutGetByCompanyId(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size,
-            @RequestParam long id) {
-        GetAboutCompanyRes getAboutCompanyResDTO = experienceService.getAboutCompanyById(id, page, size);
+            @RequestParam(defaultValue = "0") int pageExperienceNumber,
+            @RequestParam(defaultValue = "10") int pageExperienceSize,
+            @RequestParam long id
+    ) {
+        GetAboutCompanyRes getAboutCompanyResDTO = experienceService.getAboutCompanyById(
+                id,
+                pageExperienceNumber, pageExperienceSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutCompanyResDTO);
     }
 
     @GetMapping(path = "/aboutGetByStudentId")
     public ResponseEntity<GetAboutStudentRes> aboutGetByStudentId(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size,
-            @RequestParam UUID id) {
-        GetAboutStudentRes getAboutStudentResDTO = experienceService.getAboutStudentById(id, page, size);
+            @RequestParam(defaultValue = "0") int pageExperienceNumber,
+            @RequestParam(defaultValue = "10") int pageExperienceSize,
+            @RequestParam UUID id
+    ) {
+        GetAboutStudentRes getAboutStudentResDTO = experienceService.getAboutStudentById(
+                id,
+                pageExperienceNumber, pageExperienceSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentResDTO);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<ExperienceDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<ExperienceDTO> experienceDTOs = experienceService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageExperienceNumber,
+            @RequestParam(defaultValue = "10") int pageExperienceSize
+    ) {
+        List<ExperienceDTO> experienceDTOs = experienceService.getAll(
+                pageExperienceNumber, pageExperienceSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTOs);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<ExperienceDTO> create(
-            @RequestBody AddExperienceReq experienceReq) {
+            @RequestBody AddExperienceReq experienceReq
+    ) {
         ExperienceDTO experienceDTO = experienceService.create(experienceReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
@@ -65,7 +76,8 @@ public class ExperienceCnt {
     @PutMapping(path = "/update")
     public ResponseEntity<ExperienceDTO> update(
             @RequestParam(defaultValue = "-1") long id,
-            @RequestBody AddExperienceReq experienceReq) {
+            @RequestBody AddExperienceReq experienceReq
+    ) {
         ExperienceDTO experienceDTO = experienceService.update(id, experienceReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
@@ -73,7 +85,8 @@ public class ExperienceCnt {
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<ExperienceDTO> deleteById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         ExperienceDTO experienceDTO = experienceService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);

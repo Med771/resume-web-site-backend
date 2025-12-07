@@ -22,7 +22,8 @@ public class RecruiterCnt {
 
     @GetMapping(path = "/getById")
     public ResponseEntity<RecruiterDTO> getById(
-            @RequestParam UUID id) {
+            @RequestParam UUID id
+    ) {
         RecruiterDTO recruiterDTO = recruiterService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTO);
@@ -30,19 +31,23 @@ public class RecruiterCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<RecruiterDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<RecruiterDTO> recruiterDTOs = recruiterService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageRecruiterNumber,
+            @RequestParam(defaultValue = "10") int pageRecruiterSize
+    ) {
+        List<RecruiterDTO> recruiterDTOs = recruiterService.getAll(
+                pageRecruiterNumber, pageRecruiterSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
 
     @PostMapping(path = "/getAllByName")
     public ResponseEntity<List<RecruiterDTO>> getAllByName(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size,
-            @RequestBody GetRecruiterNameReq getRecruiterNameReq) {
-        List<RecruiterDTO> recruiterDTOs = recruiterService.getAllByName(page, size, getRecruiterNameReq);
+            @RequestParam(defaultValue = "0") int pageRecruiterNumber,
+            @RequestParam(defaultValue = "10") int pageRecruiterSize,
+            @RequestBody GetRecruiterNameReq getRecruiterNameReq
+    ) {
+        List<RecruiterDTO> recruiterDTOs = recruiterService.getAllByName(
+                pageRecruiterNumber, pageRecruiterSize, getRecruiterNameReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
@@ -58,15 +63,18 @@ public class RecruiterCnt {
     @PutMapping(path = "/update")
     public ResponseEntity<RecruiterDTO> update(
             @RequestParam UUID id,
-            @RequestBody UpdateRecruiterReq recruiterReq) {
-        RecruiterDTO recruiterDTO = recruiterService.update(id, recruiterReq);
+            @RequestBody UpdateRecruiterReq recruiterReq
+    ) {
+        RecruiterDTO recruiterDTO = recruiterService.update(
+                id, recruiterReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTO);
     }
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<RecruiterDTO> deleteById(
-            @RequestParam UUID id) {
+            @RequestParam UUID id
+    ) {
         RecruiterDTO recruiterDTO = recruiterService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTO);

@@ -10,8 +10,8 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.entity.model.TimeStamped;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "categories")
@@ -37,5 +37,5 @@ public class CategoryEnt {
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private List<SkillEnt> skills = new ArrayList<>();
+    private Set<SkillEnt> skills = new HashSet<>();
 }

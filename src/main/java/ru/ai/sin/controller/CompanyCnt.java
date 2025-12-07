@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyNameDTO;
+import ru.ai.sin.dto.company.GetCompanyNameReq;
 import ru.ai.sin.service.impl.CompanyService;
 
 import java.util.List;
@@ -29,17 +29,22 @@ public class CompanyCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<CompanyDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<CompanyDTO> companyDTOs = companyService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageCompanyNumber,
+            @RequestParam(defaultValue = "10") int pageCompanySize
+    ) {
+        List<CompanyDTO> companyDTOs = companyService.getAll(
+                pageCompanyNumber, pageCompanySize);
 
         return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
 
     @PostMapping(path = "/getAllByName")
     public ResponseEntity<List<CompanyDTO>> getAllByName(
-            @RequestBody CompanyNameDTO companyNameDTO) {
-        List<CompanyDTO> companyDTOs = companyService.getAllByName(companyNameDTO);
+            @RequestParam(defaultValue = "0") int pageCompanyNumber,
+            @RequestParam(defaultValue = "10") int pageCompanySize,
+            @RequestBody GetCompanyNameReq getCompanyNameReq) {
+        List<CompanyDTO> companyDTOs = companyService.getAllByName(
+                pageCompanyNumber, pageCompanySize, getCompanyNameReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
@@ -55,8 +60,8 @@ public class CompanyCnt {
     @PutMapping(path = "/setNameById")
     public ResponseEntity<CompanyDTO> setNameById(
             @RequestParam long id,
-            @RequestBody CompanyNameDTO companyNameDTO) {
-        CompanyDTO companyDTO = companyService.setNameById(id, companyNameDTO);
+            @RequestBody GetCompanyNameReq getCompanyNameReq) {
+        CompanyDTO companyDTO = companyService.setNameById(id, getCompanyNameReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(companyDTO);
     }

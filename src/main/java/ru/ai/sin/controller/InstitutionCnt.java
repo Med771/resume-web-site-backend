@@ -23,7 +23,8 @@ public class InstitutionCnt {
 
     @GetMapping(path = "/getById")
     public ResponseEntity<InstitutionDTO> getById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         InstitutionDTO institutionDTO = institutionService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
@@ -31,32 +32,45 @@ public class InstitutionCnt {
 
     @GetMapping(path = "/getByEducationId")
     public ResponseEntity<GetAboutEducationRes> getByEducationId(
-            @RequestParam long id) {
-        GetAboutEducationRes getAboutEducationRes = institutionService.getByEducationId(id);
+            @RequestParam long id,
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        GetAboutEducationRes getAboutEducationRes = institutionService.getByEducationId(
+                id,
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutEducationRes);
     }
 
     @GetMapping(path = "/getByStudentId")
     public ResponseEntity<GetAboutStudentRes> getByStudentId(
-            @RequestParam UUID id) {
-        GetAboutStudentRes getAboutStudentRes = institutionService.getByStudentId(id);
+            @RequestParam UUID id,
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        GetAboutStudentRes getAboutStudentRes = institutionService.getByStudentId(
+                id,
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentRes);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<InstitutionDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<InstitutionDTO> institutionDTOs = institutionService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @RequestParam(defaultValue = "10") int pageInstitutionSize
+    ) {
+        List<InstitutionDTO> institutionDTOs = institutionService.getAll(
+                pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTOs);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<InstitutionDTO> create(
-            @RequestBody AddInstitutionReq institutionReq) {
+            @RequestBody AddInstitutionReq institutionReq
+    ) {
         InstitutionDTO institutionDTO = institutionService.create(institutionReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
@@ -65,7 +79,8 @@ public class InstitutionCnt {
     @PutMapping(path = "/update")
     public ResponseEntity<InstitutionDTO> update(
             @RequestParam long id,
-            @RequestBody AddInstitutionReq institutionReq) {
+            @RequestBody AddInstitutionReq institutionReq
+    ) {
         InstitutionDTO institutionDTO = institutionService.update(id, institutionReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
@@ -73,7 +88,8 @@ public class InstitutionCnt {
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<InstitutionDTO> deleteById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         InstitutionDTO institutionDTO = institutionService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);

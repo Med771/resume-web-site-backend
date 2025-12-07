@@ -4,7 +4,10 @@ import org.mapstruct.*;
 
 import ru.ai.sin.dto.category.AddCategoryReq;
 import ru.ai.sin.dto.category.CategoryDTO;
+import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.CategoryEnt;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryMapper {
@@ -17,6 +20,5 @@ public interface CategoryMapper {
     CategoryEnt toEntity(AddCategoryReq dto);
 
     // ---------------- CategoryEnt -> CategoryDTO ----------------
-    @Mapping(target = "skills", ignore = true)
-    CategoryDTO toDto(CategoryEnt entity);
+    CategoryDTO toDto(CategoryEnt entity, List<SkillDTO> skills);
 }

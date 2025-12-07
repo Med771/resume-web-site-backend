@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import ru.ai.sin.exception.models.ApiException;
+import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.ErrorResponse;
 
 @Slf4j
@@ -19,7 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.error(
-                "Bad Request error: code={}, status={}, msg={}",
+                "Method Argument Not Valid Exception: code={}, status={}, msg={}",
                 ex.getBody().getTitle(), ex.getStatusCode(), ex.getMessage()
         );
 
@@ -28,6 +29,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(new ErrorResponse(ex.getBody().getTitle(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex) {
+        log.error(
+                "Bad Request Exception: code={}, status={}, msg={}",
+                ex.getCode(), ex.getStatus(), ex.getMessage()
+        );
+
+        businessErrors.increment();
+
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(new ErrorResponse(ex.getCode(), ex.getCode()));
     }
 
     @ExceptionHandler(ApiException.class)
@@ -41,12 +56,12 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(ex.getStatus())
-                .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+                .body(new ErrorResponse(ex.getCode(), ex.getCode()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
-        log.error("Unexpected error: {}", ex.getMessage());
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
 
         return ResponseEntity
                 .status(500)

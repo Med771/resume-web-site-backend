@@ -11,17 +11,28 @@ import java.util.UUID;
 public interface ExperienceService {
 
     // ---------- GET METHODS ----------
-    ExperienceDTO getById(long id);
+    ExperienceDTO getById(
+            long id
+    );
 
-    GetAboutCompanyRes getAboutCompanyById(long id, long page, long size);
-    GetAboutStudentRes getAboutStudentById(UUID id, long page, long size);
+    GetAboutCompanyRes getAboutCompanyById(
+            long id,
+            int pageExperienceNumber, int pageExperienceSize);
+    GetAboutStudentRes getAboutStudentById(
+            UUID id,
+            int pageExperienceNumber, int pageExperienceSize);
 
-    List<ExperienceDTO> getAll(long page, long size);
+    List<ExperienceDTO> getAll(
+            int pageExperienceNumber, int pageExperienceSize);
 
     // ---------- POST METHODS ----------
-    ExperienceDTO create(AddExperienceReq addExperienceReq);
-    ExperienceDTO update(long id, AddExperienceReq addExperienceReq);
+    ExperienceDTO create(
+            AddExperienceReq addExperienceReq);
+    ExperienceDTO update(
+            long id,
+            AddExperienceReq addExperienceReq);
 
     // ---------- DELETE METHODS ----------
-    ExperienceDTO deleteById(long id);
+    ExperienceDTO deleteById(
+            long id);
 }

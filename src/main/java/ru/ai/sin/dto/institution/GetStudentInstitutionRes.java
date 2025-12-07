@@ -1,12 +1,11 @@
 package ru.ai.sin.dto.institution;
 
 import jakarta.validation.constraints.NotNull;
-
-import java.util.List;
+import ru.ai.sin.dto.education.EducationRes;
 
 public record GetStudentInstitutionRes(
-        long educationId,
+        EducationRes education,
 
         @NotNull
-        List<InstitutionRes> educationInstitution) {
+        InstitutionRes educationInstitution) {
 }

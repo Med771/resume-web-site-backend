@@ -20,7 +20,7 @@ public record EducationDTO(
         String additionalInfo,
 
         @NotNull
-        List<UUID> studentIds,
+        List<Long> institutionsIds,
 
         @NotNull
         List<SkillDTO> skillsIds) {

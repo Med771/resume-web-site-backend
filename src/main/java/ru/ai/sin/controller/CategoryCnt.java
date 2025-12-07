@@ -32,8 +32,8 @@ public class CategoryCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<CategoryDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         List<CategoryDTO> categoryDTOs = categoryService.getAll(page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryDTOs);

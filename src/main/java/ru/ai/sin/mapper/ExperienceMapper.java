@@ -19,8 +19,10 @@ public interface ExperienceMapper {
     @Mapping(target = "student", ignore = true)
     ExperienceEnt toEntity(AddExperienceReq dto);
 
-    // ---------------- ExperienceEnt -> GetExperienceRes ----------------
-    ExperienceDTO toGetRes(ExperienceEnt entity);
+    // ---------------- ExperienceEnt -> ExperienceDTO ----------------
+    @Mapping(target = "companyId", source = "entity.company.id")
+    @Mapping(target = "studentId", source = "entity.student.id")
+    ExperienceDTO toDTO(ExperienceEnt entity, ExperienceRes experience);
 
     // ---------------- ExperienceEnt -> ExperienceRes ----------------
     ExperienceRes toRes(ExperienceEnt entity);

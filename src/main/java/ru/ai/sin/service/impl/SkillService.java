@@ -9,15 +9,21 @@ import java.util.List;
 public interface SkillService {
 
     // ---------- GET METHODS ----------
-    SkillDTO getById(long id);
+    SkillDTO getById(
+            long id);
 
-    List<SkillDTO> getAll(long page, long size);
+    List<SkillDTO> getAll(
+            int page, int size);
 
     // ---------- POST METHODS ----------
-    SkillDTO create(AddSkillReq addSkillReq);
+    SkillDTO create(
+            AddSkillReq addSkillReq);
 
-    SkillDTO setNameById(long id, SetSkillNameReq setSkillNameReq);
+    SkillDTO setNameById(
+            long id,
+            SetSkillNameReq setSkillNameReq);
 
     // ---------- DELETE METHODS ----------
-    SkillDTO deleteById(long id);
+    SkillDTO deleteById(
+            long id);
 }

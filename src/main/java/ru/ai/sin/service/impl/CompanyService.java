@@ -3,23 +3,31 @@ package ru.ai.sin.service.impl;
 
 import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyNameDTO;
+import ru.ai.sin.dto.company.GetCompanyNameReq;
 
 import java.util.List;
 
 public interface CompanyService {
 
     // ---------- GET METHODS ----------
-    CompanyDTO getById(long id);
+    CompanyDTO getById(
+            long id);
 
-    List<CompanyDTO> getAll(long page, long size);
-    List<CompanyDTO> getAllByName(CompanyNameDTO companyNameDTO);
+    List<CompanyDTO> getAll(
+            int pageCompanyNumber, int pageCompanySize);
+    List<CompanyDTO> getAllByName(
+            int pageCompanyNumber, int pageCompanySize,
+            GetCompanyNameReq getCompanyNameReq);
 
     // ---------- POST METHODS ----------
-    CompanyDTO create(AddCompanyReq addCompanyReq);
+    CompanyDTO create(
+            AddCompanyReq addCompanyReq);
 
-    CompanyDTO setNameById(long id,CompanyNameDTO companyNameDTO);
+    CompanyDTO setNameById(
+            long id,
+            GetCompanyNameReq getCompanyNameReq);
 
     // ---------- DELETE METHODS ----------
-    CompanyDTO deleteById(long id);
+    CompanyDTO deleteById(
+            long id);
 }

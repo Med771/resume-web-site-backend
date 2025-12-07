@@ -25,7 +25,8 @@ public class SpecialityCnt {
 
     @GetMapping(path = "/getById")
     public ResponseEntity<SpecialityDTO> getById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         SpecialityDTO specialityDTO = specialityService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
@@ -33,16 +34,18 @@ public class SpecialityCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<SpecialityDTO>> getAll(
-            @RequestParam(defaultValue = "0") long page,
-            @RequestParam(defaultValue = "10") long size) {
-        List<SpecialityDTO> specialityDTOs = specialityService.getAll(page, size);
+            @RequestParam(defaultValue = "0") int pageSpecialityNumber,
+            @RequestParam(defaultValue = "10") int pageSpecialitySize
+    ) {
+        List<SpecialityDTO> specialityDTOs = specialityService.getAll(pageSpecialityNumber, pageSpecialitySize);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTOs);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<SpecialityDTO> create(
-            @RequestBody AddSpecialityReq specialityReq) {
+            @RequestBody AddSpecialityReq specialityReq
+    ) {
         SpecialityDTO specialityDTO = specialityService.create(specialityReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
@@ -51,7 +54,8 @@ public class SpecialityCnt {
     @PutMapping(path = "/setNameById")
     public ResponseEntity<SpecialityDTO> setNameById(
             @RequestParam long id,
-            @RequestBody SetSpecialityNameReq setSpecialityNameReq) {
+            @RequestBody SetSpecialityNameReq setSpecialityNameReq
+    ) {
         SpecialityDTO specialityDTO = specialityService.setNameById(id, setSpecialityNameReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
@@ -60,7 +64,8 @@ public class SpecialityCnt {
     @PutMapping(path = "/setSkillsById")
     public ResponseEntity<SpecialityDTO> setSkillsById(
             @RequestParam long id,
-            @RequestBody SetSpecialitySkillsReq setSpecialitySkillsReq) {
+            @RequestBody SetSpecialitySkillsReq setSpecialitySkillsReq
+    ) {
         SpecialityDTO specialityDTO = specialityService.setSkillsById(id, setSpecialitySkillsReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
@@ -68,7 +73,8 @@ public class SpecialityCnt {
 
     @DeleteMapping(path = "/deleteById")
     public ResponseEntity<SpecialityDTO> deleteById(
-            @RequestParam long id) {
+            @RequestParam long id
+    ) {
         SpecialityDTO specialityDTO = specialityService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
