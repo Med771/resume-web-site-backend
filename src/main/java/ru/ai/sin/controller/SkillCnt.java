@@ -1,9 +1,12 @@
 package ru.ai.sin.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.skill.AddSkillReq;
@@ -15,14 +18,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping(path = "/skill")
 public class SkillCnt {
 
     private final SkillService skillService;
 
-    @GetMapping(path = "/getById")
+    @GetMapping(path = "/getById/{id}")
     public ResponseEntity<SkillDTO> getById(
-            @RequestParam long id) {
+            @PathVariable long id
+    ) {
         SkillDTO skillDTO = skillService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
@@ -30,33 +35,38 @@ public class SkillCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<SkillDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<SkillDTO> skillDTOs = skillService.getAll(page, size);
+            @Min(0) @RequestParam(defaultValue = "0") int pageSkillsNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pageSkillsSize
+    ) {
+        List<SkillDTO> skillDTOs = skillService.getAll(pageSkillsNumber, pageSkillsSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTOs);
     }
 
     @PostMapping(path = "/create")
     public ResponseEntity<SkillDTO> create(
-            @RequestBody AddSkillReq skillReq) {
+            @Valid @RequestBody AddSkillReq skillReq
+    ) {
         SkillDTO skillDTO = skillService.create(skillReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
     }
 
-    @PutMapping(path = "/setNameById")
+    @PutMapping(path = "/set/{id}/name")
     public ResponseEntity<SkillDTO> setNameById(
-            @RequestParam long id,
-            @RequestBody SetSkillNameReq setSkillNameReq) {
+            @PathVariable long id,
+
+            @Valid @RequestBody SetSkillNameReq setSkillNameReq
+    ) {
         SkillDTO skillDTO = skillService.setNameById(id, setSkillNameReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
     }
 
-    @DeleteMapping(path = "/deleteById")
+    @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<SkillDTO> deleteById(
-            @RequestParam long id) {
+            @PathVariable long id
+    ) {
         SkillDTO skillDTO = skillService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);

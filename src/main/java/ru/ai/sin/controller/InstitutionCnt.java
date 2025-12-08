@@ -1,8 +1,11 @@
 package ru.ai.sin.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.institution.AddInstitutionReq;
@@ -16,50 +19,55 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping(path = "/institution")
 public class InstitutionCnt {
 
     private final InstitutionService institutionService;
 
-    @GetMapping(path = "/getById")
+    @GetMapping(path = "/getById/{id}")
     public ResponseEntity<InstitutionDTO> getById(
-            @RequestParam long id
+            @PathVariable long id
     ) {
         InstitutionDTO institutionDTO = institutionService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
-    @GetMapping(path = "/getByEducationId")
+    @GetMapping(path = "/getByEducationId/{id}")
     public ResponseEntity<GetAboutEducationRes> getByEducationId(
-            @RequestParam long id,
-            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
-            @RequestParam(defaultValue = "10") int pageInstitutionSize
+            @PathVariable long id,
+
+            @Min(0) @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pageInstitutionSize
     ) {
-        GetAboutEducationRes getAboutEducationRes = institutionService.getByEducationId(
-                id,
-                pageInstitutionNumber, pageInstitutionSize);
+        GetAboutEducationRes getAboutEducationRes = institutionService
+                .getByEducationId(
+                        id,
+                        pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutEducationRes);
     }
 
-    @GetMapping(path = "/getByStudentId")
+    @GetMapping(path = "/getByStudentId/{id}")
     public ResponseEntity<GetAboutStudentRes> getByStudentId(
-            @RequestParam UUID id,
-            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
-            @RequestParam(defaultValue = "10") int pageInstitutionSize
+            @PathVariable UUID id,
+
+            @Min(0) @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pageInstitutionSize
     ) {
-        GetAboutStudentRes getAboutStudentRes = institutionService.getByStudentId(
-                id,
-                pageInstitutionNumber, pageInstitutionSize);
+        GetAboutStudentRes getAboutStudentRes = institutionService
+                .getByStudentId(
+                        id,
+                        pageInstitutionNumber, pageInstitutionSize);
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentRes);
     }
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<InstitutionDTO>> getAll(
-            @RequestParam(defaultValue = "0") int pageInstitutionNumber,
-            @RequestParam(defaultValue = "10") int pageInstitutionSize
+            @Min(0) @RequestParam(defaultValue = "0") int pageInstitutionNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pageInstitutionSize
     ) {
         List<InstitutionDTO> institutionDTOs = institutionService.getAll(
                 pageInstitutionNumber, pageInstitutionSize);
@@ -69,26 +77,27 @@ public class InstitutionCnt {
 
     @PostMapping(path = "/create")
     public ResponseEntity<InstitutionDTO> create(
-            @RequestBody AddInstitutionReq institutionReq
+            @Valid @RequestBody AddInstitutionReq institutionReq
     ) {
         InstitutionDTO institutionDTO = institutionService.create(institutionReq);
 
-        return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(institutionDTO);
     }
 
-    @PutMapping(path = "/update")
+    @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<InstitutionDTO> update(
-            @RequestParam long id,
-            @RequestBody AddInstitutionReq institutionReq
+            @PathVariable long id,
+
+            @Valid @RequestBody AddInstitutionReq institutionReq
     ) {
         InstitutionDTO institutionDTO = institutionService.update(id, institutionReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
-    @DeleteMapping(path = "/deleteById")
+    @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<InstitutionDTO> deleteById(
-            @RequestParam long id
+            @PathVariable long id
     ) {
         InstitutionDTO institutionDTO = institutionService.deleteById(id);
 
