@@ -10,7 +10,8 @@ import ru.ai.sin.dto.portfolio.AddPortfolioReq;
 import ru.ai.sin.dto.portfolio.PortfolioDTO;
 import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.PortfolioMapper;
 import ru.ai.sin.repository.PortfolioRepo;
 import ru.ai.sin.repository.StudentRepo;
@@ -33,7 +34,7 @@ public class PortfolioServImpl implements PortfolioService {
         PortfolioEnt portfolioEnt = portfolioRepo.findByIdAndIsActiveTrue(id);
 
         if (portfolioEnt == null) {
-            throw new BadRequestException("Failed to find portfolio by id " + id);
+            throw new NotFoundException("Failed to find portfolio by id " + id);
         }
 
         return portfolioEnt;
@@ -43,7 +44,7 @@ public class PortfolioServImpl implements PortfolioService {
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
 
         if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + id);
+            throw new NotFoundException("Failed to find student by id " + id);
         }
 
         return studentEnt;
@@ -111,7 +112,7 @@ public class PortfolioServImpl implements PortfolioService {
         PortfolioEnt portfolioEnt = portfolioRepo.findWithStudentById(id);
 
         if (portfolioEnt == null) {
-            throw new BadRequestException("Failed to find portfolio by id " + id);
+            throw new NotFoundException("Failed to find portfolio by id " + id);
         }
 
         StudentEnt studentEnt = getActiveStudentOrThrow(addPortfolioReq.studentId());

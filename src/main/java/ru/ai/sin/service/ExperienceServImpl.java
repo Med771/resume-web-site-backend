@@ -10,7 +10,8 @@ import ru.ai.sin.dto.experience.*;
 import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
 import ru.ai.sin.repository.CompanyRepo;
@@ -38,7 +39,7 @@ public class ExperienceServImpl implements ExperienceService {
         ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
 
         if  (experienceEnt == null) {
-            throw new BadRequestException("Failed to find experience by id " + id);
+            throw new NotFoundException("Failed to find experience by id " + id);
         }
 
         return experienceEnt;
@@ -54,7 +55,7 @@ public class ExperienceServImpl implements ExperienceService {
         CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(companyId);
 
         if (companyEnt == null) {
-            throw new BadRequestException("Failed to find company by id " + companyId);
+            throw new NotFoundException("Failed to find company by id " + companyId);
         }
 
         experienceEnt.setCompany(companyEnt);
@@ -64,7 +65,7 @@ public class ExperienceServImpl implements ExperienceService {
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(studentId);
 
         if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + studentId);
+            throw new NotFoundException("Failed to find student by id " + studentId);
         }
 
         experienceEnt.setStudent(studentEnt);

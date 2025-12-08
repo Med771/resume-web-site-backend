@@ -15,7 +15,7 @@ import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.EducationEnt;
 import ru.ai.sin.entity.SkillEnt;
 
-import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.mapper.SkillMapper;
 
@@ -42,7 +42,7 @@ public class EducationServImpl implements EducationService {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
         if (educationEnt == null) {
-            throw new BadRequestException("Failed to find education by id " + id);
+            throw new NotFoundException("Failed to find education by id " + id);
         }
 
         return educationEnt;

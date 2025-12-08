@@ -11,6 +11,7 @@ import ru.ai.sin.entity.EducationEnt;
 import ru.ai.sin.entity.InstitutionEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.mapper.InstitutionMapper;
 import ru.ai.sin.repository.EducationRepo;
@@ -38,7 +39,7 @@ public class InstitutionServImpl implements InstitutionService {
         InstitutionEnt institutionEnt = institutionRepo.findWithEducationAndStudentById(id);
 
         if (institutionEnt == null) {
-            throw new BadRequestException("Failed to find institution with id: " + id);
+            throw new NotFoundException("Failed to find institution with id: " + id);
         }
 
         return institutionEnt;
@@ -54,7 +55,7 @@ public class InstitutionServImpl implements InstitutionService {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(educationId);
 
         if (educationEnt == null) {
-            throw new BadRequestException("Failed to find education with id: " + educationId);
+            throw new NotFoundException("Failed to find education with id: " + educationId);
         }
 
         institutionEnt.setEducation(educationEnt);
@@ -64,7 +65,7 @@ public class InstitutionServImpl implements InstitutionService {
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(studentId);
 
         if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student with id: " + studentId);
+            throw new NotFoundException("Failed to find student with id: " + studentId);
         }
 
         institutionEnt.setStudent(studentEnt);

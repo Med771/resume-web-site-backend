@@ -10,7 +10,7 @@ import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
 import ru.ai.sin.dto.company.GetCompanyNameReq;
 import ru.ai.sin.entity.CompanyEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.repository.CompanyRepo;
 import ru.ai.sin.service.impl.CompanyService;
@@ -36,7 +36,7 @@ public class CompanyServImpl implements CompanyService {
         CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(id);
 
         if (companyEnt == null) {
-            throw new BadRequestException("Failed to find company with id " + id);
+            throw new NotFoundException("Failed to find company with id " + id);
         }
 
         return companyEnt;
