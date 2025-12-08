@@ -12,5 +12,9 @@ public record EducationRes(
 
         @NotBlank
         @Size(min = 1, max = 2000, message = "Additional info must be less than 2000 characters")
-        String additionalInfo) {
+        String additionalInfo,
+
+        @NotBlank
+        @Size(min = 1, max = 255, message = "Web Url must be less than 2000 characters")
+        String webUrl) {
 }
