@@ -52,7 +52,7 @@ public class RecruiterServImpl implements RecruiterService {
     }
 
     @Override
-    public List<RecruiterDTO> getAllByName(
+    public List<RecruiterDTO> getAllByCompanyName(
             int pageRecruiterNumber, int pageRecruiterSize,
             GetRecruiterNameReq getRecruiterNameReq
     ) {
