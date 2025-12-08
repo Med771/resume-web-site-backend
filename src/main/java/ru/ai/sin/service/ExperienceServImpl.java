@@ -1,11 +1,11 @@
 package ru.ai.sin.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.experience.*;
 import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.ExperienceEnt;
@@ -19,6 +19,7 @@ import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.ExperienceService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -33,22 +34,54 @@ public class ExperienceServImpl implements ExperienceService {
     private final ExperienceMapper experienceMapper;
     private final CompanyMapper companyMapper;
 
-    @Override
-    public ExperienceDTO getById(
-            long id
-    ) {
+    private ExperienceEnt getActiveExperienceOrThrow(long id) {
         ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
 
         if  (experienceEnt == null) {
             throw new BadRequestException("Failed to find experience by id " + id);
         }
 
+        return experienceEnt;
+    }
+
+    private ExperienceDTO mapToDTO(ExperienceEnt experienceEnt) {
         ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
 
         return experienceMapper.toDTO(experienceEnt, experienceRes);
     }
 
+    private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
+        CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(companyId);
+
+        if (companyEnt == null) {
+            throw new BadRequestException("Failed to find company by id " + companyId);
+        }
+
+        experienceEnt.setCompany(companyEnt);
+    }
+
+    private void updateActiveStudentOrThrow(UUID studentId, ExperienceEnt experienceEnt) {
+        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(studentId);
+
+        if (studentEnt == null) {
+            throw new BadRequestException("Failed to find student by id " + studentId);
+        }
+
+        experienceEnt.setStudent(studentEnt);
+    }
+
     @Override
+    @Transactional(readOnly = true)
+    public ExperienceDTO getById(
+            long id
+    ) {
+        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
+
+        return mapToDTO(experienceEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public GetAboutCompanyRes getAboutCompanyById(
             long id,
             int pageExperienceNumber, int pageExperienceSize
@@ -67,6 +100,7 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GetAboutStudentRes getAboutStudentById(
             UUID id,
             int pageExperienceNumber, int pageExperienceSize
@@ -93,11 +127,7 @@ public class ExperienceServImpl implements ExperienceService {
         List<ExperienceEnt> experienceEntList = experienceRepo.findAll(pageable).getContent();
 
         return experienceEntList.stream()
-                .map(experienceEnt -> {
-                    ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
-
-                    return experienceMapper.toDTO(experienceEnt, experienceRes);
-                }).toList();
+                .map(this::mapToDTO).toList();
     }
 
     @Override
@@ -105,26 +135,14 @@ public class ExperienceServImpl implements ExperienceService {
     public ExperienceDTO create(
             AddExperienceReq addExperienceReq
     ) {
-        CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(addExperienceReq.companyId());
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addExperienceReq.studentId());
-
-        if (companyEnt == null) {
-            throw new BadRequestException("Failed to find company by id " + addExperienceReq.companyId());
-        }
-        if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + addExperienceReq.studentId());
-        }
-
         ExperienceEnt experienceEnt = experienceMapper.toEntity(addExperienceReq);
 
-        experienceEnt.setCompany(companyEnt);
-        experienceEnt.setStudent(studentEnt);
+        updateActiveCompanyOrThrow(addExperienceReq.companyId(), experienceEnt);
+        updateActiveStudentOrThrow(addExperienceReq.studentId(), experienceEnt);
 
         experienceEnt = experienceRepo.save(experienceEnt);
 
-        ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
-
-        return experienceMapper.toDTO(experienceEnt, experienceRes);
+        return mapToDTO(experienceEnt);
     }
 
     @Override
@@ -133,39 +151,19 @@ public class ExperienceServImpl implements ExperienceService {
             long id,
             AddExperienceReq addExperienceReq
     ) {
-        ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
-
-        if (experienceEnt == null) {
-            throw new BadRequestException("Failed to find experience by id " + id);
-        }
+        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
 
         experienceMapper.updateEntityFromDto(addExperienceReq, experienceEnt);
 
-        if (experienceEnt.getCompany().getId() != addExperienceReq.companyId()) {
-            CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(addExperienceReq.companyId());
-
-            if (companyEnt == null) {
-                throw new BadRequestException("Failed to find company by id " + addExperienceReq.companyId());
-            }
-
-            experienceEnt.setCompany(companyEnt);
+        if (!Objects.equals(experienceEnt.getCompany().getId(), addExperienceReq.companyId())) {
+            updateActiveCompanyOrThrow(addExperienceReq.companyId(), experienceEnt);
         }
 
-        if (experienceEnt.getStudent().getId() != addExperienceReq.studentId()) {
-            StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addExperienceReq.studentId());
-
-            if (studentEnt == null) {
-                throw new BadRequestException("Failed to find student by id " + addExperienceReq.studentId());
-            }
-
-            experienceEnt.setStudent(studentEnt);
+        if (!Objects.equals(experienceEnt.getStudent().getId(), addExperienceReq.studentId())) {
+            updateActiveStudentOrThrow(addExperienceReq.studentId(), experienceEnt);
         }
 
-        experienceEnt = experienceRepo.save(experienceEnt);
-
-        ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
-
-        return experienceMapper.toDTO(experienceEnt, experienceRes);
+        return mapToDTO(experienceEnt);
     }
 
     @Override
@@ -173,11 +171,7 @@ public class ExperienceServImpl implements ExperienceService {
     public ExperienceDTO deleteById(
             long id
     ) {
-        ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
-
-        if (experienceEnt == null) {
-            throw new BadRequestException("Failed to find experience by id " + id);
-        }
+        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
 
         experienceRepo.deleteById(id);
 
