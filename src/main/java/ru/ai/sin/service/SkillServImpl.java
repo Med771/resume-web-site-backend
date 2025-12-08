@@ -12,7 +12,7 @@ import ru.ai.sin.dto.skill.SetSkillNameReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 
 import ru.ai.sin.entity.SkillEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.repository.SkillRepo;
