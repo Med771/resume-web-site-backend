@@ -38,24 +38,34 @@ public class EducationServImpl implements EducationService {
     private final EducationMapper educationMapper;
     private final SkillMapper skillMapper;
 
-    @Override
-    @Transactional
-    public EducationDTO getById(
-            long id
-    ) {
+    private EducationEnt getActiveEducationOrThrow(long id) {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
         if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
+            throw new BadRequestException("Failed to find education by id " + id);
         }
 
+        return educationEnt;
+    }
+
+    private EducationDTO mapToDTO(EducationEnt educationEnt) {
         List<SkillDTO> skillsIds = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
 
         return educationMapper.toDTO(educationEnt, skillsIds);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    public EducationDTO getById(
+            long id
+    ) {
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
+
+        return mapToDTO(educationEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<EducationDTO> getAll(
             int pageEducationNumber, int pageEducationSize
     ) {
@@ -63,13 +73,7 @@ public class EducationServImpl implements EducationService {
                 PageRequest.of(pageEducationNumber, pageEducationSize));
 
         return educationPage.getContent().stream()
-                .map( educationEnt -> {
-                    List<SkillDTO> skillDTOs = educationEnt.getSkills().stream()
-                            .map(skillMapper::toDTO)
-                            .toList();
-
-                    return educationMapper.toDTO(educationEnt, skillDTOs);
-                })
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -78,15 +82,7 @@ public class EducationServImpl implements EducationService {
     public EducationDTO create(
             AddEducationReq addEducationReq
     ) {
-        EducationEnt educationEnt = educationRepo.findByInstitutionIgnoreCase(addEducationReq.institution());
-
-        if (educationEnt != null) {
-            educationEnt.setAdditionalInfo(addEducationReq.additionalInfo());
-            educationEnt.setIsActive(true);
-        }
-        else {
-            educationEnt = educationMapper.toEntity(addEducationReq);
-        }
+        EducationEnt educationEnt = educationMapper.toEntity(addEducationReq);
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addEducationReq.skillsIds());
 
@@ -94,9 +90,7 @@ public class EducationServImpl implements EducationService {
 
         educationEnt = educationRepo.save(educationEnt);
 
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-
-        return educationMapper.toDTO(educationEnt, skillDTOs);
+        return mapToDTO(educationEnt);
     }
 
     @Override
@@ -105,23 +99,16 @@ public class EducationServImpl implements EducationService {
             long id,
             AddEducationReq addEducationReq
     ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed to find education by id: " + id);
-        }
-
-        educationEnt.setIsActive(true);
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
 
         educationMapper.updateEntityFromDto(addEducationReq, educationEnt);
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addEducationReq.skillsIds());
 
-        educationEnt = educationRepo.save(educationEnt);
+        educationEnt.setIsActive(true);
+        educationEnt.setSkills(skillEntSet);
 
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-
-        return educationMapper.toDTO(educationEnt, skillDTOs);
+        return mapToDTO(educationEnt);
     }
 
     @Override
@@ -129,18 +116,10 @@ public class EducationServImpl implements EducationService {
     public EducationDTO deleteById(
             long id
     ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
 
         educationEnt.setIsActive(false);
 
-        educationRepo.save(educationEnt);
-
-        List<SkillDTO> skillDTOs = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-
-        return educationMapper.toDTO(educationEnt, skillDTOs);
+        return mapToDTO(educationEnt);
     }
 }
