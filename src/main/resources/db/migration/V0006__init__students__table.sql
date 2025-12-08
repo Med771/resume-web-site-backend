@@ -31,3 +31,9 @@ ALTER TABLE students
 
 ALTER TABLE students
     ADD CONSTRAINT FK_STUDENTS_ON_SPECIALITY FOREIGN KEY (speciality_id) REFERENCES specialities (id);
+
+ALTER TABLE students
+    ADD CONSTRAINT uc_students_email UNIQUE (email);
+
+ALTER TABLE students
+    ADD CONSTRAINT uc_students_username UNIQUE (username);
