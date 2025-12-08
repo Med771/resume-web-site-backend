@@ -7,11 +7,12 @@ import ru.ai.sin.entity.model.CourseEnum;
 import java.time.LocalDate;
 
 import java.util.List;
+import java.util.Set;
 
 public record GetStudentFilterReq(
-        CourseEnum course,
+        Set<CourseEnum> course,
 
-        BusynessEnum busyness,
+        Set<BusynessEnum> busyness,
 
         LocalDate bornBefore,
 

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ai.sin.dto.skill.SkillDTO;
@@ -12,6 +13,7 @@ import ru.ai.sin.dto.student.*;
 import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.entity.spec.StudentSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.FileHelper;
@@ -76,11 +78,30 @@ public class StudentServImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public List<StudentCardDTO> getAllByFilters(
             int pageStudentNumber, int pageStudentSize,
             GetStudentFilterReq getStudentFilterReq
     ) {
-        return List.of();
+        Specification<StudentEnt> spec = StudentSpecifications
+                .courseIn(getStudentFilterReq.course())
+                .and(StudentSpecifications.busynessIn(getStudentFilterReq.busyness()))
+                .and(StudentSpecifications.bornBefore(getStudentFilterReq.bornBefore()))
+                .and(StudentSpecifications.bornAfter(getStudentFilterReq.bornAfter()))
+                .and(StudentSpecifications.hasSkills(getStudentFilterReq.skillsIds()))
+                .and(StudentSpecifications.hasSpecialities(getStudentFilterReq.specialitiesIds()));
+
+        Pageable pageable = PageRequest.of(pageStudentNumber, pageStudentSize);
+
+        return studentRepo.findAll(spec, pageable).stream()
+                .map(student -> {
+                    List<SkillDTO> skillDTOs = student.getSkills().stream()
+                            .map(skill -> new SkillDTO(skill.getId(), skill.getName()))
+                            .toList();
+
+                    return studentMapper.toCardDTO(student, skillDTOs);
+                })
+                .toList();
     }
 
     @Override
