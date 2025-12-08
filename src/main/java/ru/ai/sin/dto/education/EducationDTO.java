@@ -23,8 +23,5 @@ public record EducationDTO(
         String webUrl,
 
         @NotNull
-        List<Long> institutionsIds,
-
-        @NotNull
         List<SkillDTO> skillsIds) {
 }

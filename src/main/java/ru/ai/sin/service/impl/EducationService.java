@@ -8,25 +8,20 @@ public interface EducationService {
 
     // ---------- GET METHODS ----------
     EducationDTO getById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize);
+            long id);
 
     List<EducationDTO> getAll(
-            int pageEducationNumber, int pageEducationSize,
-            int pageInstitutionNumber, int pageInstitutionSize);
+            int pageEducationNumber, int pageEducationSize);
 
     // ---------- POST METHODS ----------
     EducationDTO create(
-            AddEducationReq addEducationReq,
-            int pageInstitutionNumber, int pageInstitutionSize);
+            AddEducationReq addEducationReq);
 
     EducationDTO update(
             long id,
-            AddEducationReq addEducationReq,
-            int pageInstitutionNumber, int pageInstitutionSize);
+            AddEducationReq addEducationReq);
 
     // ---------- DELETE METHODS ----------
     EducationDTO deleteById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize);
+            long id);
 }

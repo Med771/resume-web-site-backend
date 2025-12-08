@@ -21,7 +21,7 @@ public interface EducationMapper {
     EducationEnt toEntity(AddEducationReq dto);
 
     // ---------------- EducationEnt -> EducationDTO ----------------
-    EducationDTO toDTO(EducationEnt entity, List<Long> institutionsIds, List<SkillDTO> skillsIds);
+    EducationDTO toDTO(EducationEnt entity, List<SkillDTO> skillsIds);
 
     // ---------------- EducationEnt -> EducationRes ----------------
     EducationRes toRes(EducationEnt entity);

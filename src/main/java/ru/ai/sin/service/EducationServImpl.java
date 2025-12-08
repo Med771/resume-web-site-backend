@@ -24,8 +24,6 @@ import ru.ai.sin.repository.SkillRepo;
 
 import ru.ai.sin.service.impl.EducationService;
 
-import ru.ai.sin.tools.InstitutionTools;
-
 import java.util.List;
 import java.util.Set;
 
@@ -40,13 +38,10 @@ public class EducationServImpl implements EducationService {
     private final EducationMapper educationMapper;
     private final SkillMapper skillMapper;
 
-    private final InstitutionTools institutionTools;
-
     @Override
     @Transactional
     public EducationDTO getById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize
+            long id
     ) {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
@@ -54,35 +49,26 @@ public class EducationServImpl implements EducationService {
             throw new BadRequestException("Failed find by id");
         }
 
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
         List<SkillDTO> skillsIds = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
 
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillsIds);
+        return educationMapper.toDTO(educationEnt, skillsIds);
     }
 
     @Override
     @Transactional
     public List<EducationDTO> getAll(
-            int pageEducationNumber, int pageEducationSize,
-            int pageInstitutionNumber, int pageInstitutionSize
+            int pageEducationNumber, int pageEducationSize
     ) {
         Page<EducationEnt> educationPage = educationRepo.findAllByIsActiveTrue(
                 PageRequest.of(pageEducationNumber, pageEducationSize));
 
         return educationPage.getContent().stream()
                 .map( educationEnt -> {
-                    List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                            educationEnt.getId(),
-                            pageInstitutionNumber, pageInstitutionSize
-                    );
-
                     List<SkillDTO> skillDTOs = educationEnt.getSkills().stream()
                             .map(skillMapper::toDTO)
                             .toList();
 
-                    return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+                    return educationMapper.toDTO(educationEnt, skillDTOs);
                 })
                 .toList();
     }
@@ -90,8 +76,7 @@ public class EducationServImpl implements EducationService {
     @Override
     @Transactional
     public EducationDTO create(
-            AddEducationReq addEducationReq,
-            int pageInstitutionNumber, int pageInstitutionSize
+            AddEducationReq addEducationReq
     ) {
         EducationEnt educationEnt = educationRepo.findByInstitutionIgnoreCase(addEducationReq.institution());
 
@@ -110,20 +95,16 @@ public class EducationServImpl implements EducationService {
         educationEnt = educationRepo.save(educationEnt);
 
         List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize
-        );
 
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+        return educationMapper.toDTO(educationEnt, skillDTOs);
     }
 
     @Override
     @Transactional
     public EducationDTO update(
             long id,
-            AddEducationReq addEducationReq,
-            int pageInstitutionNumber, int pageInstitutionSize) {
+            AddEducationReq addEducationReq
+    ) {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
         if (educationEnt == null) {
@@ -139,19 +120,14 @@ public class EducationServImpl implements EducationService {
         educationEnt = educationRepo.save(educationEnt);
 
         List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize
-        );
 
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+        return educationMapper.toDTO(educationEnt, skillDTOs);
     }
 
     @Override
     @Transactional
     public EducationDTO deleteById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize
+            long id
     ) {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
@@ -164,10 +140,7 @@ public class EducationServImpl implements EducationService {
         educationRepo.save(educationEnt);
 
         List<SkillDTO> skillDTOs = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
 
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+        return educationMapper.toDTO(educationEnt, skillDTOs);
     }
 }
