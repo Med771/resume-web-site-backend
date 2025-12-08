@@ -5,17 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.recruiter.AddRecruiterReq;
 import ru.ai.sin.dto.recruiter.GetRecruiterNameReq;
 import ru.ai.sin.dto.recruiter.RecruiterDTO;
 import ru.ai.sin.dto.recruiter.UpdateRecruiterReq;
 import ru.ai.sin.entity.RecruiterEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.RecruiterMapper;
 import ru.ai.sin.repository.RecruiterRepo;
 import ru.ai.sin.service.impl.RecruiterService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -27,17 +29,21 @@ public class RecruiterServImpl implements RecruiterService {
 
     private final RecruiterMapper recruiterMapper;
 
+    private RecruiterEnt getActiveRecruiterOrThrow(UUID recruiterId) {
+        RecruiterEnt recruiterEnt = recruiterRepo.findByIdAndIsActiveTrue(recruiterId);
+
+        if (recruiterEnt == null) {
+            throw new NotFoundException("Failed to find recruiter by id " + recruiterId);
+        }
+
+        return recruiterEnt;
+    }
+
     @Override
     public RecruiterDTO getById(
             UUID id
     ) {
-        RecruiterEnt recruiterEnt = recruiterRepo.findByIdAndIsActiveTrue(id);
-
-        if (recruiterEnt == null) {
-            throw new BadRequestException("Failed to find recruiter by id " + id);
-        }
-
-        return recruiterMapper.toDTO(recruiterEnt);
+        return recruiterMapper.toDTO(getActiveRecruiterOrThrow(id));
     }
 
     @Override
@@ -78,36 +84,30 @@ public class RecruiterServImpl implements RecruiterService {
     }
 
     @Override
+    @Transactional
     public RecruiterDTO update(
             UUID id,
             UpdateRecruiterReq updateRecruiterReq
     ) {
-        RecruiterEnt recruiterEnt = recruiterRepo.findByIdAndIsActiveTrue(id);
+        Optional<RecruiterEnt> recruiterEnt = recruiterRepo.findById(id);
 
-        if (recruiterEnt == null) {
-            throw new BadRequestException("Failed to find recruiter by id " + id);
+        if (recruiterEnt.isEmpty()) {
+            throw new NotFoundException("Failed to find recruiter by id " + id);
         }
 
-        recruiterMapper.updateEntityFromDto(updateRecruiterReq, recruiterEnt);
+        recruiterMapper.updateEntityFromDto(updateRecruiterReq, recruiterEnt.get());
 
-        recruiterRepo.save(recruiterEnt);
-
-        return recruiterMapper.toDTO(recruiterEnt);
+        return recruiterMapper.toDTO(recruiterEnt.get());
     }
 
     @Override
+    @Transactional
     public RecruiterDTO deleteById(
             UUID id
     ) {
-        RecruiterEnt recruiterEnt = recruiterRepo.findByIdAndIsActiveTrue(id);
-
-        if (recruiterEnt == null) {
-            throw new BadRequestException("Failed to find recruiter by id " + id);
-        }
+        RecruiterEnt recruiterEnt = getActiveRecruiterOrThrow(id);
 
         recruiterEnt.setIsActive(false);
-
-        recruiterRepo.save(recruiterEnt);
 
         return recruiterMapper.toDTO(recruiterEnt);
     }
