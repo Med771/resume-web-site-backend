@@ -2,7 +2,6 @@ package ru.ai.sin.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
@@ -14,6 +13,10 @@ import java.nio.file.Paths;
 public class FileConfig {
     @Value("${app.file.path}")
     private String filePath;
+
+    @Getter
+    @Value("${app.file.max-size-bytes:5242880}")
+    private long maxUploadSizeBytes;
 
     public Path getFilePath() {
         Path path = Paths.get(filePath);
@@ -30,4 +33,5 @@ public class FileConfig {
 
         return path;
     }
+
 }

@@ -38,6 +38,7 @@ app:
 
   file:
     path: file
+    max-size-bytes: 5242880
 
 management:
   endpoints:

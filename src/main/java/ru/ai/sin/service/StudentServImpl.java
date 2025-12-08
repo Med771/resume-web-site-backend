@@ -13,6 +13,7 @@ import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.mapper.StudentMapper;
@@ -47,7 +48,7 @@ public class StudentServImpl implements StudentService {
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
 
         if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + id);
+            throw new NotFoundException("Failed to find student by id " + id);
         }
 
         List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
@@ -104,12 +105,14 @@ public class StudentServImpl implements StudentService {
     public StudentDTO create(
             MultipartFile multipartFile,
             AddStudentReq addStudentReq) {
+        fileHelper.validateMultipart(multipartFile);
+
         StudentEnt studentEnt = studentMapper.toEntity(addStudentReq);
 
         SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(addStudentReq.specialityId());
 
         if (specialityEnt == null) {
-            throw new BadRequestException("Failed to find speciality with id " + addStudentReq.specialityId());
+            throw new NotFoundException("Failed to find speciality with id " + addStudentReq.specialityId());
         }
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addStudentReq.skillsIds());
@@ -144,12 +147,18 @@ public class StudentServImpl implements StudentService {
             MultipartFile multipartFile,
             UpdateStudentReq updateStudentReq
     ) {
+        fileHelper.validateMultipart(multipartFile);
+        
         StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
+
+        if (studentEnt == null) {
+            throw new NotFoundException("Failed to find student by id " + id);
+        }
 
         SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(updateStudentReq.specialityId());
 
         if (specialityEnt == null) {
-            throw new BadRequestException("Failed to find speciality with id " + updateStudentReq.specialityId());
+            throw new NotFoundException("Failed to find speciality with id " + updateStudentReq.specialityId());
         }
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(updateStudentReq.skillsIds());

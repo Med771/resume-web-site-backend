@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ai.sin.config.FileConfig;
+import ru.ai.sin.exception.models.BadRequestException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,5 +61,18 @@ public class FileHelper {
         }
     }
 
+    public void validateMultipart(MultipartFile multipartFile) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            throw new BadRequestException("Avatar file is required");
+        }
 
+        if (multipartFile.getSize() > fileConfig.getMaxUploadSizeBytes()) {
+            throw new BadRequestException("Avatar file is too large");
+        }
+
+        String contentType = multipartFile.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+            throw new BadRequestException("Avatar file must be an image");
+        }
+    }
 }
