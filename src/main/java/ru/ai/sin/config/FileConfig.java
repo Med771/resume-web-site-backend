@@ -19,6 +19,10 @@ public class FileConfig {
     private long maxUploadSizeBytes;
 
     public Path getFilePath() {
+        if (maxUploadSizeBytes <= 0) {
+            throw new IllegalStateException("app.file.max-size-bytes must be > 0");
+        }
+
         Path path = Paths.get(filePath);
 
         if (!Files.exists(path)) {
@@ -27,7 +31,7 @@ public class FileConfig {
 
                 System.out.println("Директория создана: " + path.toAbsolutePath());
             } catch (IOException e) {
-                System.err.println("Ошибка при создании директории: " + e.getMessage());
+                throw new IllegalStateException("Ошибка при создании директории: " + path.toAbsolutePath(), e);
             }
         }
 
