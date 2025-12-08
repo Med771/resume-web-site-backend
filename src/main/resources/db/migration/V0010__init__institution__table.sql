@@ -9,9 +9,3 @@ CREATE TABLE institution
     updated_at   TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_institution PRIMARY KEY (id)
 );
-
-ALTER TABLE institution
-    ADD CONSTRAINT FK_INSTITUTION_ON_EDUCATION FOREIGN KEY (education_id) REFERENCES education (id);
-
-ALTER TABLE institution
-    ADD CONSTRAINT FK_INSTITUTION_ON_STUDENT FOREIGN KEY (student_id) REFERENCES students (id);

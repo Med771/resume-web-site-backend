@@ -15,12 +15,3 @@ CREATE TABLE recruiters
     telegram_user_id  VARCHAR(16),
     CONSTRAINT pk_recruiters PRIMARY KEY (id)
 );
-
-ALTER TABLE recruiters
-    ADD CONSTRAINT uc_recruiters_telegram_user UNIQUE (telegram_user_id);
-
-ALTER TABLE recruiters
-    ADD CONSTRAINT uc_recruiters_email UNIQUE (email);
-
-ALTER TABLE recruiters
-    ADD CONSTRAINT uc_recruiters_username UNIQUE (username);
