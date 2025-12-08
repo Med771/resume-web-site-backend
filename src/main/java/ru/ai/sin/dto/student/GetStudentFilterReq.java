@@ -1,5 +1,6 @@
 package ru.ai.sin.dto.student;
 
+import jakarta.validation.constraints.Positive;
 import ru.ai.sin.entity.model.BusynessEnum;
 import ru.ai.sin.entity.model.CourseEnum;
 
@@ -13,9 +14,10 @@ public record GetStudentFilterReq(
         BusynessEnum busyness,
 
         LocalDate bornBefore,
+
         LocalDate bornAfter,
 
-        List<Long> skillsIds,
+        List<@Positive Long> skillsIds,
 
-        List<Long> specialitiesIds) {
+        List<@Positive Long> specialitiesIds) {
 }

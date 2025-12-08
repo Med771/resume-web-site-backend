@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Size;
 
 public record AddSkillReq(
         @NotBlank
-        @Size(min = 1, max = 255, message = "Name must be less than 255 characters")
+        @Size(min = 1, max = 255, message = "Add skill name must be less than 255 characters")
         String name) {
 }
