@@ -25,4 +25,11 @@ public interface EducationMapper {
 
     // ---------------- EducationEnt -> EducationRes ----------------
     EducationRes toRes(EducationEnt entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "skills", ignore = true)
+    @Mapping(target = "institutions", ignore = true)
+    void updateEntityFromDto(AddEducationReq dto, @MappingTarget EducationEnt entity);
 }

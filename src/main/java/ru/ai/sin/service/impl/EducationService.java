@@ -17,20 +17,13 @@ public interface EducationService {
 
     // ---------- POST METHODS ----------
     EducationDTO create(
-            AddEducationReq addEducationReq);
+            AddEducationReq addEducationReq,
+            int pageInstitutionNumber, int pageInstitutionSize);
 
-    EducationDTO setInstitutionById(
+    EducationDTO update(
             long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationInstitutionReq setEducationInstitutionReq);
-    EducationDTO setAdditionalInfoById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationInfoReq setEducationInfoReq);
-    EducationDTO setSkillsById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationSkillsReq setEducationSkillsReq);
+            AddEducationReq addEducationReq,
+            int pageInstitutionNumber, int pageInstitutionSize);
 
     // ---------- DELETE METHODS ----------
     EducationDTO deleteById(
