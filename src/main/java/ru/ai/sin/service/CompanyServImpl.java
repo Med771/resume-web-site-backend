@@ -32,7 +32,7 @@ public class CompanyServImpl implements CompanyService {
 
     private final ExperienceTools experienceTools;
 
-    protected CompanyEnt getActiveCompanyOrThrow(long id) {
+    private CompanyEnt getActiveCompanyOrThrow(long id) {
         CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(id);
 
         if (companyEnt == null) {
@@ -42,13 +42,13 @@ public class CompanyServImpl implements CompanyService {
         return companyEnt;
     }
 
-    protected CompanyDTO mapToDTO(CompanyEnt companyEnt) {
+    private CompanyDTO mapToDTO(CompanyEnt companyEnt) {
         List<Long> experienceIds = experienceTools.getExperienceIdsByCompanyId(companyEnt.getId());
 
         return companyMapper.toDTO(companyEnt, experienceIds);
     }
 
-    protected List<CompanyDTO> mapToDTOs(List<CompanyEnt> companyEntList) {
+    private List<CompanyDTO> mapToDTOs(List<CompanyEnt> companyEntList) {
         Set<Long> companyIdSet = companyEntList.stream().map(CompanyEnt::getId).collect(Collectors.toSet());
         Map<Long, List<Long>> experiencesIds = experienceTools.getExperienceIdsByExperienceId(companyIdSet);
 

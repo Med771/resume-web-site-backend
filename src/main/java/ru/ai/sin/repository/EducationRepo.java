@@ -14,8 +14,5 @@ public interface EducationRepo extends JpaRepository<EducationEnt, Long> {
     EducationEnt findByIdAndIsActiveTrue(Long id);
 
     @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
-    EducationEnt findByInstitutionIgnoreCase(String institution);
-
-    @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<EducationEnt> findAllByIsActiveTrue(Pageable pageable);
 }
