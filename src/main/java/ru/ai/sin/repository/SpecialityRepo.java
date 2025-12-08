@@ -17,7 +17,7 @@ public interface SpecialityRepo extends JpaRepository<SpecialityEnt, Long> {
 
     @Nullable
     @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
-    SpecialityEnt findByNameIgnoreCaseAndIsActiveTrue(String name);
+    SpecialityEnt findByName(String name);
 
     @EntityGraph(attributePaths = {"skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<SpecialityEnt> findAllByIsActiveTrue(Pageable pageable);
