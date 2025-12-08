@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.ai.sin.entity.ExperienceEnt;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -17,6 +18,8 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
     ExperienceEnt findWithCompanyAndStudentById(Long id);
 
     List<ExperienceEnt> findAllByCompanyId(Long companyId);
+
+    Set<ExperienceEnt> findAllByCompanyIdIn(Set<Long> ids);
 
     @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<ExperienceEnt> findAllByCompanyId(Long companyId, Pageable pageable);

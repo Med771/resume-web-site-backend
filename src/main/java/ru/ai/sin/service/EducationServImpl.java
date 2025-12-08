@@ -15,7 +15,7 @@ import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.entity.EducationEnt;
 import ru.ai.sin.entity.SkillEnt;
 
-import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.mapper.SkillMapper;
 
@@ -23,8 +23,6 @@ import ru.ai.sin.repository.EducationRepo;
 import ru.ai.sin.repository.SkillRepo;
 
 import ru.ai.sin.service.impl.EducationService;
-
-import ru.ai.sin.tools.InstitutionTools;
 
 import java.util.List;
 import java.util.Set;
@@ -40,50 +38,42 @@ public class EducationServImpl implements EducationService {
     private final EducationMapper educationMapper;
     private final SkillMapper skillMapper;
 
-    private final InstitutionTools institutionTools;
-
-    @Override
-    @Transactional
-    public EducationDTO getById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize
-    ) {
+    private EducationEnt getActiveEducationOrThrow(long id) {
         EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
 
         if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
+            throw new NotFoundException("Failed to find education by id " + id);
         }
 
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
+        return educationEnt;
+    }
+
+    private EducationDTO mapToDTO(EducationEnt educationEnt) {
         List<SkillDTO> skillsIds = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
 
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillsIds);
+        return educationMapper.toDTO(educationEnt, skillsIds);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    public EducationDTO getById(
+            long id
+    ) {
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
+
+        return mapToDTO(educationEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<EducationDTO> getAll(
-            int pageEducationNumber, int pageEducationSize,
-            int pageInstitutionNumber, int pageInstitutionSize
+            int pageEducationNumber, int pageEducationSize
     ) {
         Page<EducationEnt> educationPage = educationRepo.findAllByIsActiveTrue(
                 PageRequest.of(pageEducationNumber, pageEducationSize));
 
         return educationPage.getContent().stream()
-                .map( educationEnt -> {
-                    List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                            educationEnt.getId(),
-                            pageInstitutionNumber, pageInstitutionSize
-                    );
-
-                    List<SkillDTO> skillDTOs = educationEnt.getSkills().stream()
-                            .map(skillMapper::toDTO)
-                            .toList();
-
-                    return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
-                })
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -92,125 +82,44 @@ public class EducationServImpl implements EducationService {
     public EducationDTO create(
             AddEducationReq addEducationReq
     ) {
-        EducationEnt educationEnt = educationRepo.findByInstitutionIgnoreCase(addEducationReq.institution());
+        EducationEnt educationEnt = educationMapper.toEntity(addEducationReq);
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addEducationReq.skillsIds());
-
-        if (educationEnt != null) {
-            educationEnt.setAdditionalInfo(addEducationReq.additionalInfo());
-            educationEnt.setIsActive(true);
-        }
-        else {
-            educationEnt = educationMapper.toEntity(addEducationReq);
-        }
 
         educationEnt.setSkills(skillEntSet);
 
         educationEnt = educationRepo.save(educationEnt);
 
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-
-        return educationMapper.toDTO(educationEnt, List.of(), skillDTOs);
+        return mapToDTO(educationEnt);
     }
 
     @Override
     @Transactional
-    public EducationDTO setInstitutionById(
+    public EducationDTO update(
             long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationInstitutionReq setEducationInstitutionReq
+            AddEducationReq addEducationReq
     ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
 
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        educationMapper.updateEntityFromDto(addEducationReq, educationEnt);
 
-        educationEnt.setInstitution(setEducationInstitutionReq.institution());
+        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addEducationReq.skillsIds());
 
-        educationRepo.save(educationEnt);
-
-        List<SkillDTO> skillDTOs = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
-
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
-    }
-
-    @Override
-    @Transactional
-    public EducationDTO setAdditionalInfoById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationInfoReq setEducationInfoReq
-    ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
-
-        educationEnt.setAdditionalInfo(setEducationInfoReq.additionalInfo());
-
-        educationRepo.save(educationEnt);
-
-        List<SkillDTO> skillDTOs = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
-
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
-    }
-
-    @Override
-    @Transactional
-    public EducationDTO setSkillsById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize,
-            SetEducationSkillsReq setEducationSkillsReq
-    ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
-
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(setEducationSkillsReq.skillsIds());
-
+        educationEnt.setIsActive(true);
         educationEnt.setSkills(skillEntSet);
 
-        educationRepo.save(educationEnt);
-
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
-
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+        return mapToDTO(educationEnt);
     }
 
     @Override
     @Transactional
     public EducationDTO deleteById(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize
+            long id
     ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(id);
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        EducationEnt educationEnt = getActiveEducationOrThrow(id);
 
         educationEnt.setIsActive(false);
 
-        educationRepo.save(educationEnt);
-
-        List<SkillDTO> skillDTOs = educationEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-        List<Long> institutionsIds = institutionTools.getInstitutionIdsByEducationId(
-                educationEnt.getId(),
-                pageInstitutionNumber, pageInstitutionSize);
-
-        return educationMapper.toDTO(educationEnt, institutionsIds, skillDTOs);
+        return mapToDTO(educationEnt);
     }
 }

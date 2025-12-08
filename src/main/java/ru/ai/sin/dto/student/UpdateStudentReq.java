@@ -1,9 +1,7 @@
 package ru.ai.sin.dto.student;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.*;
 import ru.ai.sin.entity.model.BusynessEnum;
 import ru.ai.sin.entity.model.CourseEnum;
 
@@ -14,10 +12,12 @@ public record UpdateStudentReq(
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
         String city,
 
-        @Size(min = 1, max = 255, message = "City must be less than 255 characters")
+        @Size(min = 1, max = 255, message = "HH link must be less than 255 characters")
         String hhLink,
 
         @NotNull
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        @Past(message = "Birth date must be in the past")
         LocalDate birthDate,
 
         @Size(max = 2000, message = "Additional info must be less than 2000 characters")
@@ -29,10 +29,10 @@ public record UpdateStudentReq(
         @NotNull
         BusynessEnum busyness,
 
-        @NotNull
+        @NotBlank
         String firstName,
 
-        @NotNull
+        @NotBlank
         String lastName,
 
         @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
@@ -47,8 +47,9 @@ public record UpdateStudentReq(
         @Size(min = 1, max = 255, message = "Telegram Username must be less than 255 characters")
         String telegramUsername,
 
+        @Positive
         long specialityId,
 
         @NotNull
-        List<Long> skillsIds) {
+        List<@Positive Long> skillsIds) {
 }

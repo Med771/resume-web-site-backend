@@ -11,6 +11,7 @@ import ru.ai.sin.entity.EducationEnt;
 import ru.ai.sin.entity.InstitutionEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.mapper.InstitutionMapper;
 import ru.ai.sin.repository.EducationRepo;
@@ -19,6 +20,7 @@ import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.InstitutionService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -33,21 +35,54 @@ public class InstitutionServImpl implements InstitutionService {
     private final InstitutionMapper institutionMapper;
     private final EducationMapper educationMapper;
 
-    @Override
-    public InstitutionDTO getById(
-            long id) {
+    private InstitutionEnt getActiveInstitutionOrThrow(long id) {
         InstitutionEnt institutionEnt = institutionRepo.findWithEducationAndStudentById(id);
 
         if (institutionEnt == null) {
-            throw new BadRequestException("Failed to find institution with id: " + id);
+            throw new NotFoundException("Failed to find institution with id: " + id);
         }
 
+        return institutionEnt;
+    }
+
+    private InstitutionDTO mapToDTO(InstitutionEnt institutionEnt) {
         InstitutionRes institutionRes = institutionMapper.toRes(institutionEnt);
 
         return institutionMapper.toDTO(institutionEnt, institutionRes);
     }
 
+    private void updateActiveEducationOrThrow(long educationId, InstitutionEnt institutionEnt) {
+        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(educationId);
+
+        if (educationEnt == null) {
+            throw new NotFoundException("Failed to find education with id: " + educationId);
+        }
+
+        institutionEnt.setEducation(educationEnt);
+    }
+
+    private void updateActiveStudentOrThrow(UUID studentId, InstitutionEnt institutionEnt) {
+        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(studentId);
+
+        if (studentEnt == null) {
+            throw new NotFoundException("Failed to find student with id: " + studentId);
+        }
+
+        institutionEnt.setStudent(studentEnt);
+    }
+
     @Override
+    @Transactional(readOnly = true)
+    public InstitutionDTO getById(
+            long id
+    ) {
+        InstitutionEnt institutionEnt = getActiveInstitutionOrThrow(id);
+
+        return mapToDTO(institutionEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public GetAboutEducationRes getByEducationId(
             long id,
             int pageInstitutionNumber, int pageInstitutionSize
@@ -66,6 +101,7 @@ public class InstitutionServImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GetAboutStudentRes getByStudentId(
             UUID id,
             int pageInstitutionNumber, int pageInstitutionSize
@@ -84,6 +120,7 @@ public class InstitutionServImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<InstitutionDTO> getAll(
             int pageInstitutionNumber, int pageInstitutionSize
     ) {
@@ -104,26 +141,14 @@ public class InstitutionServImpl implements InstitutionService {
     public InstitutionDTO create(
             AddInstitutionReq addInstitutionReq
     ) {
-        EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(addInstitutionReq.educationId());
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addInstitutionReq.studentId());
-
-        if (educationEnt == null) {
-            throw new BadRequestException("Failed to find education by id: " + addInstitutionReq.educationId());
-        }
-        if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id: " + addInstitutionReq.studentId());
-        }
-
         InstitutionEnt institutionEnt = institutionMapper.toEntity(addInstitutionReq);
 
-        institutionEnt.setEducation(educationEnt);
-        institutionEnt.setStudent(studentEnt);
+        updateActiveEducationOrThrow(addInstitutionReq.educationId(), institutionEnt);
+        updateActiveStudentOrThrow(addInstitutionReq.studentId(), institutionEnt);
 
         institutionRepo.save(institutionEnt);
 
-        InstitutionRes institutionRes = institutionMapper.toRes(institutionEnt);
-
-        return institutionMapper.toDTO(institutionEnt, institutionRes);
+        return mapToDTO(institutionEnt);
     }
 
     @Override
@@ -140,46 +165,25 @@ public class InstitutionServImpl implements InstitutionService {
 
         institutionMapper.updateEntityFromDto(addInstitutionReq, institutionEnt);
 
-        if (institutionEnt.getEducation().getId() != addInstitutionReq.educationId()) {
-            EducationEnt educationEnt = educationRepo.findByIdAndIsActiveTrue(addInstitutionReq.educationId());
-
-            if (educationEnt == null) {
-                throw new BadRequestException("Failed to find education by id: " + id);
-            }
-
-            institutionEnt.setEducation(educationEnt);
+        if (!Objects.equals(institutionEnt.getEducation().getId(), addInstitutionReq.educationId())) {
+            updateActiveEducationOrThrow(addInstitutionReq.educationId(), institutionEnt);
         }
-        if (institutionEnt.getStudent().getId() != addInstitutionReq.studentId()) {
-            StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addInstitutionReq.studentId());
-
-            if (studentEnt == null) {
-                throw new BadRequestException("Failed to find student by id " + addInstitutionReq.studentId());
-            }
-
-            institutionEnt.setStudent(studentEnt);
+        if (!Objects.equals(institutionEnt.getStudent().getId(), addInstitutionReq.studentId())) {
+            updateActiveStudentOrThrow(addInstitutionReq.studentId(), institutionEnt);
         }
 
-        institutionRepo.save(institutionEnt);
-
-        InstitutionRes institutionRes = institutionMapper.toRes(institutionEnt);
-
-        return institutionMapper.toDTO(institutionEnt, institutionRes);
+        return mapToDTO(institutionEnt);
     }
 
     @Override
+    @Transactional
     public InstitutionDTO deleteById(
             long id
     ) {
-        InstitutionEnt institutionEnt = institutionRepo.findWithEducationAndStudentById(id);
-
-        if (institutionEnt == null) {
-            throw new BadRequestException("Failed to find institution with id: " + id);
-        }
+        InstitutionEnt institutionEnt = getActiveInstitutionOrThrow(id);
 
         institutionRepo.delete(institutionEnt);
 
-        InstitutionRes institutionRes = institutionMapper.toRes(institutionEnt);
-
-        return institutionMapper.toDTO(institutionEnt, institutionRes);
+        return mapToDTO(institutionEnt);
     }
 }

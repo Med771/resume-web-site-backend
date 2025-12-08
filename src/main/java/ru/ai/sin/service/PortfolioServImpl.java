@@ -10,7 +10,8 @@ import ru.ai.sin.dto.portfolio.AddPortfolioReq;
 import ru.ai.sin.dto.portfolio.PortfolioDTO;
 import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.PortfolioMapper;
 import ru.ai.sin.repository.PortfolioRepo;
 import ru.ai.sin.repository.StudentRepo;
@@ -29,20 +30,38 @@ public class PortfolioServImpl implements PortfolioService {
 
     private final PortfolioMapper portfolioMapper;
 
-    @Override
-    public PortfolioDTO getById(
-            long id
-    ) {
+    private PortfolioEnt getActivePortfolioOrThrow(long id) {
         PortfolioEnt portfolioEnt = portfolioRepo.findByIdAndIsActiveTrue(id);
 
         if (portfolioEnt == null) {
-            throw new BadRequestException("Failed to find portfolio by id " + id);
+            throw new NotFoundException("Failed to find portfolio by id " + id);
         }
+
+        return portfolioEnt;
+    }
+
+    private StudentEnt getActiveStudentOrThrow(UUID id) {
+        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
+
+        if (studentEnt == null) {
+            throw new NotFoundException("Failed to find student by id " + id);
+        }
+
+        return studentEnt;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PortfolioDTO getById(
+            long id
+    ) {
+       PortfolioEnt portfolioEnt = getActivePortfolioOrThrow(id);
 
         return portfolioMapper.toDTO(portfolioEnt);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PortfolioDTO> getAll(
             int pagePortfolioNumber, int pagePortfolioSize
     ) {
@@ -56,6 +75,7 @@ public class PortfolioServImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PortfolioDTO> getAllByStudentId(
             UUID studentId,
             int pagePortfolioNumber, int pagePortfolioSize
@@ -75,21 +95,9 @@ public class PortfolioServImpl implements PortfolioService {
     public PortfolioDTO create(
             AddPortfolioReq addPortfolioReq
     ) {
-        PortfolioEnt portfolioEnt = portfolioRepo.findByLinkAndIsActiveTrue(addPortfolioReq.link());
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addPortfolioReq.studentId());
+        StudentEnt studentEnt = getActiveStudentOrThrow(addPortfolioReq.studentId());
 
-        if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + addPortfolioReq.studentId());
-        }
-
-        if (portfolioEnt == null) {
-            portfolioEnt = portfolioMapper.toEntity(addPortfolioReq, studentEnt);
-        }
-        else {
-            portfolioEnt.setName(addPortfolioReq.name());
-            portfolioEnt.setAdditionalInfo(addPortfolioReq.additionalInfo());
-            portfolioEnt.setStudent(studentEnt);
-        }
+        PortfolioEnt portfolioEnt = portfolioMapper.toEntity(addPortfolioReq, studentEnt);
 
         portfolioEnt = portfolioRepo.save(portfolioEnt);
 
@@ -97,43 +105,33 @@ public class PortfolioServImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional
     public PortfolioDTO update(
             long id,
             AddPortfolioReq addPortfolioReq) {
         PortfolioEnt portfolioEnt = portfolioRepo.findWithStudentById(id);
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(addPortfolioReq.studentId());
-
-        if (studentEnt == null) {
-            throw new BadRequestException("Failed to find student by id " + addPortfolioReq.studentId());
-        }
 
         if (portfolioEnt == null) {
-            portfolioEnt = portfolioMapper.toEntity(addPortfolioReq, studentEnt);
+            throw new NotFoundException("Failed to find portfolio by id " + id);
         }
 
-        portfolioEnt.setAdditionalInfo(addPortfolioReq.additionalInfo());
-        portfolioEnt.setName(addPortfolioReq.name());
-        portfolioEnt.setIsActive(true);
-        portfolioEnt.setStudent(studentEnt);
+        StudentEnt studentEnt = getActiveStudentOrThrow(addPortfolioReq.studentId());
 
-        portfolioEnt = portfolioRepo.save(portfolioEnt);
+        portfolioMapper.updateEntityFromDto(addPortfolioReq, portfolioEnt);
+
+        portfolioEnt.setStudent(studentEnt);
 
         return portfolioMapper.toDTO(portfolioEnt);
     }
 
     @Override
+    @Transactional
     public PortfolioDTO deleteById(
             long id
     ) {
-        PortfolioEnt portfolioEnt = portfolioRepo.findByIdAndIsActiveTrue(id);
-
-        if (portfolioEnt == null) {
-            throw new BadRequestException("Failed to find portfolio by id " + id);
-        }
+        PortfolioEnt portfolioEnt = getActivePortfolioOrThrow(id);
 
         portfolioEnt.setIsActive(false);
-
-        portfolioRepo.save(portfolioEnt);
 
         return portfolioMapper.toDTO(portfolioEnt);
     }

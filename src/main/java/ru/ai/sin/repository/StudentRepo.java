@@ -14,7 +14,9 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-public interface StudentRepo extends JpaRepository<StudentEnt, UUID>, JpaSpecificationExecutor<StudentEnt> {
+public interface StudentRepo extends
+        JpaRepository<StudentEnt, UUID>,
+        JpaSpecificationExecutor<StudentEnt>  {
 
     @EntityGraph(attributePaths = {"speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     StudentEnt findByIdAndIsActiveTrue(UUID id);

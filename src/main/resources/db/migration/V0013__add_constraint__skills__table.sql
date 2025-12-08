@@ -1,0 +1,14 @@
+ALTER TABLE skills
+    ADD CONSTRAINT uc_skills_name UNIQUE (name);
+
+ALTER TABLE skills
+    ADD CONSTRAINT FK_SKILLS_ON_EDUCATION FOREIGN KEY (education_id) REFERENCES education (id);
+
+ALTER TABLE skills
+    ADD CONSTRAINT FK_SKILLS_ON_SPECIALITY FOREIGN KEY (speciality_id) REFERENCES specialities (id);
+
+ALTER TABLE skills
+    ADD student_id UUID;
+
+ALTER TABLE skills
+    ADD CONSTRAINT FK_SKILLS_ON_STUDENT FOREIGN KEY (student_id) REFERENCES students (id);

@@ -36,6 +36,9 @@ public class EducationEnt {
     @Size(max = 2000, message = "Additional info must be less than 2000 characters")
     private String additionalInfo;
 
+    @Column(name = "web_url", nullable = false)
+    private String webUrl;
+
     @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
     private Boolean isActive = true;
 

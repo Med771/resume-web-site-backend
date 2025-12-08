@@ -4,13 +4,20 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import java.io.FileNotFoundException;
 
 import ru.ai.sin.exception.models.ApiException;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.ErrorResponse;
+import ru.ai.sin.exception.models.NotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -19,35 +26,41 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        log.error(
-                "Method Argument Not Valid Exception: code={}, status={}, msg={}",
-                ex.getBody().getTitle(), ex.getStatusCode(), ex.getMessage()
-        );
+        String msg = ex.getBindingResult().getFieldErrors().isEmpty()
+                ? ex.getMessage()
+                : ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
 
+        log.warn("Validation failed: {}", msg);
         businessErrors.increment();
 
         return ResponseEntity
                 .status(ex.getStatusCode())
-                .body(new ErrorResponse(ex.getBody().getTitle(), ex.getMessage()));
+                .body(new ErrorResponse(ex.getBody().getTitle(), msg));
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex) {
-        log.error(
-                "Bad Request Exception: code={}, status={}, msg={}",
-                ex.getCode(), ex.getStatus(), ex.getMessage()
-        );
+        log.warn("Bad Request: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
 
         businessErrors.increment();
 
         return ResponseEntity
                 .status(ex.getStatus())
-                .body(new ErrorResponse(ex.getCode(), ex.getCode()));
+                .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
+        log.warn("Not Found: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
+        businessErrors.increment();
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
-        log.error(
+        log.warn(
                 "Api error: code={}, status={}, msg={}",
                 ex.getCode(), ex.getStatus(), ex.getMessage()
         );
@@ -56,7 +69,38 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(ex.getStatus())
-                .body(new ErrorResponse(ex.getCode(), ex.getCode()));
+                .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler({
+            ConstraintViolationException.class,
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequestValidation(Exception ex) {
+        log.warn("Request parse/validation error: {}", ex.getMessage());
+        businessErrors.increment();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("BAD_REQUEST", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooLarge(MaxUploadSizeExceededException ex) {
+        log.warn("Upload too large: {}", ex.getMessage());
+        businessErrors.increment();
+        return ResponseEntity
+                .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(new ErrorResponse("UPLOAD_TOO_LARGE", "File is too large"));
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleFileNotFound(FileNotFoundException ex) {
+        log.warn("File not found: {}", ex.getMessage());
+        businessErrors.increment();
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

@@ -8,6 +8,9 @@ import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.repository.ExperienceRepo;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -21,5 +24,16 @@ public class ExperienceTools {
         List<ExperienceEnt> experienceEntList = experienceRepo.findAllByCompanyId(companyId);
 
         return experienceEntList.stream().map(ExperienceEnt::getId).toList();
+    }
+
+    @Transactional
+    public Map<Long, List<Long>> getExperienceIdsByExperienceId(Set<Long> companyIds){
+        Set<ExperienceEnt> experienceEntSet = experienceRepo.findAllByCompanyIdIn(companyIds);
+
+        return experienceEntSet.stream()
+                .collect(Collectors.groupingBy(
+                        exp -> exp.getCompany().getId(),
+                        Collectors.mapping(ExperienceEnt::getId, Collectors.toList())
+                ));
     }
 }

@@ -18,4 +18,10 @@ public interface PortfolioMapper {
     // ---------------- PortfolioEnt -> PortfolioDTO ----------------
     @Mapping(target = "studentId", source = "entity.student.id")
     PortfolioDTO toDTO(PortfolioEnt entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "student", ignore = true)
+    void updateEntityFromDto(AddPortfolioReq dto, @MappingTarget PortfolioEnt entity);
 }

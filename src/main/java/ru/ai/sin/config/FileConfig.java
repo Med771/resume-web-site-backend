@@ -2,7 +2,6 @@ package ru.ai.sin.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
@@ -15,7 +14,15 @@ public class FileConfig {
     @Value("${app.file.path}")
     private String filePath;
 
+    @Getter
+    @Value("${app.file.max-size-bytes:5242880}")
+    private long maxUploadSizeBytes;
+
     public Path getFilePath() {
+        if (maxUploadSizeBytes <= 0) {
+            throw new IllegalStateException("app.file.max-size-bytes must be > 0");
+        }
+
         Path path = Paths.get(filePath);
 
         if (!Files.exists(path)) {
@@ -24,10 +31,11 @@ public class FileConfig {
 
                 System.out.println("Директория создана: " + path.toAbsolutePath());
             } catch (IOException e) {
-                System.err.println("Ошибка при создании директории: " + e.getMessage());
+                throw new IllegalStateException("Ошибка при создании директории: " + path.toAbsolutePath(), e);
             }
         }
 
         return path;
     }
+
 }

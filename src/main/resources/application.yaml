@@ -38,6 +38,7 @@ app:
 
   file:
     path: file
+    max-size-bytes: 5242880
 
 management:
   endpoints:
@@ -51,10 +52,17 @@ management:
 swagger:
   title: "Resume API"
   description: "Документация API"
-  version: "0.0.1"
+  version: "0.1.0"
 
   servers:
     - url: "http://localhost:8080"
       description: "Local Dev Server"
     - url: "https://api.example.com"
       description: "Production Server"
+
+springdoc:
+  swagger-ui:
+    enabled: true
+
+  api-docs:
+    enabled: true

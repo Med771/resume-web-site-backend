@@ -7,6 +7,3 @@ CREATE TABLE specialities
     updated_at TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_specialities PRIMARY KEY (id)
 );
-
-ALTER TABLE specialities
-    ADD CONSTRAINT uc_specialities_name UNIQUE (name);

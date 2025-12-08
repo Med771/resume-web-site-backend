@@ -11,9 +11,3 @@ CREATE TABLE experiences
     updated_at      TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_experiences PRIMARY KEY (id)
 );
-
-ALTER TABLE experiences
-    ADD CONSTRAINT FK_EXPERIENCES_ON_COMPANY FOREIGN KEY (company_id) REFERENCES companies (id);
-
-ALTER TABLE experiences
-    ADD CONSTRAINT FK_EXPERIENCES_ON_STUDENT FOREIGN KEY (student_id) REFERENCES students (id);

@@ -16,7 +16,7 @@ public interface RecruiterService {
 
     List<RecruiterDTO> getAll(
             int pageRecruiterNumber, int pageRecruiterSize);
-    List<RecruiterDTO> getAllByName(
+    List<RecruiterDTO> getAllByCompanyName(
             int pageRecruiterNumber, int pageRecruiterSize,
             GetRecruiterNameReq getRecruiterNameReq);
 

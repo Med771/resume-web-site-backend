@@ -1,19 +1,19 @@
 package ru.ai.sin.service;
 
-import jakarta.transaction.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.skill.AddSkillReq;
 import ru.ai.sin.dto.skill.SetSkillNameReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 
 import ru.ai.sin.entity.SkillEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.repository.SkillRepo;
 import ru.ai.sin.service.impl.SkillService;
@@ -30,13 +30,15 @@ public class SkillServImpl implements SkillService {
 
     private final SkillMapper skillMapper;
 
+    private SkillEnt getActiveSkillOrThrow(long id) {
+        return skillRepo.findByIdAndIsActiveTrue(id).orElseThrow(
+                () -> new NotFoundException("Failed find by id")
+        );
+    }
+
     @Override
     public SkillDTO getById(long id) {
-        SkillEnt skillEnt = skillRepo.findByIdAndIsActiveTrue(id).orElseThrow(
-                () -> new BadRequestException("Failed find by id")
-        );
-
-        return skillMapper.toDTO(skillEnt);
+        return skillMapper.toDTO(getActiveSkillOrThrow(id));
     }
 
     @Override
@@ -72,9 +74,7 @@ public class SkillServImpl implements SkillService {
     @Override
     @Transactional
     public SkillDTO setNameById(long id, SetSkillNameReq setSkillNameReq) {
-        SkillEnt skillEnt = skillRepo.findByIdAndIsActiveTrue(id).orElseThrow(
-                () -> new BadRequestException("Failed find by id")
-        );
+        SkillEnt skillEnt = getActiveSkillOrThrow(id);
 
         skillEnt.setName(setSkillNameReq.name());
 
@@ -86,13 +86,9 @@ public class SkillServImpl implements SkillService {
     @Override
     @Transactional
     public SkillDTO deleteById(long id) {
-        SkillEnt skillEnt = skillRepo.findByIdAndIsActiveTrue(id).orElseThrow(
-                () -> new BadRequestException("Failed find by id")
-        );
+        SkillEnt skillEnt = getActiveSkillOrThrow(id);
 
         skillEnt.setIsActive(false);
-
-        skillEnt = skillRepo.save(skillEnt);
 
         return skillMapper.toDTO(skillEnt);
     }

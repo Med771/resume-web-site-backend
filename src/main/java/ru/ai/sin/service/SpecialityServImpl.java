@@ -13,7 +13,7 @@ import ru.ai.sin.dto.speciality.SetSpecialitySkillsReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
 import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
-import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.mapper.SpecialityMapper;
 import ru.ai.sin.repository.SkillRepo;
@@ -34,19 +34,29 @@ public class SpecialityServImpl implements SpecialityService {
     private final SpecialityMapper specialityMapper;
     private final SkillMapper skillMapper;
 
+    private SpecialityEnt getActiveSpecialityOrThrow(long specialityId) {
+        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(specialityId);
+
+        if (specialityEnt == null) {
+            throw new NotFoundException("Failed to find special by id " + specialityId);
+        }
+
+        return specialityEnt;
+    }
+
+    public SpecialityDTO mapToDto(SpecialityEnt specialityEnt) {
+        List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream().map(skillMapper::toDTO).toList();
+
+        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+    }
+
     @Override
     public SpecialityDTO getById(
             long id
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(id);
+        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
 
-        if (specialityEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
-
-        List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+        return mapToDto(specialityEnt);
     }
 
     @Override
@@ -58,13 +68,7 @@ public class SpecialityServImpl implements SpecialityService {
         List<SpecialityEnt> list = specialityRepo.findAllByIsActiveTrue(pageable).getContent();
 
         return list.stream()
-                .map(specialityEnt -> {
-                    List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream()
-                            .map(skillMapper::toDTO)
-                            .toList();
-
-                    return specialityMapper.toDTO(specialityEnt, skillDTOs);
-                }).toList();
+                .map(this::mapToDto).toList();
     }
 
     @Override
@@ -72,10 +76,9 @@ public class SpecialityServImpl implements SpecialityService {
     public SpecialityDTO create(
             AddSpecialityReq addSpecialityReq
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByNameIgnoreCaseAndIsActiveTrue(addSpecialityReq.name());
+        SpecialityEnt specialityEnt = specialityRepo.findByName(addSpecialityReq.name());
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addSpecialityReq.skillsIds());
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
 
         if  (specialityEnt == null) {
             specialityEnt = specialityMapper.toEntity(addSpecialityReq);
@@ -83,14 +86,13 @@ public class SpecialityServImpl implements SpecialityService {
         else {
             specialityEnt.setName(addSpecialityReq.name());
             specialityEnt.setIsActive(true);
-
         }
 
         specialityEnt.setSkills(skillEntSet);
 
         specialityEnt = specialityRepo.save(specialityEnt);
 
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+        return mapToDto(specialityEnt);
     }
 
     @Override
@@ -99,19 +101,11 @@ public class SpecialityServImpl implements SpecialityService {
             long id,
             SetSpecialityNameReq setSpecialityNameReq
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(id);
-
-        if (specialityEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
 
         specialityEnt.setName(setSpecialityNameReq.name());
 
-        specialityRepo.save(specialityEnt);
-
-        List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+        return mapToDto(specialityEnt);
     }
 
     @Override
@@ -120,20 +114,13 @@ public class SpecialityServImpl implements SpecialityService {
             long id,
             SetSpecialitySkillsReq setSpecialitySkillsReq
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(id);
-
-        if (specialityEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(setSpecialitySkillsReq.skillsIds());
-        List<SkillDTO> skillDTOs = skillEntSet.stream().map(skillMapper::toDTO).toList();
 
         specialityEnt.setSkills(skillEntSet);
 
-        specialityRepo.save(specialityEnt);
-
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+        return mapToDto(specialityEnt);
     }
 
     @Override
@@ -141,18 +128,10 @@ public class SpecialityServImpl implements SpecialityService {
     public SpecialityDTO deleteById(
             long id
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(id);
-
-        if (specialityEnt == null) {
-            throw new BadRequestException("Failed find by id");
-        }
+        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
 
         specialityEnt.setIsActive(false);
 
-        specialityRepo.save(specialityEnt);
-
-        List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
+        return mapToDto(specialityEnt);
     }
 }

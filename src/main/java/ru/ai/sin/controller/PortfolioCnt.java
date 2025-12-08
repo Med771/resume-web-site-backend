@@ -1,8 +1,11 @@
 package ru.ai.sin.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.portfolio.AddPortfolioReq;
 import ru.ai.sin.dto.portfolio.PortfolioDTO;
@@ -13,14 +16,15 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping(path = "/portfolio")
 public class PortfolioCnt {
 
     private final PortfolioService portfolioService;
 
-    @GetMapping(path = "/getById")
+    @GetMapping(path = "/getById/{id}")
     public ResponseEntity<PortfolioDTO> getById(
-            @RequestParam long id
+            @PathVariable long id
     ) {
         PortfolioDTO portfolioDTO = portfolioService.getById(id);
 
@@ -29,8 +33,8 @@ public class PortfolioCnt {
 
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<PortfolioDTO>> getAll(
-            @RequestParam(defaultValue = "0") int pagePortfolioNumber,
-            @RequestParam(defaultValue = "10") int pagePortfolioSize
+            @Min(0) @RequestParam(defaultValue = "0") int pagePortfolioNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pagePortfolioSize
     ) {
         List<PortfolioDTO> portfolioDTOs = portfolioService.getAll(
                 pagePortfolioNumber, pagePortfolioSize);
@@ -38,11 +42,12 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTOs);
     }
 
-    @GetMapping(path = "getAllByStudentId")
+    @GetMapping(path = "getAllByStudentId/{studentId}")
     public ResponseEntity<List<PortfolioDTO>> getAllByStudentId(
-            @RequestParam(defaultValue = "0") int pagePortfolioNumber,
-            @RequestParam(defaultValue = "10") int pagePortfolioSize,
-            @RequestParam UUID studentId
+            @PathVariable UUID studentId,
+
+            @Min(0) @RequestParam(defaultValue = "0") int pagePortfolioNumber,
+            @Min(1) @RequestParam(defaultValue = "10") int pagePortfolioSize
     ) {
         List<PortfolioDTO> portfolioDTOs = portfolioService.getAllByStudentId(
                 studentId,
@@ -53,26 +58,27 @@ public class PortfolioCnt {
 
     @PostMapping(path = "/create")
     public ResponseEntity<PortfolioDTO> create(
-            @RequestBody AddPortfolioReq portfolioReq
+            @Valid @RequestBody AddPortfolioReq portfolioReq
     ) {
         PortfolioDTO portfolioDTO = portfolioService.create(portfolioReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(portfolioDTO);
     }
 
-    @PutMapping(path = "/update")
+    @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<PortfolioDTO> update(
-            @RequestParam long id,
-            @RequestBody AddPortfolioReq portfolioReq
+            @PathVariable long id,
+
+            @Valid @RequestBody AddPortfolioReq portfolioReq
     ) {
         PortfolioDTO portfolioDTO = portfolioService.update(id, portfolioReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTO);
     }
 
-    @DeleteMapping(path = "/deleteById")
+    @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<PortfolioDTO> deleteById(
-            @RequestParam long id
+            @PathVariable long id
     ) {
         PortfolioDTO portfolioDTO = portfolioService.deleteById(id);
 
