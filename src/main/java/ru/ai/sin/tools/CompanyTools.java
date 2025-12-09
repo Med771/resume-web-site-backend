@@ -29,18 +29,20 @@ public class CompanyTools {
     private final ExperienceTools experienceTools;
 
     @Transactional(readOnly = true)
-    public CompanyEnt getCompany(long id) {
+    public CompanyEnt getCompanyOrThrow(long id) {
         return companyRepo.findWithExperiencesById(id).orElseThrow(
                 () -> new NotFoundException("Failed to find company with id " + id)
         );
     }
 
+    @Transactional
     public CompanyDTO mapToDTO(CompanyEnt companyEnt) {
         List<Long> experienceIds = experienceTools.getExperienceIdsByCompanyId(companyEnt.getId());
 
         return companyMapper.toDTO(companyEnt, experienceIds);
     }
 
+    @Transactional
     public List<CompanyDTO> mapToDTOs(List<CompanyEnt> companyEntList) {
         Set<Long> companyIds = companyEntList.stream().map(CompanyEnt::getId).collect(Collectors.toSet());
         Map<Long, List<Long>> experiencesIds = experienceTools.getExperienceIdsByExperienceId(companyIds);

@@ -33,7 +33,7 @@ public class CompanyServImpl implements CompanyService {
     @Override
     @Transactional
     public CompanyDTO getById(long id) {
-        return companyTools.mapToDTO(companyTools.getCompany(id));
+        return companyTools.mapToDTO(companyTools.getCompanyOrThrow(id));
     }
 
     @Override
@@ -75,7 +75,7 @@ public class CompanyServImpl implements CompanyService {
             long id,
             GetCompanyNameReq getCompanyNameReq
     ) {
-        CompanyEnt companyEnt = companyTools.getCompany(id);
+        CompanyEnt companyEnt = companyTools.getCompanyOrThrow(id);
 
         companyEnt.setName(getCompanyNameReq.name());
 
@@ -85,7 +85,7 @@ public class CompanyServImpl implements CompanyService {
     @Override
     @Transactional
     public CompanyDTO deleteById(long id) {
-        CompanyEnt companyEnt = companyTools.getCompany(id);
+        CompanyEnt companyEnt = companyTools.getCompanyOrThrow(id);
 
         try {
             companyRepo.delete(companyEnt);
