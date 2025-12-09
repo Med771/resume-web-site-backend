@@ -2,21 +2,27 @@ package ru.ai.sin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.ai.sin.dto.experience.*;
 import ru.ai.sin.entity.ExperienceEnt;
-import ru.ai.sin.entity.StudentEnt;
 
-import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.exception.models.BadRequestException;
+
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
+
 import ru.ai.sin.repository.ExperienceRepo;
-import ru.ai.sin.repository.StudentRepo;
+
 import ru.ai.sin.service.impl.ExperienceService;
+
 import ru.ai.sin.service.tools.CompanyTools;
+import ru.ai.sin.service.tools.ExperienceTools;
+import ru.ai.sin.service.tools.StudentTools;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,65 +34,42 @@ import java.util.UUID;
 public class ExperienceServImpl implements ExperienceService {
 
     private final ExperienceRepo experienceRepo;
-    private final StudentRepo studentRepo;
 
     private final ExperienceMapper experienceMapper;
     private final CompanyMapper companyMapper;
 
+    private final ExperienceTools experienceTools;
     private final CompanyTools companyTools;
-
-    private ExperienceEnt getActiveExperienceOrThrow(long id) {
-        ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
-
-        if  (experienceEnt == null) {
-            throw new NotFoundException("Failed to find experience by id " + id);
-        }
-
-        return experienceEnt;
-    }
-
-    private ExperienceDTO mapToDTO(ExperienceEnt experienceEnt) {
-        ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
-
-        return experienceMapper.toDTO(experienceEnt, experienceRes);
-    }
+    private final StudentTools studentTools;
 
     private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
         experienceEnt.setCompany(companyTools.getCompanyOrThrow(companyId));
     }
 
     private void updateActiveStudentOrThrow(UUID studentId, ExperienceEnt experienceEnt) {
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(studentId);
-
-        if (studentEnt == null) {
-            throw new NotFoundException("Failed to find student by id " + studentId);
-        }
-
-        experienceEnt.setStudent(studentEnt);
+        experienceEnt.setStudent(studentTools.getStudentOrThrow(studentId));
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ExperienceDTO getById(
-            long id
-    ) {
-        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
-
-        return mapToDTO(experienceEnt);
+    public ExperienceDTO getById(long id) {
+        return experienceTools.mapToDTO(experienceTools.getExperienceOrThrow(id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public GetAboutCompanyRes getAboutCompanyById(
             long id,
-            int pageExperienceNumber, int pageExperienceSize
+            int pageExperienceNumber,
+            int pageExperienceSize
     ) {
-        Pageable pageable = PageRequest.of(pageExperienceNumber, pageExperienceSize);
 
-        List<ExperienceEnt> experienceEntList = experienceRepo.findAllByCompanyId(id, pageable).getContent();
+        List<ExperienceEnt> experienceEntList = experienceRepo
+                .findAllByCompanyId(
+                        id,
+                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
+                .getContent();
 
-        List<GetCompanyExperienceRes> getCompanyExperienceRes = experienceEntList.stream()
-                .map(experienceEnt -> new GetCompanyExperienceRes(
+        List<GetAboutCompanyRes.GetCompanyExperienceRes> getCompanyExperienceRes = experienceEntList.stream()
+                .map(experienceEnt -> new GetAboutCompanyRes.GetCompanyExperienceRes(
                         experienceEnt.getStudent().getId(),
                         experienceMapper.toRes(experienceEnt)
                 )).toList();
@@ -95,17 +78,19 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public GetAboutStudentRes getAboutStudentById(
             UUID id,
-            int pageExperienceNumber, int pageExperienceSize
+            int pageExperienceNumber,
+            int pageExperienceSize
     ) {
-        Pageable pageable = PageRequest.of(pageExperienceNumber, pageExperienceSize);
+        List<ExperienceEnt> experienceEntList = experienceRepo
+                .findAllByStudentId(
+                        id,
+                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
+                .getContent();
 
-        List<ExperienceEnt> experienceEntList = experienceRepo.findAllByStudentId(id, pageable).getContent();
-
-        List<GetStudentExperienceRes> getStudentExperienceRes = experienceEntList.stream()
-                .map(experienceEnt -> new GetStudentExperienceRes(
+        List<GetAboutStudentRes.GetStudentExperienceRes> getStudentExperienceRes = experienceEntList.stream()
+                .map(experienceEnt -> new GetAboutStudentRes.GetStudentExperienceRes(
                         companyMapper.toRes(experienceEnt.getCompany()),
                         experienceMapper.toRes(experienceEnt)
                 )).toList();
@@ -115,21 +100,21 @@ public class ExperienceServImpl implements ExperienceService {
 
     @Override
     public List<ExperienceDTO> getAll(
-            int pageExperienceNumber, int pageExperienceSize
+            int pageExperienceNumber,
+            int pageExperienceSize
     ) {
-        Pageable pageable = PageRequest.of(pageExperienceNumber, pageExperienceSize);
-
-        List<ExperienceEnt> experienceEntList = experienceRepo.findAll(pageable).getContent();
+        List<ExperienceEnt> experienceEntList = experienceRepo
+                .findAll(
+                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
+                .getContent();
 
         return experienceEntList.stream()
-                .map(this::mapToDTO).toList();
+                .map(experienceTools::mapToDTO).toList();
     }
 
     @Override
     @Transactional
-    public ExperienceDTO create(
-            AddExperienceReq addExperienceReq
-    ) {
+    public ExperienceDTO create(AddExperienceReq addExperienceReq) {
         ExperienceEnt experienceEnt = experienceMapper.toEntity(addExperienceReq);
 
         updateActiveCompanyOrThrow(addExperienceReq.companyId(), experienceEnt);
@@ -137,7 +122,7 @@ public class ExperienceServImpl implements ExperienceService {
 
         experienceEnt = experienceRepo.save(experienceEnt);
 
-        return mapToDTO(experienceEnt);
+        return experienceTools.mapToDTO(experienceEnt);
     }
 
     @Override
@@ -146,7 +131,7 @@ public class ExperienceServImpl implements ExperienceService {
             long id,
             AddExperienceReq addExperienceReq
     ) {
-        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
+        ExperienceEnt experienceEnt = experienceTools.getExperienceOrThrow(id);
 
         experienceMapper.updateEntityFromDto(addExperienceReq, experienceEnt);
 
@@ -158,20 +143,23 @@ public class ExperienceServImpl implements ExperienceService {
             updateActiveStudentOrThrow(addExperienceReq.studentId(), experienceEnt);
         }
 
-        return mapToDTO(experienceEnt);
+        return experienceTools.mapToDTO(experienceEnt);
     }
 
     @Override
     @Transactional
-    public ExperienceDTO deleteById(
-            long id
-    ) {
-        ExperienceEnt experienceEnt = getActiveExperienceOrThrow(id);
+    public ExperienceDTO deleteById(long id) {
+        ExperienceEnt experienceEnt = experienceTools.getExperienceOrThrow(id);
 
-        experienceRepo.deleteById(id);
+        try {
+            experienceRepo.delete(experienceEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting experience: {}", ex.getMessage());
 
-        ExperienceRes experienceRes = experienceMapper.toRes(experienceEnt);
+            throw new BadRequestException("Error while deleting experience");
+        }
 
-        return experienceMapper.toDTO(experienceEnt, experienceRes);
+        return experienceTools.mapToDTO(experienceEnt);
     }
 }
