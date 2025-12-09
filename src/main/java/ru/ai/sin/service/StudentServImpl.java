@@ -2,27 +2,37 @@ package ru.ai.sin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.dto.student.*;
+
 import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.spec.StudentSpecifications;
+
 import ru.ai.sin.exception.models.BadRequestException;
-import ru.ai.sin.exception.models.NotFoundException;
+
 import ru.ai.sin.helper.FileHelper;
+
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.mapper.StudentMapper;
+
 import ru.ai.sin.repository.SkillRepo;
-import ru.ai.sin.repository.SpecialityRepo;
 import ru.ai.sin.repository.StudentRepo;
+
 import ru.ai.sin.service.impl.StudentService;
+import ru.ai.sin.service.tools.SkillTools;
+import ru.ai.sin.service.tools.SpecialityTools;
+import ru.ai.sin.service.tools.StudentTools;
 
 import java.util.List;
 import java.util.Set;
@@ -34,41 +44,16 @@ import java.util.UUID;
 public class StudentServImpl implements StudentService {
 
     private final StudentRepo studentRepo;
-    private final SpecialityRepo specialityRepo;
     private final SkillRepo skillRepo;
 
     private final StudentMapper studentMapper;
     private final SkillMapper skillMapper;
 
+    private final StudentTools studentTools;
+    private final SpecialityTools specialityTools;
+    private final SkillTools skillTools;
+
     private final FileHelper fileHelper;
-
-    private StudentEnt getActiveStudentOrThrow(UUID id) {
-        StudentEnt studentEnt = studentRepo.findByIdAndIsActiveTrue(id);
-
-        if (studentEnt == null) {
-            throw new NotFoundException("Failed to find student by id " + id);
-        }
-
-        return studentEnt;
-    }
-
-    private SpecialityEnt getActiveSpecialityOrThrow(long id) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(id);
-
-        if (specialityEnt == null) {
-            throw new NotFoundException("Failed to find special by id " + id);
-        }
-
-        return specialityEnt;
-    }
-
-    @Transactional
-    protected StudentDTO mapToDTO(StudentEnt studentEnt) {
-        List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
-                .stream().map(skillMapper::toDTO).toList();
-
-        return studentMapper.toDTO(studentEnt, skillDTOList);
-    }
 
     @Transactional
     protected StudentCardDTO mapToCardDTO(StudentEnt studentEnt) {
@@ -79,32 +64,30 @@ public class StudentServImpl implements StudentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public StudentDTO getById(
-            UUID id
-    ) {
-        StudentEnt studentEnt = getActiveStudentOrThrow(id);
+    public StudentDTO getById(UUID id) {
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
-        return mapToDTO(studentEnt);
+        return studentTools.mapToDTO(studentEnt);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<StudentCardDTO> getAllCards(
-            int pageStudentNumber, int pageStudentSize
+            int pageStudentNumber,
+            int pageStudentSize
     ) {
-        Pageable pageable = PageRequest.of(pageStudentNumber, pageStudentSize);
-
-        List<StudentEnt> studentEntList = studentRepo.findAllByIsActiveTrue(pageable).getContent();
+        List<StudentEnt> studentEntList = studentRepo
+                .findAll(
+                        PageRequest.of(pageStudentNumber, pageStudentSize))
+                .getContent();
 
         return studentEntList.stream()
                 .map(this::mapToCardDTO).toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<StudentCardDTO> getAllByFilters(
-            int pageStudentNumber, int pageStudentSize,
+            int pageStudentNumber,
+            int pageStudentSize,
             GetStudentFilterReq getStudentFilterReq
     ) {
         Specification<StudentEnt> spec = StudentSpecifications
@@ -115,37 +98,41 @@ public class StudentServImpl implements StudentService {
                 .and(StudentSpecifications.hasSkills(getStudentFilterReq.skillsIds()))
                 .and(StudentSpecifications.hasSpecialities(getStudentFilterReq.specialitiesIds()));
 
-        Pageable pageable = PageRequest.of(pageStudentNumber, pageStudentSize);
-
-        return studentRepo.findAll(spec, pageable).stream()
+        return studentRepo
+                .findAll(
+                        spec,
+                        PageRequest.of(pageStudentNumber, pageStudentSize))
+                .stream()
                 .map(this::mapToCardDTO).toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<StudentDTO> getAll(
-            int pageStudentNumber, int pageStudentSize
+            int pageStudentNumber,
+            int pageStudentSize
     ) {
-        Pageable pageable = PageRequest.of(pageStudentNumber, pageStudentSize);
-
-        List<StudentEnt> studentEntList = studentRepo.findAllByIsActiveTrue(pageable).getContent();
+        List<StudentEnt> studentEntList = studentRepo
+                .findAll(
+                        PageRequest.of(pageStudentNumber, pageStudentSize))
+                .getContent();
 
         return studentEntList.stream()
-                .map(this::mapToDTO).toList();
+                .map(studentTools::mapToDTO).toList();
     }
 
     @Override
     @Transactional
     public StudentDTO create(
             MultipartFile multipartFile,
-            AddStudentReq addStudentReq) {
+            AddStudentReq addStudentReq
+    ) {
         fileHelper.validateMultipart(multipartFile);
 
         StudentEnt studentEnt = studentMapper.toEntity(addStudentReq);
 
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(addStudentReq.specialityId());
+        SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(addStudentReq.specialityId());
 
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addStudentReq.skillsIds());
+        Set<SkillEnt> skillEntSet = skillTools.getSkillsByIds(addStudentReq.skillsIds());
 
         studentEnt.setSpeciality(specialityEnt);
         studentEnt.setSkills(skillEntSet);
@@ -157,11 +144,20 @@ public class StudentServImpl implements StudentService {
         if (filePath == null) {
             throw new BadRequestException("Failed to save file");
         }
+
         studentEnt.setImagePath(filePath);
 
-        studentRepo.save(studentEnt);
+        try {
+            studentEnt = studentRepo.save(studentEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Student already exists: {}, {}", addStudentReq.email(), addStudentReq.telegramUsername());
 
-        return mapToDTO(studentEnt);
+            throw new BadRequestException("Student already exists: %s, %s"
+                    .formatted(addStudentReq.email(), addStudentReq.telegramUsername()));
+        }
+
+        return studentTools.mapToDTO(studentEnt);
     }
 
     @Override
@@ -173,9 +169,9 @@ public class StudentServImpl implements StudentService {
     ) {
         fileHelper.validateMultipart(multipartFile);
         
-        StudentEnt studentEnt = getActiveStudentOrThrow(id);
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(updateStudentReq.specialityId());
+        SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(updateStudentReq.specialityId());
 
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(updateStudentReq.skillsIds());
 
@@ -191,18 +187,23 @@ public class StudentServImpl implements StudentService {
         studentEnt.setSkills(skillEntSet);
         studentEnt.setImagePath(filePath);
 
-        return mapToDTO(studentEnt);
+        return studentTools.mapToDTO(studentEnt);
     }
 
     @Override
     @Transactional
-    public StudentDTO deleteById(
-            UUID id
-    ) {
-        StudentEnt studentEnt = getActiveStudentOrThrow(id);
+    public StudentDTO deleteById(UUID id) {
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
-        studentEnt.setIsActive(false);
+        try {
+            studentRepo.delete(studentEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting student: {}", ex.getMessage());
 
-        return mapToDTO(studentEnt);
+            throw new BadRequestException("Error while deleting student");
+        }
+
+        return studentTools.mapToDTO(studentEnt);
     }
 }

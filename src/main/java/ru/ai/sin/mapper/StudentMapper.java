@@ -1,11 +1,14 @@
 package ru.ai.sin.mapper;
 
 import org.mapstruct.*;
+
 import ru.ai.sin.dto.skill.SkillDTO;
+
 import ru.ai.sin.dto.student.AddStudentReq;
 import ru.ai.sin.dto.student.StudentCardDTO;
 import ru.ai.sin.dto.student.StudentDTO;
 import ru.ai.sin.dto.student.UpdateStudentReq;
+
 import ru.ai.sin.entity.StudentEnt;
 
 import java.util.List;
@@ -13,9 +16,8 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface StudentMapper {
 
-    // ----------------  -> StudentEnt ----------------
+    // ---------------- AddStudentReq -> StudentEnt ----------------
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "imagePath", ignore = true)
     @Mapping(target = "speciality",  ignore = true)
@@ -38,10 +40,9 @@ public interface StudentMapper {
     @Mapping(source = "student.speciality.name", target = "speciality")
     StudentCardDTO toCardDTO(StudentEnt student, List<SkillDTO> skills);
 
-    // ---------------- StudentEnt -> StudentEnt ----------------
+    // ---------------- UpdateStudentReq -> StudentEnt ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "student.userInformation.passwordHash", ignore = true)
     @Mapping(target = "student.contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
