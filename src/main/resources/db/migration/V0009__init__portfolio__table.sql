@@ -4,8 +4,7 @@ CREATE TABLE portfolio
     name            VARCHAR(128)                            NOT NULL,
     link            VARCHAR(255)                            NOT NULL,
     additional_info TEXT,
-    is_active       BOOLEAN DEFAULT TRUE                    NOT NULL,
-    student_id      UUID,
+    student_id      UUID                                    NOT NULL,
     created_at      TIMESTAMP WITHOUT TIME ZONE,
     updated_at      TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_portfolio PRIMARY KEY (id)
