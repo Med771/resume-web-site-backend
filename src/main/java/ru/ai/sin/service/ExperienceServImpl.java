@@ -7,17 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.experience.*;
-import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.entity.StudentEnt;
 
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
-import ru.ai.sin.repository.CompanyRepo;
 import ru.ai.sin.repository.ExperienceRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.ExperienceService;
+import ru.ai.sin.tools.CompanyTools;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,11 +28,12 @@ import java.util.UUID;
 public class ExperienceServImpl implements ExperienceService {
 
     private final ExperienceRepo experienceRepo;
-    private final CompanyRepo companyRepo;
     private final StudentRepo studentRepo;
 
     private final ExperienceMapper experienceMapper;
     private final CompanyMapper companyMapper;
+
+    private final CompanyTools companyTools;
 
     private ExperienceEnt getActiveExperienceOrThrow(long id) {
         ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
@@ -52,13 +52,7 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
-        CompanyEnt companyEnt = companyRepo.findByIdAndIsActiveTrue(companyId);
-
-        if (companyEnt == null) {
-            throw new NotFoundException("Failed to find company by id " + companyId);
-        }
-
-        experienceEnt.setCompany(companyEnt);
+        experienceEnt.setCompany(companyTools.getCompany(companyId));
     }
 
     private void updateActiveStudentOrThrow(UUID studentId, ExperienceEnt experienceEnt) {

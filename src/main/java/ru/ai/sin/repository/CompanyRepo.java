@@ -2,16 +2,25 @@ package ru.ai.sin.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.stereotype.Repository;
+
 import ru.ai.sin.entity.CompanyEnt;
+
+import java.util.Optional;
 
 @Repository
 public interface CompanyRepo extends JpaRepository<CompanyEnt, Long> {
 
-    CompanyEnt findByIdAndIsActiveTrue(Long id);
+    @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
+    Optional<CompanyEnt> findWithExperiencesById(Long id);
 
-    Page<CompanyEnt> findAllByNameIgnoreCaseAndIsActiveTrue(String name, Pageable pageable);
+    @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
+    Page<CompanyEnt> findAllByNameIgnoreCase(String name, Pageable pageable);
 
-    Page<CompanyEnt> findAllByIsActiveTrue(Pageable pageable);
+    @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
+    Page<CompanyEnt> findAllWithExperiences(Pageable pageable);
 }
