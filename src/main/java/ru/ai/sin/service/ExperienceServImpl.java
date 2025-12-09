@@ -52,7 +52,7 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
-        experienceEnt.setCompany(companyTools.getCompany(companyId));
+        experienceEnt.setCompany(companyTools.getCompanyOrThrow(companyId));
     }
 
     private void updateActiveStudentOrThrow(UUID studentId, ExperienceEnt experienceEnt) {
