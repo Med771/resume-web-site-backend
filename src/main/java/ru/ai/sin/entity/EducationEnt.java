@@ -39,16 +39,9 @@ public class EducationEnt {
     @Column(name = "web_url", nullable = false)
     private String webUrl;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
-    private Boolean isActive = true;
-
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 
     @OneToMany(mappedBy = "education", fetch = FetchType.LAZY)
     private Set<InstitutionEnt> institutions = new HashSet<>();
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "education_id")
-    private Set<SkillEnt> skills = new HashSet<>();
 }

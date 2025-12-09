@@ -1,11 +1,7 @@
 package ru.ai.sin.dto.education;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import ru.ai.sin.dto.skill.SkillDTO;
-
-import java.util.List;
 
 public record EducationDTO(
         long id,
@@ -20,8 +16,5 @@ public record EducationDTO(
 
         @NotBlank
         @Size(min = 1, max = 255, message = "Web Url must be less than 2000 characters")
-        String webUrl,
-
-        @NotNull
-        List<SkillDTO> skillsIds) {
+        String webUrl) {
 }
