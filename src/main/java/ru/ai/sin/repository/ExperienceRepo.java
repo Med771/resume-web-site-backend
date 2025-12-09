@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import ru.ai.sin.entity.ExperienceEnt;
 
@@ -19,7 +20,7 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
 
     List<ExperienceEnt> findAllByCompanyId(Long companyId);
 
-    Set<ExperienceEnt> findAllByCompanyIdIn(Set<Long> ids);
+    Set<ExperienceEnt> findAllByCompanyIdIn(Set<Long> companyIds);
 
     @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<ExperienceEnt> findAllByCompanyId(Long companyId, Pageable pageable);
@@ -27,6 +28,7 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
     @EntityGraph(attributePaths = {"company"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<ExperienceEnt> findAllByStudentId(UUID studentId, Pageable pageable);
 
+    @NonNull
     @EntityGraph(attributePaths = {"company", "student"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<ExperienceEnt> findAll(Pageable pageable);
+    Page<ExperienceEnt> findAll(@NonNull Pageable pageable);
 }

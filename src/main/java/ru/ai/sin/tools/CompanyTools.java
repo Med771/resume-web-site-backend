@@ -8,13 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.company.CompanyDTO;
 
 import ru.ai.sin.entity.CompanyEnt;
-import ru.ai.sin.entity.ExperienceEnt;
 
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.repository.CompanyRepo;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +26,8 @@ public class CompanyTools {
 
     private final CompanyMapper companyMapper;
 
+    private final ExperienceTools experienceTools;
+
     @Transactional(readOnly = true)
     public CompanyEnt getCompany(long id) {
         return companyRepo.findWithExperiencesById(id).orElseThrow(
@@ -32,19 +36,20 @@ public class CompanyTools {
     }
 
     public CompanyDTO mapToDTO(CompanyEnt companyEnt) {
-        List<Long> experienceIds = companyEnt.getExperiences().stream().map(ExperienceEnt::getId).toList();
+        List<Long> experienceIds = experienceTools.getExperienceIdsByCompanyId(companyEnt.getId());
 
         return companyMapper.toDTO(companyEnt, experienceIds);
     }
 
     public List<CompanyDTO> mapToDTOs(List<CompanyEnt> companyEntList) {
+        Set<Long> companyIds = companyEntList.stream().map(CompanyEnt::getId).collect(Collectors.toSet());
+        Map<Long, List<Long>> experiencesIds = experienceTools.getExperienceIdsByExperienceId(companyIds);
+
         return companyEntList.stream()
                 .map(companyEnt ->
                         companyMapper.toDTO(
                                 companyEnt,
-                                companyEnt.getExperiences().stream()
-                                        .map(ExperienceEnt::getId)
-                                        .toList())
+                                experiencesIds.getOrDefault(companyEnt.getId(), List.of()))
                 )
                 .toList();
     }
