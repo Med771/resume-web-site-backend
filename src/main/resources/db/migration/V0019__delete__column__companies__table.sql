@@ -1,2 +1,0 @@
-ALTER TABLE companies
-    DROP COLUMN is_active;

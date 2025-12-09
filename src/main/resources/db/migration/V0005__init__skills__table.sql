@@ -5,8 +5,7 @@ CREATE TABLE skills
     is_active     BOOLEAN DEFAULT TRUE                    NOT NULL,
     created_at    TIMESTAMP WITHOUT TIME ZONE,
     updated_at    TIMESTAMP WITHOUT TIME ZONE,
-    category_id   BIGINT,
-    education_id  BIGINT,
+    student_id UUID,
     speciality_id BIGINT,
     CONSTRAINT pk_skills PRIMARY KEY (id)
 );

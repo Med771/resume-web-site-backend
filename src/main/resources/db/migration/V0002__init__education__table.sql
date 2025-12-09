@@ -4,7 +4,6 @@ CREATE TABLE education
     institution     VARCHAR(255)                            NOT NULL,
     additional_info TEXT,
     web_url         VARCHAR(255)                            NOT NULL,
-    is_active       BOOLEAN DEFAULT TRUE                    NOT NULL,
     created_at      TIMESTAMP WITHOUT TIME ZONE,
     updated_at      TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_education PRIMARY KEY (id)
