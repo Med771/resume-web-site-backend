@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import org.springframework.lang.NonNull;
+
 import org.springframework.stereotype.Repository;
 
 import ru.ai.sin.entity.CompanyEnt;
@@ -21,6 +23,7 @@ public interface CompanyRepo extends JpaRepository<CompanyEnt, Long> {
     @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<CompanyEnt> findAllByNameIgnoreCase(String name, Pageable pageable);
 
+    @NonNull
     @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<CompanyEnt> findAllWithExperiences(Pageable pageable);
+    Page<CompanyEnt> findAll(@NonNull Pageable pageable);
 }

@@ -42,7 +42,7 @@ public class CompanyServImpl implements CompanyService {
             int pageCompanySize
     ) {
         List<CompanyEnt> companyEntList = companyRepo
-                .findAllWithExperiences(
+                .findAll(
                         PageRequest.of(pageCompanyNumber, pageCompanySize))
                 .getContent();
 
