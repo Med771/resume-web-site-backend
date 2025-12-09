@@ -1,5 +1,9 @@
 ALTER TABLE experiences
-    ADD CONSTRAINT FK_EXPERIENCES_ON_COMPANY FOREIGN KEY (company_id) REFERENCES companies (id);
+    ADD CONSTRAINT FK_EXPERIENCES_ON_COMPANY
+        FOREIGN KEY (company_id)
+            REFERENCES companies (id);
 
 ALTER TABLE experiences
-    ADD CONSTRAINT FK_EXPERIENCES_ON_STUDENT FOREIGN KEY (student_id) REFERENCES students (id);
+    ADD CONSTRAINT FK_EXPERIENCES_ON_STUDENT
+        FOREIGN KEY (student_id)
+            REFERENCES students (id);
