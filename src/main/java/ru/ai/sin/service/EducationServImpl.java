@@ -20,7 +20,7 @@ import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.repository.EducationRepo;
 
 import ru.ai.sin.service.impl.EducationService;
-import ru.ai.sin.tools.EducationTools;
+import ru.ai.sin.service.tools.EducationTools;
 
 import java.util.List;
 

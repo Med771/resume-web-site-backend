@@ -17,7 +17,7 @@ import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.repository.SkillRepo;
 import ru.ai.sin.service.impl.SkillService;
-import ru.ai.sin.tools.SkillTools;
+import ru.ai.sin.service.tools.SkillTools;
 
 import java.util.List;
 

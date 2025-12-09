@@ -16,7 +16,7 @@ import ru.ai.sin.mapper.ExperienceMapper;
 import ru.ai.sin.repository.ExperienceRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.ExperienceService;
-import ru.ai.sin.tools.CompanyTools;
+import ru.ai.sin.service.tools.CompanyTools;
 
 import java.util.List;
 import java.util.Objects;

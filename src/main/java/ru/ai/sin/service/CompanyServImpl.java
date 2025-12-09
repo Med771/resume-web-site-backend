@@ -17,7 +17,7 @@ import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.repository.CompanyRepo;
 import ru.ai.sin.service.impl.CompanyService;
 
-import ru.ai.sin.tools.CompanyTools;
+import ru.ai.sin.service.tools.CompanyTools;
 
 import java.util.List;
 

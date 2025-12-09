@@ -1,4 +1,4 @@
-package ru.ai.sin.tools;
+package ru.ai.sin.service.tools;
 
 import lombok.RequiredArgsConstructor;
 
