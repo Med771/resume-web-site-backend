@@ -5,11 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import ru.ai.sin.entity.SkillEnt;
 
+import java.util.Collection;
 import java.util.Set;
-import java.util.List;
 
 @Repository
 public interface SkillRepo extends JpaRepository<SkillEnt, Long> {
 
-    Set<SkillEnt> findAllByIdIn(List<Long> ids);
+    Set<SkillEnt> findAllByIdIn(Collection<Long> ids);
 }
