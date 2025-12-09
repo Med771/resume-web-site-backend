@@ -90,7 +90,6 @@ public class EducationServImpl implements EducationService {
             throw new BadRequestException("Error while deleting education");
         }
 
-
         return educationMapper.toDTO(educationEnt);
     }
 }

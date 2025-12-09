@@ -18,7 +18,7 @@ public class EducationTools {
     @Transactional(readOnly = true)
     public EducationEnt getEducationOrThrow(long id) {
         return educationRepo.findById(id).orElseThrow(
-                () -> new NotFoundException("No active education or no active education")
+                () -> new NotFoundException("Failed to find education with id" + id)
         );
     }
 }

@@ -1,5 +1,5 @@
 ALTER TABLE skills
-    ADD CONSTRAINT UC_SKILLS_NAME UNIQUE (name);
+    ADD CONSTRAINT uc_skills_name UNIQUE (name);
 
 ALTER TABLE skills
     ADD CONSTRAINT FK_SKILLS_ON_SPECIALITY FOREIGN KEY (speciality_id) REFERENCES specialities (id);
