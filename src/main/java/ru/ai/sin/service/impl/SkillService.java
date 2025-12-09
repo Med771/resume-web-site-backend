@@ -1,7 +1,6 @@
 package ru.ai.sin.service.impl;
 
 import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SetSkillNameReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 
 import java.util.List;
@@ -13,7 +12,7 @@ public interface SkillService {
             long id);
 
     List<SkillDTO> getAll(
-            int page, int size);
+            int pageSkillsNumber, int pageSkillsSize);
 
     // ---------- POST METHODS ----------
     SkillDTO create(
@@ -21,7 +20,7 @@ public interface SkillService {
 
     SkillDTO setNameById(
             long id,
-            SetSkillNameReq setSkillNameReq);
+            AddSkillReq addSkillReq);
 
     // ---------- DELETE METHODS ----------
     SkillDTO deleteById(
