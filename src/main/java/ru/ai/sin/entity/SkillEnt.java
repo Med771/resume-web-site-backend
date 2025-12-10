@@ -8,11 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import ru.ai.sin.entity.join.SpecialitySkillEnt;
 import ru.ai.sin.entity.model.TimeStamped;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "skills")
@@ -32,9 +28,6 @@ public class SkillEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
-
-    @OneToMany(mappedBy = "skill", fetch = FetchType.LAZY)
-    Set<SpecialitySkillEnt> specialities = new HashSet<>();
 
     public SkillEnt(String name) {
         this.name = name;

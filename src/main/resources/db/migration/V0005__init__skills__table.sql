@@ -5,6 +5,7 @@ CREATE TABLE skills
     created_at TIMESTAMP WITHOUT TIME ZONE,
     updated_at TIMESTAMP WITHOUT TIME ZONE,
     student_id UUID,
+    speciality_id BIGINT,
     CONSTRAINT pk_skills PRIMARY KEY (id)
 );
 

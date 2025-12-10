@@ -1,24 +1,28 @@
 package ru.ai.sin.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.ai.sin.dto.skill.SkillDTO;
+import org.springframework.transaction.annotation.Transactional;
+
 import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SetSpecialityNameReq;
-import ru.ai.sin.dto.speciality.SetSpecialitySkillsReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
+
 import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
-import ru.ai.sin.exception.models.NotFoundException;
-import ru.ai.sin.mapper.SkillMapper;
+
+import ru.ai.sin.exception.models.BadRequestException;
+
 import ru.ai.sin.mapper.SpecialityMapper;
-import ru.ai.sin.repository.SkillRepo;
+
 import ru.ai.sin.repository.SpecialityRepo;
+
 import ru.ai.sin.service.impl.SpecialityService;
+import ru.ai.sin.service.tools.SkillTools;
+import ru.ai.sin.service.tools.SpecialityTools;
 
 import java.util.List;
 import java.util.Set;
@@ -29,109 +33,82 @@ import java.util.Set;
 public class SpecialityServImpl implements SpecialityService {
 
     private final SpecialityRepo specialityRepo;
-    private final SkillRepo skillRepo;
 
     private final SpecialityMapper specialityMapper;
-    private final SkillMapper skillMapper;
 
-    private SpecialityEnt getActiveSpecialityOrThrow(long specialityId) {
-        SpecialityEnt specialityEnt = specialityRepo.findByIdAndIsActiveTrue(specialityId);
-
-        if (specialityEnt == null) {
-            throw new NotFoundException("Failed to find special by id " + specialityId);
-        }
-
-        return specialityEnt;
-    }
-
-    public SpecialityDTO mapToDto(SpecialityEnt specialityEnt) {
-        List<SkillDTO> skillDTOs = specialityEnt.getSkills().stream().map(skillMapper::toDTO).toList();
-
-        return specialityMapper.toDTO(specialityEnt, skillDTOs);
-    }
+    private final SpecialityTools specialityTools;
+    private final SkillTools skillTools;
 
     @Override
-    public SpecialityDTO getById(
-            long id
-    ) {
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
-
-        return mapToDto(specialityEnt);
+    public SpecialityDTO getById(long id) {
+        return specialityTools.mapToDto(specialityTools.getSpecialityOrThrow(id));
     }
 
     @Override
     public List<SpecialityDTO> getAll(
-            int pageSpecialityNumber, int pageSpecialitySize
+            int pageSpecialityNumber,
+            int pageSpecialitySize
     ) {
-        Pageable pageable = PageRequest.of(pageSpecialityNumber, pageSpecialitySize);
+        List<SpecialityEnt> specialityEntList = specialityRepo
+                .findAll(
+                        PageRequest.of(pageSpecialityNumber, pageSpecialitySize))
+                .getContent();
 
-        List<SpecialityEnt> list = specialityRepo.findAllByIsActiveTrue(pageable).getContent();
-
-        return list.stream()
-                .map(this::mapToDto).toList();
+        return specialityEntList.stream()
+                .map(specialityTools::mapToDto)
+                .toList();
     }
 
     @Override
     @Transactional
-    public SpecialityDTO create(
+    public SpecialityDTO create(AddSpecialityReq addSpecialityReq) {
+        SpecialityEnt specialityEnt = specialityMapper.toEntity(addSpecialityReq);
+        Set<SkillEnt> skillEntSet = skillTools.getSkillsByIds(addSpecialityReq.skillsIds());
+
+        specialityEnt.setSkills(skillEntSet);
+
+        try {
+            specialityEnt = specialityRepo.save(specialityEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Speciality already exists: {}", addSpecialityReq.name());
+
+            throw new BadRequestException("Speciality already exists: " + addSpecialityReq.name());
+        }
+
+        return specialityTools.mapToDto(specialityEnt);
+    }
+
+
+    @Override
+    @Transactional
+    public SpecialityDTO update(
+            long id,
             AddSpecialityReq addSpecialityReq
     ) {
-        SpecialityEnt specialityEnt = specialityRepo.findByName(addSpecialityReq.name());
+        SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(id);
+        Set<SkillEnt> skillEntSet = skillTools.getSkillsByIds(addSpecialityReq.skillsIds());
 
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(addSpecialityReq.skillsIds());
-
-        if  (specialityEnt == null) {
-            specialityEnt = specialityMapper.toEntity(addSpecialityReq);
-        }
-        else {
-            specialityEnt.setName(addSpecialityReq.name());
-            specialityEnt.setIsActive(true);
-        }
-
+        specialityMapper.updateEntityFromDto(addSpecialityReq, specialityEnt);
         specialityEnt.setSkills(skillEntSet);
 
-        specialityEnt = specialityRepo.save(specialityEnt);
-
-        return mapToDto(specialityEnt);
+        return specialityTools.mapToDto(specialityEnt);
     }
 
     @Override
     @Transactional
-    public SpecialityDTO setNameById(
-            long id,
-            SetSpecialityNameReq setSpecialityNameReq
-    ) {
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
+    public SpecialityDTO deleteById(long id) {
+        SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(id);
 
-        specialityEnt.setName(setSpecialityNameReq.name());
+        try {
+            specialityRepo.delete(specialityEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting speciality: {}", ex.getMessage());
 
-        return mapToDto(specialityEnt);
-    }
+            throw new BadRequestException("Error while deleting speciality");
+        }
 
-    @Override
-    @Transactional
-    public SpecialityDTO setSkillsById(
-            long id,
-            SetSpecialitySkillsReq setSpecialitySkillsReq
-    ) {
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
-
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(setSpecialitySkillsReq.skillsIds());
-
-        specialityEnt.setSkills(skillEntSet);
-
-        return mapToDto(specialityEnt);
-    }
-
-    @Override
-    @Transactional
-    public SpecialityDTO deleteById(
-            long id
-    ) {
-        SpecialityEnt specialityEnt = getActiveSpecialityOrThrow(id);
-
-        specialityEnt.setIsActive(false);
-
-        return mapToDto(specialityEnt);
+        return specialityTools.mapToDto(specialityEnt);
     }
 }
