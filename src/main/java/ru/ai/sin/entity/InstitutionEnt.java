@@ -37,10 +37,10 @@ public class InstitutionEnt {
     private TimeStamped timestamps = new TimeStamped();
 
     @ManyToOne
-    @JoinColumn(name = "education_id")
+    @JoinColumn(name = "education_id", nullable = false)
     private EducationEnt education;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "student_id", nullable = false)
     private StudentEnt student;
 }

@@ -43,9 +43,6 @@ public class StudentEnt {
     @Column(unique = true)
     private String imagePath;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
-    private Boolean isActive = true;
-
     @Column(name = "course", length = 16)
     @Convert(converter = CourseEnumConverter.class)
     private CourseEnum course;

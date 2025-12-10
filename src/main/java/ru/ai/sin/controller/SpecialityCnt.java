@@ -11,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SetSpecialityNameReq;
-import ru.ai.sin.dto.speciality.SetSpecialitySkillsReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
 
 import ru.ai.sin.service.impl.SpecialityService;
@@ -55,28 +53,16 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
     }
 
-    @PutMapping(path = "/set/{id}/name")
-    public ResponseEntity<SpecialityDTO> setNameById(
+    @PutMapping(path = "updateById/{id}")
+    public ResponseEntity<SpecialityDTO> update(
             @PathVariable long id,
 
-            @Valid @RequestBody SetSpecialityNameReq setSpecialityNameReq
+            @Valid @RequestBody AddSpecialityReq addSpecialityReq
     ) {
-        SpecialityDTO specialityDTO = specialityService.setNameById(id, setSpecialityNameReq);
+        SpecialityDTO specialityDTO = specialityService.update(id, addSpecialityReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
     }
-
-    @PutMapping(path = "/set/{id}/skills")
-    public ResponseEntity<SpecialityDTO> setSkillsById(
-            @PathVariable long id,
-
-            @Valid @RequestBody SetSpecialitySkillsReq setSpecialitySkillsReq
-    ) {
-        SpecialityDTO specialityDTO = specialityService.setSkillsById(id, setSpecialitySkillsReq);
-
-        return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
-    }
-
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<SpecialityDTO> deleteById(
             @PathVariable long id

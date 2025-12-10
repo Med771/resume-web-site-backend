@@ -1,8 +1,7 @@
 CREATE TABLE recruiters
 (
-    id                UUID                 NOT NULL,
-    company_name      VARCHAR(255)         NOT NULL,
-    is_active         BOOLEAN DEFAULT TRUE NOT NULL,
+    id                UUID         NOT NULL,
+    company_name      VARCHAR(255) NOT NULL,
     first_name        VARCHAR(255),
     last_name         VARCHAR(255),
     username          VARCHAR(64),

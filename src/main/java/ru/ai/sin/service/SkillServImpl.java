@@ -3,23 +3,23 @@ package ru.ai.sin.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SetSkillNameReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 
 import ru.ai.sin.entity.SkillEnt;
 
-import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.repository.SkillRepo;
 import ru.ai.sin.service.impl.SkillService;
+import ru.ai.sin.service.tools.SkillTools;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,55 +30,51 @@ public class SkillServImpl implements SkillService {
 
     private final SkillMapper skillMapper;
 
-    private SkillEnt getActiveSkillOrThrow(long id) {
-        return skillRepo.findByIdAndIsActiveTrue(id).orElseThrow(
-                () -> new NotFoundException("Failed find by id")
-        );
-    }
+    private final SkillTools skillTools;
 
     @Override
     public SkillDTO getById(long id) {
-        return skillMapper.toDTO(getActiveSkillOrThrow(id));
+        return skillMapper.toDTO(skillTools.getSkillOrThrow(id));
     }
 
     @Override
-    public List<SkillDTO> getAll(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-
-        List<SkillEnt> list = skillRepo.findAllByIsActiveTrue(pageRequest).stream().toList();
+    public List<SkillDTO> getAll(
+            int pageSkillsNumber,
+            int pageSkillsSize
+    ) {
+        List<SkillEnt> list = skillRepo
+                .findAll(PageRequest.of(pageSkillsNumber, pageSkillsSize))
+                .stream()
+                .toList();
 
         return list.stream().map(skillMapper::toDTO).toList();
     }
 
     @Override
-    @Transactional
     public SkillDTO create(AddSkillReq addSkillReq) {
-        Optional<SkillEnt> optSkillEnt = skillRepo.findByNameIgnoreCase(addSkillReq.name());
+        SkillEnt skillEnt = new SkillEnt(addSkillReq.name());
 
-        SkillEnt skillEnt;
-
-        if (optSkillEnt.isPresent()) {
-            skillEnt = optSkillEnt.get();
-
-            skillEnt.setIsActive(true);
+        try {
+            skillEnt = skillRepo.save(skillEnt);
         }
-        else {
-            skillEnt = skillMapper.toEntity(addSkillReq);
-        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Skill already exists: {}", addSkillReq.name());
 
-        skillEnt = skillRepo.save(skillEnt);
+            throw new BadRequestException("Skill already exists: " + addSkillReq.name());
+        }
 
         return skillMapper.toDTO(skillEnt);
     }
 
     @Override
     @Transactional
-    public SkillDTO setNameById(long id, SetSkillNameReq setSkillNameReq) {
-        SkillEnt skillEnt = getActiveSkillOrThrow(id);
+    public SkillDTO setNameById(
+            long id,
+            AddSkillReq addSkillReq
+    ) {
+        SkillEnt skillEnt = skillTools.getSkillOrThrow(id);
 
-        skillEnt.setName(setSkillNameReq.name());
-
-        skillEnt = skillRepo.save(skillEnt);
+        skillEnt.setName(addSkillReq.name());
 
         return skillMapper.toDTO(skillEnt);
     }
@@ -86,9 +82,16 @@ public class SkillServImpl implements SkillService {
     @Override
     @Transactional
     public SkillDTO deleteById(long id) {
-        SkillEnt skillEnt = getActiveSkillOrThrow(id);
+        SkillEnt skillEnt = skillTools.getSkillOrThrow(id);
 
-        skillEnt.setIsActive(false);
+        try {
+            skillRepo.delete(skillEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting skill: {}", ex.getMessage());
+
+            throw new BadRequestException("Error while deleting skill");
+        }
 
         return skillMapper.toDTO(skillEnt);
     }

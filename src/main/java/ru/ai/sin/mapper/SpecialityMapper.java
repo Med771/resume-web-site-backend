@@ -13,11 +13,16 @@ public interface SpecialityMapper {
 
     // ---------------- AddSpecialityReq -> SpecialityEnt ----------------
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "skills", ignore = true)
     SpecialityEnt toEntity(AddSpecialityReq dto);
 
     // ---------------- SpecialityEnt -> SpecialityDTO ----------------
     SpecialityDTO toDTO(SpecialityEnt entity, List<SkillDTO> skills);
+
+    // ---------------- AddSpecialityReq -> SpecialityEnt ----------------
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "skills", ignore = true)
+    void updateEntityFromDto(AddSpecialityReq dto, @MappingTarget SpecialityEnt entity);
 }

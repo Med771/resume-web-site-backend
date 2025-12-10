@@ -10,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SetSkillNameReq;
 import ru.ai.sin.dto.skill.SkillDTO;
 import ru.ai.sin.service.impl.SkillService;
 
@@ -56,9 +55,9 @@ public class SkillCnt {
     public ResponseEntity<SkillDTO> setNameById(
             @PathVariable long id,
 
-            @Valid @RequestBody SetSkillNameReq setSkillNameReq
+            @Valid @RequestBody AddSkillReq addSkillReq
     ) {
-        SkillDTO skillDTO = skillService.setNameById(id, setSkillNameReq);
+        SkillDTO skillDTO = skillService.setNameById(id, addSkillReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
     }

@@ -1,8 +1,6 @@
 package ru.ai.sin.service.impl;
 
 import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SetSpecialityNameReq;
-import ru.ai.sin.dto.speciality.SetSpecialitySkillsReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
 
 import java.util.List;
@@ -20,10 +18,9 @@ public interface SpecialityService {
     SpecialityDTO create(
             AddSpecialityReq addSpecialityReq);
 
-    SpecialityDTO setNameById(
-            long id, SetSpecialityNameReq  setSpecialityNameReq);
-    SpecialityDTO setSkillsById(
-            long id, SetSpecialitySkillsReq setSpecialitySkillsReq);
+    SpecialityDTO update(
+            long id,
+            AddSpecialityReq addSpecialityReq);
 
     // ---------- POST METHODS ----------
     SpecialityDTO deleteById(

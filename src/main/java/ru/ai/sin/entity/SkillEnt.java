@@ -26,9 +26,10 @@ public class SkillEnt {
     @Column(unique = true, length = 128)
     private String name;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
-    private Boolean isActive = true;
-
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    public SkillEnt(String name) {
+        this.name = name;
+    }
 }

@@ -1,8 +1,10 @@
 package ru.ai.sin.mapper;
 
 import org.mapstruct.*;
+
 import ru.ai.sin.dto.portfolio.AddPortfolioReq;
 import ru.ai.sin.dto.portfolio.PortfolioDTO;
+
 import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
 
@@ -11,7 +13,6 @@ public interface PortfolioMapper {
 
     // ---------------- AddSpecialityReq -> PortfolioEnt ----------------
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     PortfolioEnt toEntity(AddPortfolioReq dto, StudentEnt student);
 
@@ -20,7 +21,6 @@ public interface PortfolioMapper {
     PortfolioDTO toDTO(PortfolioEnt entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "student", ignore = true)
     void updateEntityFromDto(AddPortfolioReq dto, @MappingTarget PortfolioEnt entity);

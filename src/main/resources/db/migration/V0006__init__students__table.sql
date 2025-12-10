@@ -6,7 +6,6 @@ CREATE TABLE students
     birth_date        date                 NOT NULL,
     bio               TEXT,
     image_path        VARCHAR(255),
-    is_active         BOOLEAN DEFAULT TRUE NOT NULL,
     course            VARCHAR(16),
     busyness          VARCHAR(32),
     speciality_id     BIGINT,

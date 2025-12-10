@@ -31,9 +31,6 @@ public class RecruiterEnt {
     @Column(name = "company_name", nullable = false)
     private String companyName;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
-    private Boolean isActive = true;
-
     @Embedded
     private UserInformation userInformation = new UserInformation();
 

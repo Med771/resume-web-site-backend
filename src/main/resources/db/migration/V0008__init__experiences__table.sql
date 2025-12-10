@@ -5,8 +5,8 @@ CREATE TABLE experiences
     additional_info TEXT,
     start_date      date                                    NOT NULL,
     end_date        date                                    NOT NULL,
-    company_id      BIGINT,
-    student_id      UUID,
+    company_id      BIGINT                                  NOT NULL,
+    student_id      UUID                                    NOT NULL,
     created_at      TIMESTAMP WITHOUT TIME ZONE,
     updated_at      TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_experiences PRIMARY KEY (id)
