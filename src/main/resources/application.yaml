@@ -1,3 +1,70 @@
 spring:
   application:
     name: resume-web-site-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5501/resume
+    username: Resume
+    password: Resume!01156
+    name: resume
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+logging:
+  level:
+    root: INFO
+    ru.ai.sin: INFO
+
+  file:
+    name: logs/app.log
+
+app:
+  logging:
+    pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+    max-history: 7
+    rotation-pattern: "logs/app.%d{yyyy-MM-dd}.gz"
+
+  file:
+    path: file
+    max-size-bytes: 5242880
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+swagger:
+  title: "Resume API"
+  description: "Документация API"
+  version: "0.1.0"
+
+  servers:
+    - url: "http://localhost:8080"
+      description: "Local Dev Server"
+    - url: "https://api.example.com"
+      description: "Production Server"
+
+springdoc:
+  swagger-ui:
+    enabled: true
+
+  api-docs:
+    enabled: true
