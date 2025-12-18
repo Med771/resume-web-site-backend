@@ -31,4 +31,11 @@ public class UserEnt {
 
     @Embedded
     private UserInformation userInformation = new UserInformation();
+
+    public UserEnt(RoleEnum role, String username, String passwordHash) {
+        this.role = role;
+
+        this.userInformation.setUsername(username);
+        this.userInformation.setPasswordHash(passwordHash);
+    }
 }
