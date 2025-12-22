@@ -25,11 +25,11 @@ public interface StudentRepo extends
         JpaSpecificationExecutor<StudentEnt>  {
 
     @NonNull
-    @EntityGraph(attributePaths = {"speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<StudentEnt> findById(@NonNull UUID id);
 
     @NonNull
-    @EntityGraph(attributePaths = {"speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<StudentEnt> findAll(@NonNull Pageable pageable);
 
     @Query("SELECT s.skills FROM StudentEnt s WHERE s.id = :studentId")

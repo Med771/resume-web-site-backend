@@ -1,5 +1,9 @@
 package ru.ai.sin.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -77,8 +81,14 @@ public class StudentCnt {
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> create(
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @Valid @RequestPart(value = "profileData") AddStudentReq addStudentReq
-    ) {
+            @Valid @RequestPart(value = "profileData") String profileDataJson
+    ) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        AddStudentReq addStudentReq = objectMapper.readValue(profileDataJson, AddStudentReq.class);
+
         StudentDTO studentDTO = studentService.create(multipartFile, addStudentReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
