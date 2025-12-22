@@ -33,6 +33,7 @@
         <psql-driver.version>42.7.8</psql-driver.version>
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <spring-security.version>7.0.0</spring-security.version>
     </properties>
     <dependencies>
         <!-- Main starter -->
@@ -128,6 +129,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.18.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
     </dependencies>
