@@ -42,13 +42,70 @@ app:
     path: file
     max-size-bytes: 5242880
 
-  logins:
-    - username: guest
-      password: guest
-    - username: user
-      password: user
-    - username: admin
-      password: admin
+  user:
+    logins:
+      - username: guest
+        password: guest
+        role: guest
+      - username: user
+        password: user
+        role: user
+      - username: admin
+        password: admin
+        role: admin
+
+  security:
+    cors:
+      allowed-origins:
+        - "http://localhost:8080"
+        - "https://api.singularity-resume.ru"
+        - "https://singularity-resume.ru"
+      allowed-methods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "PATCH"
+        - "DELETE"
+        - "OPTIONS"
+        - "HEAD"
+      allowed-headers:
+        - "Content-Type"
+        - "Authorization"
+      allow-credentials: true
+      max-age: 3600
+
+    csp:
+      policy: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; frame-ancestors 'none';"
+
+  jwt:
+    access-secret: "mySuperSecretKeyThatShouldBeVeryLongAndSecure123!"
+    refresh-secret: "mySuperSecretKeyThatShouldBeVeryLongAndSecure123!"
+
+    issuer: "Singularity-backend"
+    audience: "Singularity-frontend"
+
+    access-token-ttl: 900
+    refresh-token-ttl: 604800
+
+    cookie:
+      access-token-name: "ACCESS_TOKEN"
+      refresh-token-name: "REFRESH_TOKEN"
+      http-only: true
+      secure: false
+      same-site: Strict
+      path: "/"
+
+
+  swagger:
+    title: "Resume API"
+    description: "Документация API"
+    version: "0.1.0"
+
+    servers:
+      - url: "http://localhost:8080"
+        description: "Local Dev Server"
+      - url: "https://api.example.com"
+        description: "Production Server"
 
 management:
   endpoints:
@@ -58,17 +115,6 @@ management:
   endpoint:
     health:
       show-details: always
-
-swagger:
-  title: "Resume API"
-  description: "Документация API"
-  version: "0.1.0"
-
-  servers:
-    - url: "http://localhost:8080"
-      description: "Local Dev Server"
-    - url: "https://api.example.com"
-      description: "Production Server"
 
 springdoc:
   swagger-ui:

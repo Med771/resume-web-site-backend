@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.service.impl.MainService;
 
 @RestController
@@ -18,12 +15,12 @@ public class MainCnt {
 
     private final MainService mainService;
 
-    @GetMapping(path = "/status")
+    @GetMapping(path = "status")
     public ResponseEntity<?> status() {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(path = "/photo/{image_path}")
+    @GetMapping(path = "photo/{image_path}")
     public ResponseEntity<byte[]> getPhoto(
             @PathVariable("image_path") String image_path
     ) {
