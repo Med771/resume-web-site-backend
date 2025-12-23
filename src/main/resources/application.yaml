@@ -27,7 +27,7 @@ spring:
 logging:
   level:
     root: INFO
-    ru.ai.sin: DEBUG
+    ru.ai.sin: INFO
 
   file:
     name: logs/app.log
