@@ -3,7 +3,6 @@ package ru.ai.sin.filter;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,7 +22,6 @@ import ru.ai.sin.helper.CookieHelper;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.property.JwtProperties;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 @Slf4j
@@ -41,12 +39,7 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-
-        if ("OPTIONS".equals(request.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+                                    @NonNull FilterChain filterChain) {
 
         try {
             String accessToken = extractCookie(request, jwtProperties.getCookie().getAccessTokenName());
@@ -69,12 +62,10 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
                     response.addHeader(HttpHeaders.SET_COOKIE, newAccessCookie.toString());
 
                     setAuthentication(username, request);
-                    filterChain.doFilter(request, response);
-                    return;
                 }
             }
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
             log.debug("Access token expired: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -90,9 +81,12 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
     private void setAuthentication(String username, HttpServletRequest request) {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
+
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
     }

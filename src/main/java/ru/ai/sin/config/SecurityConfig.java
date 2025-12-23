@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Configuration;
 
 import org.springframework.core.annotation.Order;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,6 +31,7 @@ import ru.ai.sin.property.SecurityProperties;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtCookieAuthenticationFilter jwtFilter;
@@ -40,7 +43,6 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     SecurityFilterChain filterChain(HttpSecurity http) {
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -50,14 +52,14 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/swagger-resources/**",
-                                "/webjars/**"
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
