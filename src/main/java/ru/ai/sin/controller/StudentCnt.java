@@ -99,8 +99,14 @@ public class StudentCnt {
             @PathVariable("id") UUID id,
 
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @Valid @RequestPart(value = "profileData") UpdateStudentReq updateStudentReq
-    ) {
+            @Valid @RequestPart(value = "profileData") String profileDataJson
+    ) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        UpdateStudentReq updateStudentReq = objectMapper.readValue(profileDataJson, UpdateStudentReq.class);
+
         StudentDTO studentDTO = studentService.update(id, multipartFile, updateStudentReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
