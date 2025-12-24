@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class SpecialityCnt {
 
     private final SpecialityService specialityService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<SpecialityDTO> getById(
             @PathVariable long id
@@ -34,6 +36,7 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<SpecialityDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageSpecialityNumber,
@@ -44,6 +47,7 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<SpecialityDTO> create(
             @Valid @RequestBody AddSpecialityReq specialityReq
@@ -53,6 +57,7 @@ public class SpecialityCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "updateById/{id}")
     public ResponseEntity<SpecialityDTO> update(
             @PathVariable long id,
@@ -63,6 +68,8 @@ public class SpecialityCnt {
 
         return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<SpecialityDTO> deleteById(
             @PathVariable long id

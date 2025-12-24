@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.recruiter.AddRecruiterReq;
@@ -24,6 +25,7 @@ public class RecruiterCnt {
 
     private final RecruiterService recruiterService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<RecruiterDTO> getById(
             @PathVariable UUID id
@@ -33,6 +35,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<RecruiterDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageRecruiterNumber,
@@ -44,6 +47,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/getAllByCompanyName")
     public ResponseEntity<List<RecruiterDTO>> getAllByCompanyName(
             @Min(0) @RequestParam(defaultValue = "0") int pageRecruiterNumber,
@@ -59,6 +63,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<RecruiterDTO> create(
             @Valid @RequestBody AddRecruiterReq recruiterReq
@@ -68,6 +73,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(recruiterDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<RecruiterDTO> updateById(
             @PathVariable UUID id,
@@ -82,6 +88,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<RecruiterDTO> deleteById(
             @PathVariable UUID id

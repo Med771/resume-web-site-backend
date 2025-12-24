@@ -25,6 +25,5 @@ public record AddExperienceReq(
         @NotNull
         LocalDate startDate,
 
-        @NotNull
         LocalDate endDate) {
 }

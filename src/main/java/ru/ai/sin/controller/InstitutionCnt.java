@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.institution.AddInstitutionReq;
-import ru.ai.sin.dto.institution.GetAboutEducationRes;
 import ru.ai.sin.dto.institution.GetAboutStudentRes;
 import ru.ai.sin.dto.institution.InstitutionDTO;
 import ru.ai.sin.service.impl.InstitutionService;
@@ -25,6 +25,7 @@ public class InstitutionCnt {
 
     private final InstitutionService institutionService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<InstitutionDTO> getById(
             @PathVariable long id
@@ -34,6 +35,8 @@ public class InstitutionCnt {
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
+    /* TODO: Implement statistics by Q1 2026
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getByEducationId/{id}")
     public ResponseEntity<GetAboutEducationRes> getByEducationId(
             @PathVariable long id,
@@ -48,7 +51,9 @@ public class InstitutionCnt {
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutEducationRes);
     }
+    */
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getByStudentId/{id}")
     public ResponseEntity<GetAboutStudentRes> getByStudentId(
             @PathVariable UUID id,
@@ -64,6 +69,7 @@ public class InstitutionCnt {
         return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentRes);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<InstitutionDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageInstitutionNumber,
@@ -75,6 +81,7 @@ public class InstitutionCnt {
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<InstitutionDTO> create(
             @Valid @RequestBody AddInstitutionReq institutionReq
@@ -84,6 +91,7 @@ public class InstitutionCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(institutionDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<InstitutionDTO> update(
             @PathVariable long id,
@@ -95,6 +103,7 @@ public class InstitutionCnt {
         return ResponseEntity.status(HttpStatus.OK).body(institutionDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<InstitutionDTO> deleteById(
             @PathVariable long id

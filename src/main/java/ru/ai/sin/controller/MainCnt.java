@@ -3,6 +3,7 @@ package ru.ai.sin.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.service.impl.MainService;
@@ -20,6 +21,7 @@ public class MainCnt {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "photo/{image_path}")
     public ResponseEntity<byte[]> getPhoto(
             @PathVariable("image_path") String image_path
