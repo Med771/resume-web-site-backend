@@ -19,6 +19,5 @@ public record ExperienceRes(
         @NotNull
         LocalDate startDate,
 
-        @NotNull
         LocalDate endDate) {
 }

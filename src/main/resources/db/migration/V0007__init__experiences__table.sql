@@ -4,7 +4,7 @@ CREATE TABLE experiences
     position        VARCHAR(255)                            NOT NULL,
     additional_info TEXT,
     start_date      date                                    NOT NULL,
-    end_date        date                                    NOT NULL,
+    end_date        date,
     company_id      BIGINT                                  NOT NULL,
     student_id      UUID                                    NOT NULL,
     created_at      TIMESTAMP WITHOUT TIME ZONE,

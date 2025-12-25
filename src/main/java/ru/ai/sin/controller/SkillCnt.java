@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class SkillCnt {
 
     private final SkillService skillService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<SkillDTO> getById(
             @PathVariable long id
@@ -32,6 +34,7 @@ public class SkillCnt {
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<SkillDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageSkillsNumber,
@@ -42,6 +45,7 @@ public class SkillCnt {
         return ResponseEntity.status(HttpStatus.OK).body(skillDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<SkillDTO> create(
             @Valid @RequestBody AddSkillReq skillReq
@@ -51,6 +55,7 @@ public class SkillCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/set/{id}/name")
     public ResponseEntity<SkillDTO> setNameById(
             @PathVariable long id,
@@ -62,6 +67,7 @@ public class SkillCnt {
         return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<SkillDTO> deleteById(
             @PathVariable long id

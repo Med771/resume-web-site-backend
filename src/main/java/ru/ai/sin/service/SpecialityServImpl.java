@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.speciality.AddSpecialityReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
 
-import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 
 import ru.ai.sin.exception.models.BadRequestException;
@@ -21,11 +20,10 @@ import ru.ai.sin.mapper.SpecialityMapper;
 import ru.ai.sin.repository.SpecialityRepo;
 
 import ru.ai.sin.service.impl.SpecialityService;
-import ru.ai.sin.service.tools.SkillTools;
+
 import ru.ai.sin.service.tools.SpecialityTools;
 
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,11 +35,10 @@ public class SpecialityServImpl implements SpecialityService {
     private final SpecialityMapper specialityMapper;
 
     private final SpecialityTools specialityTools;
-    private final SkillTools skillTools;
 
     @Override
     public SpecialityDTO getById(long id) {
-        return specialityTools.mapToDto(specialityTools.getSpecialityOrThrow(id));
+        return specialityMapper.toDTO(specialityTools.getSpecialityOrThrow(id));
     }
 
     @Override
@@ -55,7 +52,7 @@ public class SpecialityServImpl implements SpecialityService {
                 .getContent();
 
         return specialityEntList.stream()
-                .map(specialityTools::mapToDto)
+                .map(specialityMapper::toDTO)
                 .toList();
     }
 
@@ -63,9 +60,6 @@ public class SpecialityServImpl implements SpecialityService {
     @Transactional
     public SpecialityDTO create(AddSpecialityReq addSpecialityReq) {
         SpecialityEnt specialityEnt = specialityMapper.toEntity(addSpecialityReq);
-        Set<SkillEnt> skillEntSet = skillTools.getSkillsByIds(addSpecialityReq.skillsIds());
-
-        specialityEnt.setSkills(skillEntSet);
 
         try {
             specialityEnt = specialityRepo.save(specialityEnt);
@@ -76,7 +70,7 @@ public class SpecialityServImpl implements SpecialityService {
             throw new BadRequestException("Speciality already exists: " + addSpecialityReq.name());
         }
 
-        return specialityTools.mapToDto(specialityEnt);
+        return specialityMapper.toDTO(specialityEnt);
     }
 
 
@@ -87,12 +81,10 @@ public class SpecialityServImpl implements SpecialityService {
             AddSpecialityReq addSpecialityReq
     ) {
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(id);
-        Set<SkillEnt> skillEntSet = skillTools.getSkillsByIds(addSpecialityReq.skillsIds());
 
         specialityMapper.updateEntityFromDto(addSpecialityReq, specialityEnt);
-        specialityEnt.setSkills(skillEntSet);
 
-        return specialityTools.mapToDto(specialityEnt);
+        return specialityMapper.toDTO(specialityEnt);
     }
 
     @Override
@@ -109,6 +101,6 @@ public class SpecialityServImpl implements SpecialityService {
             throw new BadRequestException("Error while deleting speciality");
         }
 
-        return specialityTools.mapToDto(specialityEnt);
+        return specialityMapper.toDTO(specialityEnt);
     }
 }

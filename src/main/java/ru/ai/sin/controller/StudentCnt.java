@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ public class StudentCnt {
 
     private final StudentService studentService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<StudentDTO> getById(
             @PathVariable UUID id
@@ -39,6 +41,7 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAllCards")
     public ResponseEntity<List<StudentCardDTO>> getAllCards(
             @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
@@ -51,6 +54,7 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<StudentDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
@@ -63,6 +67,7 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.OK).body(studentDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/getAllByFilters")
     public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
             @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
@@ -78,6 +83,7 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> create(
             @RequestPart("avatarFile") MultipartFile multipartFile,
@@ -94,18 +100,26 @@ public class StudentCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "updateById/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentDTO> updateById(
             @PathVariable("id") UUID id,
 
             @RequestPart("avatarFile") MultipartFile multipartFile,
-            @Valid @RequestPart(value = "profileData") UpdateStudentReq updateStudentReq
-    ) {
+            @Valid @RequestPart(value = "profileData") String profileDataJson
+    ) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        UpdateStudentReq updateStudentReq = objectMapper.readValue(profileDataJson, UpdateStudentReq.class);
+
         StudentDTO studentDTO = studentService.update(id, multipartFile, updateStudentReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<StudentDTO> deleteById(
             @PathVariable UUID id

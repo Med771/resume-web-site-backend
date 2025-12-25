@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.experience.*;
@@ -21,6 +22,7 @@ public class ExperienceCnt {
 
     private final ExperienceService experienceService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<ExperienceDTO> getById(
             @PathVariable long id
@@ -30,6 +32,9 @@ public class ExperienceCnt {
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
+    /* TODO: Implement statistics by Q1 2026
+
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/aboutGetByCompanyId/{id}")
     public ResponseEntity<GetAboutCompanyRes> aboutGetByCompanyId(
             @PathVariable long id,
@@ -44,7 +49,9 @@ public class ExperienceCnt {
 
         return ResponseEntity.status(HttpStatus.OK).body(getAboutCompanyResDTO);
     }
+    */
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/aboutGetByStudentId/{id}")
     public ResponseEntity<GetAboutStudentRes> aboutGetByStudentId(
             @PathVariable UUID id,
@@ -60,6 +67,7 @@ public class ExperienceCnt {
         return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentResDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<ExperienceDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageExperienceNumber,
@@ -71,6 +79,7 @@ public class ExperienceCnt {
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<ExperienceDTO> create(
             @Valid @RequestBody AddExperienceReq experienceReq
@@ -80,6 +89,7 @@ public class ExperienceCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(experienceDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<ExperienceDTO> update(
             @PathVariable long id,
@@ -91,6 +101,7 @@ public class ExperienceCnt {
         return ResponseEntity.status(HttpStatus.OK).body(experienceDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<ExperienceDTO> deleteById(
             @PathVariable long id

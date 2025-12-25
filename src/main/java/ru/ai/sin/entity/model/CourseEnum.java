@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum CourseEnum {
+    NEW("0"),
     FIRST("1"),
     SECOND("2"),
     THIRD("3"),

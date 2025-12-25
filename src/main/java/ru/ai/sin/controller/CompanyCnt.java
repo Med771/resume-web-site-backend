@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class CompanyCnt {
 
     private final CompanyService companyService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<CompanyDTO> getById(
             @PathVariable long id
@@ -32,6 +34,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(companyDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<CompanyDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageCompanyNumber,
@@ -43,6 +46,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/getAllByName")
     public ResponseEntity<List<CompanyDTO>> getAllByName(
             @Min(0) @RequestParam(defaultValue = "0") int pageCompanyNumber,
@@ -56,6 +60,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(companyDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<CompanyDTO> create(
             @Valid @RequestBody AddCompanyReq companyReq
@@ -65,6 +70,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(companyDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/set/{id}/name")
     public ResponseEntity<CompanyDTO> setNameById(
             @PathVariable long id,
@@ -76,6 +82,7 @@ public class CompanyCnt {
         return ResponseEntity.status(HttpStatus.OK).body(companyDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<CompanyDTO> deleteById(
             @PathVariable long id

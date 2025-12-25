@@ -11,9 +11,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import ru.ai.sin.entity.model.TimeStamped;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(name = "specialities")
 @EntityListeners(AuditingEntityListener.class)
@@ -31,8 +28,4 @@ public class SpecialityEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "speciality_id")
-    private Set<SkillEnt> skills = new HashSet<>();
 }

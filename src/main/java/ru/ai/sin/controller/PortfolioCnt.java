@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.portfolio.AddPortfolioReq;
@@ -22,6 +23,7 @@ public class PortfolioCnt {
 
     private final PortfolioService portfolioService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<PortfolioDTO> getById(
             @PathVariable long id
@@ -31,6 +33,7 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<PortfolioDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pagePortfolioNumber,
@@ -42,6 +45,7 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "getAllByStudentId/{studentId}")
     public ResponseEntity<List<PortfolioDTO>> getAllByStudentId(
             @PathVariable UUID studentId,
@@ -56,6 +60,7 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<PortfolioDTO> create(
             @Valid @RequestBody AddPortfolioReq portfolioReq
@@ -65,6 +70,7 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(portfolioDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<PortfolioDTO> update(
             @PathVariable long id,
@@ -76,6 +82,7 @@ public class PortfolioCnt {
         return ResponseEntity.status(HttpStatus.OK).body(portfolioDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<PortfolioDTO> deleteById(
             @PathVariable long id

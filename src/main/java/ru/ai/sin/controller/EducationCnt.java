@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.education.*;
@@ -20,6 +21,7 @@ public class EducationCnt {
 
     private final EducationService educationService;
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getById/{id}")
     public ResponseEntity<EducationDTO> getById(
             @PathVariable long id
@@ -29,6 +31,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<EducationDTO>> getAll(
             @Min(0) @RequestParam(defaultValue = "0") int pageEducationNumber,
@@ -40,6 +43,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<EducationDTO> create(
             @Valid @RequestBody AddEducationReq addEducationReq
@@ -50,6 +54,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/updateById/{id}")
     public ResponseEntity<EducationDTO> update(
             @PathVariable long id,
@@ -64,6 +69,7 @@ public class EducationCnt {
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/deleteById/{id}")
     public ResponseEntity<EducationDTO> deleteById(
             @PathVariable long id
