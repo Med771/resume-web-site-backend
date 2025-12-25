@@ -46,7 +46,7 @@ public class ExperienceTools {
     }
 
     @Transactional(readOnly = true)
-    public Map<Long, List<Long>> getExperienceIdsByExperienceId(Set<Long> companyIds){
+    public Map<Long, List<Long>> getExperienceIdsByCompanyIds(Set<Long> companyIds){
         Set<ExperienceEnt> experienceEntSet = experienceRepo.findAllByCompanyIdIn(companyIds);
 
         return experienceEntSet.stream()

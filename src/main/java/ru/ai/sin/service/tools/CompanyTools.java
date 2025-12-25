@@ -13,6 +13,7 @@ import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.repository.CompanyRepo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,9 +44,14 @@ public class CompanyTools {
     }
 
     @Transactional
+    public CompanyDTO newObjMapToDTO(CompanyEnt companyEnt) {
+        return companyMapper.toDTO(companyEnt, new ArrayList<>(0));
+    }
+
+    @Transactional
     public List<CompanyDTO> mapToDTOs(List<CompanyEnt> companyEntList) {
         Set<Long> companyIds = companyEntList.stream().map(CompanyEnt::getId).collect(Collectors.toSet());
-        Map<Long, List<Long>> experiencesIds = experienceTools.getExperienceIdsByExperienceId(companyIds);
+        Map<Long, List<Long>> experiencesIds = experienceTools.getExperienceIdsByCompanyIds(companyIds);
 
         return companyEntList.stream()
                 .map(companyEnt ->

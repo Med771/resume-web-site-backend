@@ -1,33 +1,31 @@
 package ru.ai.sin.service.impl;
 
+import org.springframework.data.domain.Pageable;
+
+import ru.ai.sin.dto.PageResponse;
 
 import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.GetCompanyNameReq;
+import ru.ai.sin.dto.company.CompanyFilterReq;
+import ru.ai.sin.dto.company.UpdateCompanyReq;
 
-import java.util.List;
 
 public interface CompanyService {
 
     // ---------- GET METHODS ----------
-    CompanyDTO getById(
-            long id);
-
-    List<CompanyDTO> getAll(
-            int pageCompanyNumber, int pageCompanySize);
-    List<CompanyDTO> getAllByName(
-            int pageCompanyNumber, int pageCompanySize,
-            GetCompanyNameReq getCompanyNameReq);
+    CompanyDTO getById(long id);
 
     // ---------- POST METHODS ----------
-    CompanyDTO create(
-            AddCompanyReq addCompanyReq);
+    PageResponse<CompanyDTO> getAllByFilter(
+            Pageable pageable,
+            CompanyFilterReq companyFilterReq);
 
-    CompanyDTO setNameById(
+    CompanyDTO create(AddCompanyReq addCompanyReq);
+
+    CompanyDTO updateById(
             long id,
-            GetCompanyNameReq getCompanyNameReq);
+            UpdateCompanyReq updateCompanyReq);
 
     // ---------- DELETE METHODS ----------
-    CompanyDTO deleteById(
-            long id);
+    void deleteById(long id);
 }
