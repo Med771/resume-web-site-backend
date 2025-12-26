@@ -4,16 +4,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
+
+import ru.ai.sin.dto.PageResponse;
 
 import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.GetCompanyNameReq;
+import ru.ai.sin.dto.company.CompanyFilterReq;
 
+import ru.ai.sin.dto.company.UpdateCompanyReq;
 import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.repository.CompanyRepo;
 import ru.ai.sin.service.impl.CompanyService;
 
@@ -30,61 +38,64 @@ public class CompanyServImpl implements CompanyService {
 
     private final CompanyTools companyTools;
 
+    private final SecurityHelper securityHelper;
+
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public CompanyDTO getById(long id) {
         return companyTools.mapToDTO(companyTools.getCompanyOrThrow(id));
     }
 
     @Override
-    public List<CompanyDTO> getAll(
-            int pageCompanyNumber,
-            int pageCompanySize
+    @Transactional(readOnly = true)
+    public PageResponse<CompanyDTO> getAllByFilter(
+            Pageable pageable,
+            CompanyFilterReq companyFilterReq
     ) {
-        List<CompanyEnt> companyEntList = companyRepo
-                .findAll(
-                        PageRequest.of(pageCompanyNumber, pageCompanySize))
-                .getContent();
-
-        return companyTools.mapToDTOs(companyEntList);
-    }
-
-    @Override
-    public List<CompanyDTO> getAllByName(
-            int pageCompanyNumber,
-            int pageCompanySize,
-            GetCompanyNameReq getCompanyNameReq
-    ) {
-        List<CompanyEnt> companyEntList = companyRepo
+        Page<CompanyEnt> companies = companyRepo
                 .findAllByNameIgnoreCase(
-                        getCompanyNameReq.name(),
-                        PageRequest.of(pageCompanyNumber, pageCompanySize))
-                .getContent();
+                        companyFilterReq.name(),
+                        pageable);
 
-        return companyTools.mapToDTOs(companyEntList);
+        List<CompanyEnt> companyEntList = companies.getContent();
+
+        return new PageResponse<>(
+                companyTools.mapToDTOs(companyEntList),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                companies.getTotalElements(),
+                companies.getTotalPages());
     }
 
     @Override
     public CompanyDTO create(AddCompanyReq addCompanyReq) {
-        return companyTools.mapToDTO(companyRepo.save(new CompanyEnt(addCompanyReq.name())));
+        CompanyDTO companyDTO = companyTools.newObjMapToDTO(companyRepo.save(new CompanyEnt(addCompanyReq.name())));
+
+        log.info("User: {}, created a new company: {}", securityHelper.getCurrentUsername(), companyDTO);
+
+        return companyDTO;
     }
 
     @Override
     @Transactional
-    public CompanyDTO setNameById(
+    public CompanyDTO updateById(
             long id,
-            GetCompanyNameReq getCompanyNameReq
+            UpdateCompanyReq updateCompanyReq
     ) {
         CompanyEnt companyEnt = companyTools.getCompanyOrThrow(id);
 
-        companyEnt.setName(getCompanyNameReq.name());
+        companyEnt.setName(updateCompanyReq.name());
 
-        return companyTools.mapToDTO(companyEnt);
+        CompanyDTO companyDTO = companyTools.mapToDTO(companyEnt);
+
+        log.info("User: {}, update a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyDTO);
+
+        return companyDTO;
     }
 
     @Override
     @Transactional
-    public CompanyDTO deleteById(long id) {
+    public void deleteById(long id) {
         CompanyEnt companyEnt = companyTools.getCompanyOrThrow(id);
 
         try {
@@ -96,6 +107,6 @@ public class CompanyServImpl implements CompanyService {
             throw new BadRequestException("Error while deleting company");
         }
 
-        return companyTools.mapToDTO(companyEnt);
+        log.info("User: {}, delete a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyEnt);
     }
 }
