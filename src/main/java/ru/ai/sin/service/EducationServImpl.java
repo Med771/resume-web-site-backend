@@ -4,25 +4,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
+
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.education.*;
 
 import ru.ai.sin.entity.EducationEnt;
 
 import ru.ai.sin.exception.models.BadRequestException;
-import ru.ai.sin.mapper.EducationMapper;
 
+import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.mapper.EducationMapper;
 import ru.ai.sin.repository.EducationRepo;
 
 import ru.ai.sin.service.impl.EducationService;
 import ru.ai.sin.service.tools.EducationTools;
 
-import java.util.List;
 
 @Slf4j
 @Service
@@ -35,6 +38,8 @@ public class EducationServImpl implements EducationService {
 
     private final EducationTools educationTools;
 
+    private final SecurityHelper securityHelper;
+
     @Override
     @Transactional(readOnly = true)
     public EducationDTO getById(long id) {
@@ -42,47 +47,50 @@ public class EducationServImpl implements EducationService {
     }
 
     @Override
-    public List<EducationDTO> getAll(
-            int pageEducationNumber,
-            int pageEducationSize
-    ) {
-        Page<EducationEnt> educationPage = educationRepo.findAll(
-                PageRequest.of(pageEducationNumber, pageEducationSize));
+    public PageResponse<EducationDTO> getAll(Pageable pageable) {
+        Page<EducationEnt> educationPage = educationRepo.findAll(pageable);
 
-        return educationPage.getContent().stream()
-                .map(educationMapper::toDTO)
-                .toList();
+        return new PageResponse<>(
+                educationPage.getContent().stream().map(educationMapper::toDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                educationPage.getTotalElements(),
+                educationPage.getTotalPages());
     }
 
     @Override
     public EducationDTO create(AddEducationReq addEducationReq) {
-        EducationEnt educationEnt = educationMapper.toEntity(addEducationReq);
+        EducationDTO educationDTO = educationMapper.toDTO(educationRepo.save(educationMapper.toEntity(addEducationReq)));
 
-        educationEnt = educationRepo.save(educationEnt);
+        log.info("User: {}, created a new education: {}", securityHelper.getCurrentUsername(), educationDTO);
 
-        return educationMapper.toDTO(educationEnt);
+        return educationDTO;
     }
 
     @Override
     @Transactional
     public EducationDTO update(
             long id,
-            AddEducationReq addEducationReq
+            UpdateEducationReq updateEducationReq
     ) {
         EducationEnt educationEnt = educationTools.getEducationOrThrow(id);
 
-        educationMapper.updateEntityFromDto(addEducationReq, educationEnt);
+        educationMapper.updateEntityFromDto(updateEducationReq, educationEnt);
 
-        return educationMapper.toDTO(educationEnt);
+        EducationDTO educationDTO = educationMapper.toDTO(educationEnt);
+
+        log.info("User: {}, updated a education: {} with data: {}", securityHelper.getCurrentUsername(), id, educationDTO);
+
+        return educationDTO;
     }
 
     @Override
     @Transactional
-    public EducationDTO deleteById(long id) {
+    public void deleteById(long id) {
         EducationEnt educationEnt = educationTools.getEducationOrThrow(id);
 
         try {
-            educationRepo.deleteById(id);
+            educationRepo.delete(educationEnt);
         }
         catch (DataIntegrityViolationException ex) {
             log.warn("Error while deleting education: {}", ex.getMessage());
@@ -90,6 +98,6 @@ public class EducationServImpl implements EducationService {
             throw new BadRequestException("Error while deleting education");
         }
 
-        return educationMapper.toDTO(educationEnt);
+        log.info("User: {}, deleted a education: {} with data: {}", securityHelper.getCurrentUsername(), id, educationEnt);
     }
 }

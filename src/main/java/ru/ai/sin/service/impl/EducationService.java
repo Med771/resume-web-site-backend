@@ -1,27 +1,24 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.education.*;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.education.*;
 
 public interface EducationService {
 
     // ---------- GET METHODS ----------
-    EducationDTO getById(
-            long id);
+    EducationDTO getById(long id);
 
-    List<EducationDTO> getAll(
-            int pageEducationNumber, int pageEducationSize);
+    PageResponse<EducationDTO> getAll(Pageable pageable);
 
     // ---------- POST METHODS ----------
-    EducationDTO create(
-            AddEducationReq addEducationReq);
+    EducationDTO create(AddEducationReq addEducationReq);
 
     EducationDTO update(
             long id,
-            AddEducationReq addEducationReq);
+            UpdateEducationReq updateEducationReq);
 
     // ---------- DELETE METHODS ----------
-    EducationDTO deleteById(
-            long id);
+    void deleteById(long id);
 }

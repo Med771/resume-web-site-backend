@@ -2,16 +2,26 @@ package ru.ai.sin.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
+
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.education.*;
+
 import ru.ai.sin.service.impl.EducationService;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,61 +32,47 @@ public class EducationCnt {
     private final EducationService educationService;
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getById/{id}")
-    public ResponseEntity<EducationDTO> getById(
-            @PathVariable long id
-    ) {
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<EducationDTO> getById(@PathVariable @Min(1) long id) {
         EducationDTO educationDTO = educationService.getById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getAll")
-    public ResponseEntity<List<EducationDTO>> getAll(
-            @Min(0) @RequestParam(defaultValue = "0") int pageEducationNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int sizeEducationSize
+    @GetMapping(path = "/all")
+    public ResponseEntity<PageResponse<EducationDTO>> getAll(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        List<EducationDTO> educationDTOs = educationService
-                .getAll(pageEducationNumber, sizeEducationSize);
+        PageResponse<EducationDTO> educationDTOs = educationService.getAll(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/create")
-    public ResponseEntity<EducationDTO> create(
-            @Valid @RequestBody AddEducationReq addEducationReq
-    ) {
-        EducationDTO educationDTO = educationService
-                .create(addEducationReq);
+    @PostMapping()
+    public ResponseEntity<EducationDTO> create(@Valid @RequestBody AddEducationReq addEducationReq) {
+        EducationDTO educationDTO = educationService.create(addEducationReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "/updateById/{id}")
+    @PutMapping(path = "/{id}")
     public ResponseEntity<EducationDTO> update(
-            @PathVariable long id,
+            @PathVariable @Min(1) long id,
 
-            @Valid @RequestBody AddEducationReq addEducationReq
+            @Valid @RequestBody UpdateEducationReq updateEducationReq
     ) {
-        EducationDTO educationDTO = educationService
-                .update(
-                        id,
-                        addEducationReq);
+        EducationDTO educationDTO = educationService.update(id, updateEducationReq);
 
         return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(path = "/deleteById/{id}")
-    public ResponseEntity<EducationDTO> deleteById(
-            @PathVariable long id
-    ) {
-        EducationDTO educationDTO = educationService.deleteById(
-                id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
+    @DeleteMapping(path = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable @Min(1) long id) {
+        educationService.deleteById(id);
     }
 }
