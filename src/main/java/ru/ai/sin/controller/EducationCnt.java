@@ -36,7 +36,7 @@ public class EducationCnt {
     public ResponseEntity<EducationDTO> getById(@PathVariable @Min(1) long id) {
         EducationDTO educationDTO = educationService.getById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
+        return ResponseEntity.ok(educationDTO);
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
@@ -46,7 +46,7 @@ public class EducationCnt {
     ) {
         PageResponse<EducationDTO> educationDTOs = educationService.getAll(pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(educationDTOs);
+        return ResponseEntity.ok(educationDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,7 +66,7 @@ public class EducationCnt {
     ) {
         EducationDTO educationDTO = educationService.update(id, updateEducationReq);
 
-        return ResponseEntity.status(HttpStatus.OK).body(educationDTO);
+        return ResponseEntity.ok(educationDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
