@@ -13,21 +13,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-
 import ru.ai.sin.dto.company.AddCompanyReq;
 import ru.ai.sin.dto.company.CompanyDTO;
 import ru.ai.sin.dto.company.CompanyFilterReq;
-
 import ru.ai.sin.dto.company.UpdateCompanyReq;
-import ru.ai.sin.entity.CompanyEnt;
+
 import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.repository.CompanyRepo;
-import ru.ai.sin.service.impl.CompanyService;
 
+import ru.ai.sin.service.impl.CompanyService;
 import ru.ai.sin.service.tools.CompanyTools;
 
-import java.util.List;
 
 @Slf4j
 @Service
@@ -57,10 +56,8 @@ public class CompanyServImpl implements CompanyService {
                         companyFilterReq.name(),
                         pageable);
 
-        List<CompanyEnt> companyEntList = companies.getContent();
-
         return new PageResponse<>(
-                companyTools.mapToDTOs(companyEntList),
+                companyTools.mapToDTOs(companies.getContent()),
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 companies.getTotalElements(),
@@ -88,7 +85,7 @@ public class CompanyServImpl implements CompanyService {
 
         CompanyDTO companyDTO = companyTools.mapToDTO(companyEnt);
 
-        log.info("User: {}, update a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyDTO);
+        log.info("User: {}, updated a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyDTO);
 
         return companyDTO;
     }
@@ -107,6 +104,6 @@ public class CompanyServImpl implements CompanyService {
             throw new BadRequestException("Error while deleting company");
         }
 
-        log.info("User: {}, delete a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyEnt);
+        log.info("User: {}, deleted a company: {} with data: {}", securityHelper.getCurrentUsername(), id, companyEnt);
     }
 }
