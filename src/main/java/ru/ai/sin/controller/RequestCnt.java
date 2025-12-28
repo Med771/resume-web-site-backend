@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ public class RequestCnt {
 
     private final RequestService requestService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<RequestDTO> getById(@PathVariable("id") @Min(1) long id) {
         RequestDTO requestDTO = requestService.getById(id);
@@ -37,6 +39,7 @@ public class RequestCnt {
         return ResponseEntity.ok(requestDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<RequestDTO>> getByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -48,6 +51,7 @@ public class RequestCnt {
         return ResponseEntity.ok(requestDTOs);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/newChat/{id}")
     public ResponseEntity<RequestDTO> newChatById(
             @PathVariable @Min(1) long id,
@@ -59,6 +63,7 @@ public class RequestCnt {
         return ResponseEntity.ok(requestDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/status/{id}")
     public ResponseEntity<RequestDTO> updateStatus(
             @PathVariable @Min(1) long id,
