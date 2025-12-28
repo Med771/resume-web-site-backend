@@ -3,6 +3,7 @@ package ru.ai.sin.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -31,6 +32,10 @@ public interface StudentRepo extends
     @NonNull
     @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<StudentEnt> findAll(@NonNull Pageable pageable);
+
+    @NonNull
+    @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
+    Page<StudentEnt> findAll(Specification specification, @NonNull Pageable pageable);
 
     @Query("SELECT s.skills FROM StudentEnt s WHERE s.id = :studentId")
     Set<SkillEnt> findSkillsByStudentId(UUID studentId);
