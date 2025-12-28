@@ -16,7 +16,9 @@ import org.springframework.validation.annotation.Validated;
 
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.HttpStatus;
 import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
 import ru.ai.sin.dto.request.RequestNewChatReq;
@@ -49,6 +51,16 @@ public class RequestCnt {
         PageResponse<RequestDTO> requestDTOs = requestService.getByFilter(pageable, requestFilterReq);
 
         return ResponseEntity.ok(requestDTOs);
+    }
+
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PostMapping()
+    public ResponseEntity<RequestDTO> create(
+            @Valid @RequestBody AddRequestReq addRequestReq
+    ) {
+        RequestDTO requestDTO = requestService.create(addRequestReq);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
