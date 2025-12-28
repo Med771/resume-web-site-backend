@@ -6,10 +6,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ResultEnum {
-    PENDING("pending"),
-    ACCEPTED("accepted"),
-    REJECTED("rejected"),
-    COMPLETED("completed");
+    CREATION("creation"),
+    EXPECTATION("expectation"),
+    SUCCESS("success"),
+    REFUSAL("refusal");
 
     private final String result;
 
