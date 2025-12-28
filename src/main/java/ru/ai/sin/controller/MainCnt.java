@@ -21,7 +21,6 @@ public class MainCnt {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "photo/{image_path}")
     public ResponseEntity<byte[]> getPhoto(
             @PathVariable("image_path") String image_path

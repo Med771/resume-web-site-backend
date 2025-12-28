@@ -14,4 +14,8 @@ import java.util.UUID;
 public interface RecruiterRepo extends JpaRepository<RecruiterEnt, UUID> {
 
     Page<RecruiterEnt> findAllByCompanyNameIgnoreCase(String companyName, Pageable pageable);
+
+    java.util.Optional<RecruiterEnt> findByContactInformationTelegramUsername(String telegramUsername);
+
+    java.util.Optional<RecruiterEnt> findByUserInformationEmail(String email);
 }
