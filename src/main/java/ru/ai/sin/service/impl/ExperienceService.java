@@ -1,11 +1,9 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.experience.AddExperienceReq;
-import ru.ai.sin.dto.experience.GetAboutCompanyRes;
-import ru.ai.sin.dto.experience.GetAboutStudentRes;
-import ru.ai.sin.dto.experience.ExperienceDTO;
+import org.springframework.data.domain.Pageable;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.experience.*;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface ExperienceService {
@@ -15,24 +13,21 @@ public interface ExperienceService {
             long id
     );
 
-    GetAboutCompanyRes getAboutCompanyById(
-            long id,
-            int pageExperienceNumber, int pageExperienceSize);
+    @Deprecated
     GetAboutStudentRes getAboutStudentById(
             UUID id,
             int pageExperienceNumber, int pageExperienceSize);
 
-    List<ExperienceDTO> getAll(
-            int pageExperienceNumber, int pageExperienceSize);
-
     // ---------- POST METHODS ----------
-    ExperienceDTO create(
-            AddExperienceReq addExperienceReq);
+    PageResponse<ExperienceDTO> getAllByFilter(
+            Pageable pageable,
+            ExperienceFilterReq experienceFilterReq);
+
+    ExperienceDTO create(AddExperienceReq addExperienceReq);
     ExperienceDTO update(
             long id,
-            AddExperienceReq addExperienceReq);
+            UpdateExperienceReq updateExperienceReq);
 
     // ---------- DELETE METHODS ----------
-    ExperienceDTO deleteById(
-            long id);
+    void deleteById(long id);
 }

@@ -8,6 +8,7 @@ import org.mapstruct.ReportingPolicy;
 import ru.ai.sin.dto.experience.AddExperienceReq;
 import ru.ai.sin.dto.experience.ExperienceRes;
 import ru.ai.sin.dto.experience.ExperienceDTO;
+import ru.ai.sin.dto.experience.UpdateExperienceReq;
 
 import ru.ai.sin.entity.ExperienceEnt;
 
@@ -34,5 +35,5 @@ public interface ExperienceMapper {
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "company", ignore = true)
     @Mapping(target = "student", ignore = true)
-    void updateEntityFromDto(AddExperienceReq dto, @MappingTarget ExperienceEnt entity);
+    void updateEntityFromDto(UpdateExperienceReq dto, @MappingTarget ExperienceEnt entity);
 }

@@ -4,14 +4,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.experience.*;
+
 import ru.ai.sin.entity.ExperienceEnt;
 
+import ru.ai.sin.entity.spec.ExperienceSpecifications;
+
 import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
@@ -42,6 +53,8 @@ public class ExperienceServImpl implements ExperienceService {
     private final CompanyTools companyTools;
     private final StudentTools studentTools;
 
+    private final SecurityHelper securityHelper;
+
     private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
         experienceEnt.setCompany(companyTools.getCompanyOrThrow(companyId));
     }
@@ -55,28 +68,7 @@ public class ExperienceServImpl implements ExperienceService {
         return experienceTools.mapToDTO(experienceTools.getExperienceOrThrow(id));
     }
 
-    @Override
-    public GetAboutCompanyRes getAboutCompanyById(
-            long id,
-            int pageExperienceNumber,
-            int pageExperienceSize
-    ) {
-
-        List<ExperienceEnt> experienceEntList = experienceRepo
-                .findAllByCompanyId(
-                        id,
-                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
-                .getContent();
-
-        List<GetAboutCompanyRes.GetCompanyExperienceRes> getCompanyExperienceRes = experienceEntList.stream()
-                .map(experienceEnt -> new GetAboutCompanyRes.GetCompanyExperienceRes(
-                        experienceEnt.getStudent().getId(),
-                        experienceMapper.toRes(experienceEnt)
-                )).toList();
-
-        return new GetAboutCompanyRes(id, getCompanyExperienceRes);
-    }
-
+    @Deprecated
     @Override
     public GetAboutStudentRes getAboutStudentById(
             UUID id,
@@ -99,17 +91,20 @@ public class ExperienceServImpl implements ExperienceService {
     }
 
     @Override
-    public List<ExperienceDTO> getAll(
-            int pageExperienceNumber,
-            int pageExperienceSize
-    ) {
-        List<ExperienceEnt> experienceEntList = experienceRepo
+    @Transactional
+    public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, ExperienceFilterReq experienceFilterReq) {
+        Page<ExperienceEnt> page = experienceRepo
                 .findAll(
-                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
-                .getContent();
+                        ExperienceSpecifications.byFilters(experienceFilterReq),
+                        pageable
+                );
 
-        return experienceEntList.stream()
-                .map(experienceTools::mapToDTO).toList();
+        return new PageResponse<>(
+                page.getContent().stream().map(experienceTools::mapToDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override
@@ -122,33 +117,41 @@ public class ExperienceServImpl implements ExperienceService {
 
         experienceEnt = experienceRepo.save(experienceEnt);
 
-        return experienceTools.mapToDTO(experienceEnt);
+        ExperienceDTO experienceDTO = experienceTools.mapToDTO(experienceEnt);
+
+        log.info("User: {}, created a new experience: {}", securityHelper.getCurrentUsername(), experienceDTO);
+
+        return experienceDTO;
     }
 
     @Override
     @Transactional
     public ExperienceDTO update(
             long id,
-            AddExperienceReq addExperienceReq
+            UpdateExperienceReq updateExperienceReq
     ) {
         ExperienceEnt experienceEnt = experienceTools.getExperienceOrThrow(id);
 
-        experienceMapper.updateEntityFromDto(addExperienceReq, experienceEnt);
+        experienceMapper.updateEntityFromDto(updateExperienceReq, experienceEnt);
 
-        if (!Objects.equals(experienceEnt.getCompany().getId(), addExperienceReq.companyId())) {
-            updateActiveCompanyOrThrow(addExperienceReq.companyId(), experienceEnt);
+        if (!Objects.equals(experienceEnt.getCompany().getId(), updateExperienceReq.companyId())) {
+            updateActiveCompanyOrThrow(updateExperienceReq.companyId(), experienceEnt);
         }
 
-        if (!Objects.equals(experienceEnt.getStudent().getId(), addExperienceReq.studentId())) {
-            updateActiveStudentOrThrow(addExperienceReq.studentId(), experienceEnt);
+        if (!Objects.equals(experienceEnt.getStudent().getId(), updateExperienceReq.studentId())) {
+            updateActiveStudentOrThrow(updateExperienceReq.studentId(), experienceEnt);
         }
 
-        return experienceTools.mapToDTO(experienceEnt);
+        ExperienceDTO experienceDTO = experienceTools.mapToDTO(experienceEnt);
+
+        log.info("User: {}, updated a experience: {} with data: {}", securityHelper.getCurrentUsername(), id, experienceDTO);
+
+        return experienceDTO;
     }
 
     @Override
     @Transactional
-    public ExperienceDTO deleteById(long id) {
+    public void deleteById(long id) {
         ExperienceEnt experienceEnt = experienceTools.getExperienceOrThrow(id);
 
         try {
@@ -160,6 +163,6 @@ public class ExperienceServImpl implements ExperienceService {
             throw new BadRequestException("Error while deleting experience");
         }
 
-        return experienceTools.mapToDTO(experienceEnt);
+        log.info("User: {}, deleted a experience: {} with data: {}", securityHelper.getCurrentUsername(), id, experienceEnt);
     }
 }

@@ -1,9 +1,12 @@
 package ru.ai.sin.mapper;
 
 import org.mapstruct.*;
+
 import ru.ai.sin.dto.education.AddEducationReq;
 import ru.ai.sin.dto.education.EducationDTO;
 import ru.ai.sin.dto.education.EducationRes;
+import ru.ai.sin.dto.education.UpdateEducationReq;
+
 import ru.ai.sin.entity.EducationEnt;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -24,5 +27,5 @@ public interface EducationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "institutions", ignore = true)
-    void updateEntityFromDto(AddEducationReq dto, @MappingTarget EducationEnt entity);
+    void updateEntityFromDto(UpdateEducationReq dto, @MappingTarget EducationEnt entity);
 }
