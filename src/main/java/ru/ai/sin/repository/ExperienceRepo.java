@@ -2,9 +2,11 @@ package ru.ai.sin.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNull;
+
 import org.springframework.stereotype.Repository;
 import ru.ai.sin.entity.ExperienceEnt;
 
@@ -22,13 +24,13 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
 
     Set<ExperienceEnt> findAllByCompanyIdIn(Set<Long> companyIds);
 
-    @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<ExperienceEnt> findAllByCompanyId(Long companyId, Pageable pageable);
-
     @EntityGraph(attributePaths = {"company"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<ExperienceEnt> findAllByStudentId(UUID studentId, Pageable pageable);
 
-    @NonNull
-    @EntityGraph(attributePaths = {"company", "student"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<ExperienceEnt> findAll(@NonNull Pageable pageable);
+    @EntityGraph(attributePaths = {"student", "company"})
+    Page<ExperienceEnt> findAll(
+            Specification<ExperienceEnt> spec,
+            Pageable pageable
+    );
+
 }
