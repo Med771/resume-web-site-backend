@@ -96,8 +96,12 @@ public class TelegramServImpl implements TelegramService {
     public StudentTelegramDTO clearStudentTelegramUserId(UUID studentId) {
         StudentEnt studentEnt = telegramTools.getStudentOrThrow(studentId);
 
-        studentEnt.getContactInformation().setTelegramUserId(null);
-        studentEnt = studentRepo.save(studentEnt);
+        if (studentEnt.getContactInformation() == null) {
+            studentEnt.setContactInformation(new ContactInformation());
+        }
+        else {
+            studentEnt.getContactInformation().setTelegramUserId(null);
+        }
 
         StudentTelegramDTO studentTelegramDTO = telegramTools.mapStudentToDTO(studentEnt);
 
