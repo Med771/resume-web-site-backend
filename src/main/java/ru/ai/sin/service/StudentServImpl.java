@@ -17,6 +17,7 @@ import ru.ai.sin.dto.student.*;
 import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.SpecialityEnt;
 import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.entity.model.ContactInformation;
 import ru.ai.sin.entity.spec.StudentSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
@@ -183,6 +184,11 @@ public class StudentServImpl implements StudentService {
 
         studentMapper.updateEntityFromDto(updateStudentReq, studentEnt);
 
+        if (studentEnt.getContactInformation() == null) {
+            studentEnt.setContactInformation(new ContactInformation());
+        }
+        studentEnt.getUserInformation().setFirstName(updateStudentReq.firstName());
+        studentEnt.getUserInformation().setLastName(updateStudentReq.lastName());
         studentEnt.setSpeciality(specialityEnt);
         studentEnt.setSkills(skillEntSet);
         studentEnt.setImagePath(filePath);
