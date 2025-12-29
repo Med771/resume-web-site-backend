@@ -18,6 +18,8 @@ import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.spec.RequestSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.helper.FastHelper;
+import ru.ai.sin.helper.model.ChatCreateResponseDto;
 import ru.ai.sin.repository.RequestRepo;
 import ru.ai.sin.service.impl.RequestService;
 import ru.ai.sin.service.tools.RecruiterTools;
@@ -34,6 +36,8 @@ public class RequestServImpl implements RequestService {
     private final RequestTools requestTools;
     private final StudentTools studentTools;
     private final RecruiterTools recruiterTools;
+
+    private final FastHelper fastHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,7 +67,6 @@ public class RequestServImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO create(AddRequestReq addRequestReq) {
-        // Создаем AddRecruiterReq из AddRequestReq
         AddRecruiterReq addRecruiterReq = new AddRecruiterReq(
                 addRequestReq.companyName(),
                 addRequestReq.firstName(),
@@ -74,16 +77,26 @@ public class RequestServImpl implements RequestService {
                 addRequestReq.telegramUsername()
         );
 
-        // Ищем или создаем рекрутера
         var recruiterEnt = recruiterTools.findOrCreateRecruiter(addRecruiterReq);
 
-        // Получаем студента
         StudentEnt studentEnt = studentTools.getStudentOrThrow(addRequestReq.studentId());
 
-        // Создаем RequestEnt
         RequestEnt requestEnt = new RequestEnt();
         requestEnt.setRecruiter(recruiterEnt);
         requestEnt.setStudent(studentEnt);
+
+        try {
+            ChatCreateResponseDto resp = fastHelper.createChat("Чат с кандидатом: %s %s и компанией: %s".formatted(
+                    studentEnt.getUserInformation().getLastName(),
+                    studentEnt.getUserInformation().getFirstName(),
+                    recruiterEnt.getCompanyName()));
+
+            requestEnt.setChatId(String.valueOf(resp.chatId()));
+            requestEnt.setChatUrl(resp.inviteLink());
+        }
+        catch (Exception e) {
+            log.warn("Error while creating chat: {}", e.getMessage());
+        }
 
         try {
             requestEnt = requestRepo.save(requestEnt);
@@ -93,7 +106,6 @@ public class RequestServImpl implements RequestService {
         }
 
         RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
-
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
         return requestDTO;

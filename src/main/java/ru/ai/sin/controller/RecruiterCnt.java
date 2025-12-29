@@ -63,7 +63,7 @@ public class RecruiterCnt {
         return ResponseEntity.status(HttpStatus.OK).body(recruiterDTOs);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/create")
     public ResponseEntity<RecruiterDTO> create(
             @Valid @RequestBody AddRecruiterReq recruiterReq

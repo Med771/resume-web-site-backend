@@ -29,6 +29,9 @@ public class RequestEnt {
     @Convert(converter = ResultEnumConverter.class)
     private ResultEnum result = ResultEnum.CREATION;
 
+    @Column(name = "chat_title")
+    private String chatTitle;
+
     @Column(name = "chat_url")
     private String chatUrl;
 

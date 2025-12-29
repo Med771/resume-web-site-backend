@@ -108,6 +108,10 @@ app:
       - url: "https://api.example.com"
         description: "Production Server"
 
+  fast:
+    url: "http://localhost:8000/create_chat"
+    bot-username: "@med777701bot"
+
 management:
   endpoints:
     web:
