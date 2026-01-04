@@ -17,7 +17,7 @@ import ru.ai.sin.service.impl.AuthService;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthCnt {
+public class AuthController {
 
     private final AuthService authService;
     private final CookieHelper cookieHelper;
