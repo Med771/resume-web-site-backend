@@ -1,10 +1,9 @@
 package ru.ai.sin.service.impl;
 
 import org.springframework.data.domain.Pageable;
+
 import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.experience.*;
-
-import java.util.UUID;
 
 public interface ExperienceService {
 
@@ -12,11 +11,6 @@ public interface ExperienceService {
     ExperienceDTO getById(
             long id
     );
-
-    @Deprecated
-    GetAboutStudentRes getAboutStudentById(
-            UUID id,
-            int pageExperienceNumber, int pageExperienceSize);
 
     // ---------- POST METHODS ----------
     PageResponse<ExperienceDTO> getAllByFilter(

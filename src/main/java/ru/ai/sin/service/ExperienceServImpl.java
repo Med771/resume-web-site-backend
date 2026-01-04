@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
@@ -17,14 +16,12 @@ import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.experience.*;
 
 import ru.ai.sin.entity.ExperienceEnt;
-
 import ru.ai.sin.entity.spec.ExperienceSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.CompanyMapper;
 import ru.ai.sin.mapper.ExperienceMapper;
 
 import ru.ai.sin.repository.ExperienceRepo;
@@ -35,7 +32,6 @@ import ru.ai.sin.service.tools.CompanyTools;
 import ru.ai.sin.service.tools.ExperienceTools;
 import ru.ai.sin.service.tools.StudentTools;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -47,9 +43,9 @@ public class ExperienceServImpl implements ExperienceService {
     private final ExperienceRepo experienceRepo;
 
     private final ExperienceMapper experienceMapper;
-    private final CompanyMapper companyMapper;
 
     private final ExperienceTools experienceTools;
+
     private final CompanyTools companyTools;
     private final StudentTools studentTools;
 
@@ -68,36 +64,12 @@ public class ExperienceServImpl implements ExperienceService {
         return experienceTools.mapToDTO(experienceTools.getExperienceOrThrow(id));
     }
 
-    @Deprecated
-    @Override
-    public GetAboutStudentRes getAboutStudentById(
-            UUID id,
-            int pageExperienceNumber,
-            int pageExperienceSize
-    ) {
-        List<ExperienceEnt> experienceEntList = experienceRepo
-                .findAllByStudentId(
-                        id,
-                        PageRequest.of(pageExperienceNumber, pageExperienceSize))
-                .getContent();
-
-        List<GetAboutStudentRes.GetStudentExperienceRes> getStudentExperienceRes = experienceEntList.stream()
-                .map(experienceEnt -> new GetAboutStudentRes.GetStudentExperienceRes(
-                        companyMapper.toRes(experienceEnt.getCompany()),
-                        experienceMapper.toRes(experienceEnt)
-                )).toList();
-
-        return new GetAboutStudentRes(id, getStudentExperienceRes);
-    }
-
     @Override
     @Transactional
     public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, ExperienceFilterReq experienceFilterReq) {
-        Page<ExperienceEnt> page = experienceRepo
-                .findAll(
-                        ExperienceSpecifications.byFilters(experienceFilterReq),
-                        pageable
-                );
+        Page<ExperienceEnt> page = experienceRepo.findAll(
+                ExperienceSpecifications.byFilters(experienceFilterReq),
+                pageable);
 
         return new PageResponse<>(
                 page.getContent().stream().map(experienceTools::mapToDTO).toList(),
