@@ -1,18 +1,24 @@
 package ru.ai.sin.controller;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
+// TODO: up security for image in Q1 2026
+// import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
+
 import ru.ai.sin.service.impl.MainService;
 
 @RestController
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/main")
-public class MainCnt {
+public class MainController {
 
     private final MainService mainService;
 
@@ -21,6 +27,8 @@ public class MainCnt {
         return ResponseEntity.noContent().build();
     }
 
+    // TODO: up security for image in Q1 2026
+    // @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "photo/{image_path}")
     public ResponseEntity<byte[]> getPhoto(
             @PathVariable("image_path") String image_path

@@ -27,7 +27,7 @@ import ru.ai.sin.service.impl.EducationService;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/education")
-public class EducationCnt {
+public class EducationController {
 
     private final EducationService educationService;
 
