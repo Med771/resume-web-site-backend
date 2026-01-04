@@ -32,7 +32,7 @@ import ru.ai.sin.service.impl.CompanyService;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/company")
-public class CompanyCnt {
+public class CompanyController {
 
     private final CompanyService companyService;
 
