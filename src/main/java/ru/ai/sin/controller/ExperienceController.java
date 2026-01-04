@@ -48,7 +48,7 @@ public class ExperienceController {
 
             @Valid @RequestBody ExperienceFilterReq experienceFilterReq) {
         if (experienceFilterReq.companyId() != null) {
-            securityHelper.checkRoleForFilter();
+            securityHelper.checkAdminRoleForFilter();
         }
 
         PageResponse<ExperienceDTO> experienceDTOs = experienceService.getAllByFilter(pageable, experienceFilterReq);
