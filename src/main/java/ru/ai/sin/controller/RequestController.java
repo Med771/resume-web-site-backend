@@ -29,7 +29,7 @@ import ru.ai.sin.service.impl.RequestService;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/request")
-public class RequestCnt {
+public class RequestController {
 
     private final RequestService requestService;
 
