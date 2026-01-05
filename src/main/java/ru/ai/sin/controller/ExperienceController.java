@@ -36,13 +36,13 @@ public class ExperienceController {
     private final SecurityHelper securityHelper;
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "{id}")
+    @GetMapping(path = "/{id}")
     public ResponseEntity<ExperienceDTO> getById(@PathVariable @Min(1) long id) {
         return ResponseEntity.ok(experienceService.getById(id));
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @PostMapping(path = "filter")
+    @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
