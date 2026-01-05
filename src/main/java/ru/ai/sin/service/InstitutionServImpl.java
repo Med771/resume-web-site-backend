@@ -4,28 +4,33 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.institution.*;
 
 import ru.ai.sin.entity.InstitutionEnt;
+import ru.ai.sin.entity.spec.InstitutionSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
-import ru.ai.sin.mapper.EducationMapper;
+import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.mapper.InstitutionMapper;
 
 import ru.ai.sin.repository.InstitutionRepo;
 
 import ru.ai.sin.service.impl.InstitutionService;
+
 import ru.ai.sin.service.tools.EducationTools;
 import ru.ai.sin.service.tools.InstitutionTools;
 import ru.ai.sin.service.tools.StudentTools;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -37,11 +42,13 @@ public class InstitutionServImpl implements InstitutionService {
     private final InstitutionRepo institutionRepo;
 
     private final InstitutionMapper institutionMapper;
-    private final EducationMapper educationMapper;
 
     private final InstitutionTools institutionTools;
+
     private final EducationTools educationTools;
     private final StudentTools studentTools;
+
+    private final SecurityHelper securityHelper;
 
     private void updateActiveEducationOrThrow(long educationId, InstitutionEnt institutionEnt) {
         institutionEnt.setEducation(educationTools.getEducationOrThrow(educationId));
@@ -59,59 +66,18 @@ public class InstitutionServImpl implements InstitutionService {
     }
 
     @Override
-    public GetAboutEducationRes getByEducationId(
-            long id,
-            int pageInstitutionNumber,
-            int pageInstitutionSize
-    ) {
-        List<InstitutionEnt> institutionEntList = institutionRepo
-                .findAllByEducationId(
-                        id,
-                        PageRequest.of(pageInstitutionNumber, pageInstitutionSize))
-                .getContent();
+    @Transactional(readOnly = true)
+    public PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, InstitutionFilterReq institutionFilterReq) {
+        Page<InstitutionEnt> page = institutionRepo.findAll(
+                InstitutionSpecifications.byFilters(institutionFilterReq),
+                pageable);
 
-        List<GetAboutEducationRes.GetEducationInstitutionRes> getEducationInstitutionResList = institutionEntList.stream()
-                .map(institutionEnt -> new GetAboutEducationRes.GetEducationInstitutionRes(
-                        institutionEnt.getStudent().getId(),
-                        institutionMapper.toRes(institutionEnt)
-                )).toList();
-
-        return new GetAboutEducationRes(id, getEducationInstitutionResList);
-    }
-
-    @Override
-    public GetAboutStudentRes getByStudentId(
-            UUID id,
-            int pageInstitutionNumber,
-            int pageInstitutionSize
-    ) {
-        List<InstitutionEnt> institutionEntList = institutionRepo
-                .findAllByStudentId(
-                        id,
-                        PageRequest.of(pageInstitutionNumber, pageInstitutionSize))
-                .getContent();
-
-        List<GetAboutStudentRes.GetStudentInstitutionRes> getStudentInstitutionResList = institutionEntList.stream()
-                .map(institutionEnt -> new GetAboutStudentRes.GetStudentInstitutionRes(
-                        educationMapper.toRes(institutionEnt.getEducation()),
-                        institutionMapper.toRes(institutionEnt)
-                )).toList();
-
-        return new GetAboutStudentRes(id, getStudentInstitutionResList);
-    }
-
-    @Override
-    public List<InstitutionDTO> getAll(
-            int pageInstitutionNumber,
-            int pageInstitutionSize
-    ) {
-        List<InstitutionEnt> institutionEntList = institutionRepo
-                .findAll(
-                        PageRequest.of(pageInstitutionNumber, pageInstitutionSize))
-                .getContent();
-
-        return institutionEntList.stream()
-                .map(institutionTools::mapToDTO).toList();
+        return new PageResponse<>(
+                page.getContent().stream().map(institutionTools::mapToDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override
@@ -122,34 +88,42 @@ public class InstitutionServImpl implements InstitutionService {
         updateActiveEducationOrThrow(addInstitutionReq.educationId(), institutionEnt);
         updateActiveStudentOrThrow(addInstitutionReq.studentId(), institutionEnt);
 
-        institutionRepo.save(institutionEnt);
+        institutionEnt = institutionRepo.save(institutionEnt);
 
-        return institutionTools.mapToDTO(institutionEnt);
+        InstitutionDTO institutionDTO = institutionTools.mapToDTO(institutionEnt);
+
+        log.info("User: {}, created a new institution: {}", securityHelper.getCurrentUsername(), institutionDTO);
+
+        return institutionDTO;
     }
 
     @Override
     @Transactional
     public InstitutionDTO update(
             long id,
-            AddInstitutionReq addInstitutionReq
+            UpdateInstitutionReq updateInstitutionReq
     ) {
         InstitutionEnt institutionEnt = institutionTools.getInstitutionOrThrow(id);
 
-        institutionMapper.updateEntityFromDto(addInstitutionReq, institutionEnt);
+        institutionMapper.updateEntityFromDto(updateInstitutionReq, institutionEnt);
 
-        if (!Objects.equals(institutionEnt.getEducation().getId(), addInstitutionReq.educationId())) {
-            updateActiveEducationOrThrow(addInstitutionReq.educationId(), institutionEnt);
+        if (!Objects.equals(institutionEnt.getEducation().getId(), updateInstitutionReq.educationId())) {
+            updateActiveEducationOrThrow(updateInstitutionReq.educationId(), institutionEnt);
         }
-        if (!Objects.equals(institutionEnt.getStudent().getId(), addInstitutionReq.studentId())) {
-            updateActiveStudentOrThrow(addInstitutionReq.studentId(), institutionEnt);
+        if (!Objects.equals(institutionEnt.getStudent().getId(), updateInstitutionReq.studentId())) {
+            updateActiveStudentOrThrow(updateInstitutionReq.studentId(), institutionEnt);
         }
 
-        return institutionTools.mapToDTO(institutionEnt);
+        InstitutionDTO institutionDTO = institutionTools.mapToDTO(institutionEnt);
+
+        log.info("User: {}, updated a institution: {} with data: {}", securityHelper.getCurrentUsername(), id, institutionDTO);
+
+        return institutionDTO;
     }
 
     @Override
     @Transactional
-    public InstitutionDTO deleteById(long id) {
+    public void deleteById(long id) {
         InstitutionEnt institutionEnt = institutionTools.getInstitutionOrThrow(id);
 
         try {
@@ -161,6 +135,6 @@ public class InstitutionServImpl implements InstitutionService {
             throw new BadRequestException("Error while deleting institution");
         }
 
-        return institutionTools.mapToDTO(institutionEnt);
+        log.info("User: {}, deleted a institution: {} with data: {}", securityHelper.getCurrentUsername(), id, institutionEnt);
     }
 }
