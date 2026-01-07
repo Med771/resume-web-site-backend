@@ -20,6 +20,7 @@ import ru.ai.sin.dto.skill.UpdateSkillReq;
 
 import ru.ai.sin.entity.SkillEnt;
 
+import ru.ai.sin.entity.spec.SkillSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
@@ -53,6 +54,7 @@ public class SkillServImpl implements SkillService {
     @Override
     public PageResponse<SkillDTO> getAllByFilter(Pageable pageable, SkillFilterReq skillFilterReq) {
         Page<SkillEnt> page = skillRepo.findAll(
+                SkillSpecifications.byFilters(skillFilterReq),
                 pageable
         );
 
