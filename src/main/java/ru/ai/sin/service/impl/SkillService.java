@@ -1,28 +1,31 @@
 package ru.ai.sin.service.impl;
 
+import org.springframework.data.domain.Pageable;
+
+import ru.ai.sin.dto.PageResponse;
+
 import ru.ai.sin.dto.skill.AddSkillReq;
 import ru.ai.sin.dto.skill.SkillDTO;
+import ru.ai.sin.dto.skill.SkillFilterReq;
+import ru.ai.sin.dto.skill.UpdateSkillReq;
 
-import java.util.List;
 
 public interface SkillService {
 
     // ---------- GET METHODS ----------
-    SkillDTO getById(
-            long id);
-
-    List<SkillDTO> getAll(
-            int pageSkillsNumber, int pageSkillsSize);
+    SkillDTO getById(long id);
 
     // ---------- POST METHODS ----------
-    SkillDTO create(
-            AddSkillReq addSkillReq);
+    PageResponse<SkillDTO> getAllByFilter(
+            Pageable pageable,
+            SkillFilterReq skillFilterReq);
 
-    SkillDTO setNameById(
+    SkillDTO create(AddSkillReq addSkillReq);
+
+    SkillDTO updateById(
             long id,
-            AddSkillReq addSkillReq);
+            UpdateSkillReq updateSkillReq);
 
     // ---------- DELETE METHODS ----------
-    SkillDTO deleteById(
-            long id);
+    void deleteById(long id);
 }
