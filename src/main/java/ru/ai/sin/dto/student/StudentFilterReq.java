@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-public record GetStudentFilterReq(
+public record StudentFilterReq(
         Set<CourseEnum> course,
 
         Set<BusynessEnum> busyness,

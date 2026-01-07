@@ -1,26 +1,31 @@
 package ru.ai.sin.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
+
 import org.springframework.web.multipart.MultipartFile;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.student.*;
 
 import ru.ai.sin.service.impl.StudentService;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,100 +37,72 @@ public class StudentCnt {
     private final StudentService studentService;
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getById/{id}")
-    public ResponseEntity<StudentDTO> getById(
-            @PathVariable UUID id
-    ) {
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
         StudentDTO studentDTO = studentService.getById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
+        return ResponseEntity.ok(studentDTO);
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getAllCards")
-    public ResponseEntity<List<StudentCardDTO>> getAllCards(
-            @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageStudentSize
-    ) {
-        List<StudentCardDTO> studentCardDTOs = studentService
-                .getAllCards(
-                        pageStudentNumber, pageStudentSize);
+    @PostMapping(path = "/cardsFilter")
+    public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-        return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
+            @Valid @RequestBody StudentFilterReq studentFilterReq
+    ) {
+        PageResponse<StudentCardDTO> studentCardDTOs = studentService.getAllCardsByFilter(pageable, studentFilterReq);
+
+        return ResponseEntity.ok(studentCardDTOs);
     }
 
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getAll")
-    public ResponseEntity<List<StudentDTO>> getAll(
-            @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageStudentSize
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PostMapping(path = "/filter")
+    public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+
+            @Valid @RequestBody StudentFilterReq studentFilterReq
     ) {
-        List<StudentDTO> studentDTOs = studentService
-                .getAll(
-                        pageStudentNumber, pageStudentSize);
+        PageResponse<StudentDTO> studentDTOs = studentService.getAllByFilter(pageable, studentFilterReq);
 
-        return ResponseEntity.status(HttpStatus.OK).body(studentDTOs);
-    }
-
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @PostMapping(path = "/getAllByFilters")
-    public ResponseEntity<List<StudentCardDTO>> getAllByFilters(
-            @Min(0) @RequestParam(defaultValue = "0") int pageStudentNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageStudentSize,
-
-            @Valid @RequestBody GetStudentFilterReq getStudentFilterReq
-    ) {
-        List<StudentCardDTO> studentCardDTOs = studentService
-                .getAllByFilters(
-                        pageStudentNumber, pageStudentSize,
-                        getStudentFilterReq);
-
-        return ResponseEntity.status(HttpStatus.OK).body(studentCardDTOs);
+        return ResponseEntity.ok(studentDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<StudentDTO> create(
-            @RequestPart("avatarFile") MultipartFile multipartFile,
-            @Valid @RequestPart(value = "profileData") String profileDataJson
-    ) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setPhoto(
+            @PathVariable("id") @NotNull UUID id,
 
-        AddStudentReq addStudentReq = objectMapper.readValue(profileDataJson, AddStudentReq.class);
+            @RequestPart("avatarFile") MultipartFile multipartFile
+    ) {
+        studentService.setPhoto(id, multipartFile);
+    }
 
-        StudentDTO studentDTO = studentService.create(multipartFile, addStudentReq);
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping()
+    public ResponseEntity<StudentDTO> create(@Valid @RequestBody AddStudentReq addStudentReq) {
+        StudentDTO studentDTO = studentService.create(addStudentReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "updateById/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> updateById(
-            @PathVariable("id") UUID id,
+            @PathVariable("id")@NotNull UUID id,
 
-            @RequestPart("avatarFile") MultipartFile multipartFile,
-            @Valid @RequestPart(value = "profileData") String profileDataJson
-    ) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            @Valid @RequestBody UpdateStudentReq updateStudentReq
+    ) {
+        StudentDTO studentDTO = studentService.update(id, updateStudentReq);
 
-        UpdateStudentReq updateStudentReq = objectMapper.readValue(profileDataJson, UpdateStudentReq.class);
-
-        StudentDTO studentDTO = studentService.update(id, multipartFile, updateStudentReq);
-
-        return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
+        return ResponseEntity.ok(studentDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(path = "/deleteById/{id}")
-    public ResponseEntity<StudentDTO> deleteById(
-            @PathVariable UUID id
-    ) {
-        StudentDTO studentDTO = studentService.deleteById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(studentDTO);
+    @DeleteMapping(path = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable @NotNull UUID id) {
+       studentService.deleteById(id);
     }
 }

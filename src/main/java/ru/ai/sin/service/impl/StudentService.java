@@ -1,35 +1,37 @@
 package ru.ai.sin.service.impl;
 
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.web.multipart.MultipartFile;
+
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.student.*;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface StudentService {
 
     // ---------- GET METHODS ----------
-    StudentDTO getById(
-            UUID id);
-
-    List<StudentCardDTO> getAllCards(
-            int pageStudentNumber, int pageStudentSize);
-    List<StudentCardDTO> getAllByFilters(
-            int pageStudentNumber, int pageStudentSize,
-            GetStudentFilterReq getStudentFilterReq);
-    List<StudentDTO> getAll(
-            int pageStudentNumber, int pageStudentSize);
+    StudentDTO getById(UUID id);
 
     // ---------- POST METHODS ----------
-    StudentDTO create(
-            MultipartFile multipartFile,
-            AddStudentReq  addStudentReq);
+    void setPhoto(
+            UUID id,
+            MultipartFile file);
+
+    PageResponse<StudentCardDTO> getAllCardsByFilter(
+            Pageable pageable,
+            StudentFilterReq studentFilterReq);
+    PageResponse<StudentDTO> getAllByFilter(
+            Pageable pageable,
+            StudentFilterReq studentFilterReq);
+
+    StudentDTO create(AddStudentReq  addStudentReq);
+
     StudentDTO update(
             UUID id,
-            MultipartFile multipartFile,
             UpdateStudentReq updateStudentReq);
 
     // ---------- DELETE METHODS ----------
-    StudentDTO deleteById(
-            UUID id);
+    void deleteById(UUID id);
 }

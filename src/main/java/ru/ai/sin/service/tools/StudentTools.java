@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.skill.SkillDTO;
+import ru.ai.sin.dto.student.StudentCardDTO;
 import ru.ai.sin.dto.student.StudentDTO;
 
 import ru.ai.sin.entity.StudentEnt;
@@ -40,5 +41,13 @@ public class StudentTools {
                 .stream().map(skillMapper::toDTO).toList();
 
         return studentMapper.toDTO(studentEnt, skillDTOList);
+    }
+
+    @Transactional
+    public StudentCardDTO mapToCardDTO(StudentEnt studentEnt) {
+        List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
+                .stream().map(skillMapper::toDTO).toList();
+
+        return studentMapper.toCardDTO(studentEnt, skillDTOList);
     }
 }
