@@ -4,24 +4,32 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.recruiter.AddRecruiterReq;
-import ru.ai.sin.dto.recruiter.GetRecruiterNameReq;
-import ru.ai.sin.dto.recruiter.RecruiterDTO;
-import ru.ai.sin.dto.recruiter.UpdateRecruiterReq;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.recruiter.*;
 
 import ru.ai.sin.entity.RecruiterEnt;
+import ru.ai.sin.entity.spec.RecruiterSpecifications;
+
 import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.helper.SecurityHelper;
+
 import ru.ai.sin.mapper.RecruiterMapper;
+
 import ru.ai.sin.repository.RecruiterRepo;
 
 import ru.ai.sin.service.impl.RecruiterService;
+
 import ru.ai.sin.service.tools.RecruiterTools;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -35,53 +43,28 @@ public class RecruiterServImpl implements RecruiterService {
 
     private final RecruiterTools recruiterTools;
 
+    private final SecurityHelper securityHelper;
+
     @Override
     public RecruiterDTO getById(UUID id) {
         return recruiterMapper.toDTO(recruiterTools.getRecruiterOrThrow(id));
     }
 
     @Override
-    public List<RecruiterDTO> getAll(
-            int pageRecruiterNumber,
-            int pageRecruiterSize
+    public PageResponse<RecruiterDTO> getAllByFilter(
+            Pageable pageable,
+            RecruiterFilterReq recruiterFilterReq
     ) {
-        List<RecruiterEnt> recruiterEntList = recruiterRepo
-                .findAll(PageRequest.of(pageRecruiterNumber, pageRecruiterSize))
-                .getContent();
+        Page<RecruiterEnt> page = recruiterRepo.findAll(
+                RecruiterSpecifications.byFilters(recruiterFilterReq),
+                pageable);
 
-        return recruiterEntList.stream().map(recruiterMapper::toDTO).toList();
-    }
-
-    @Override
-    public List<RecruiterDTO> getAllByCompanyName(
-            int pageRecruiterNumber,
-            int pageRecruiterSize,
-            GetRecruiterNameReq getRecruiterNameReq
-    ) {
-        List<RecruiterEnt> recruiterEntList = recruiterRepo
-                .findAllByCompanyNameIgnoreCase(
-                        getRecruiterNameReq.companyName(),
-                        PageRequest.of(pageRecruiterNumber, pageRecruiterSize))
-                .getContent();
-
-        return recruiterEntList.stream().map(recruiterMapper::toDTO).toList();
-    }
-
-    @Override
-    public RecruiterDTO create(AddRecruiterReq addRecruiterReq) {
-        RecruiterEnt recruiterEnt = recruiterMapper.toEntity(addRecruiterReq);
-
-        try {
-            recruiterEnt = recruiterRepo.save(recruiterEnt);
-        }
-        catch (DataIntegrityViolationException ex) {
-            log.warn("Recruiter already exists: {}, {}", addRecruiterReq.email(), addRecruiterReq.telegramUsername());
-
-            throw new BadRequestException("Recruiter already exists: %s, %s"
-                    .formatted(addRecruiterReq.email(), addRecruiterReq.telegramUsername()));
-        }
-
-        return recruiterMapper.toDTO(recruiterEnt);
+        return new PageResponse<>(
+                page.getContent().stream().map(recruiterMapper::toDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override
@@ -94,12 +77,16 @@ public class RecruiterServImpl implements RecruiterService {
 
         recruiterMapper.updateEntityFromDto(updateRecruiterReq, recruiterEnt);
 
-        return recruiterMapper.toDTO(recruiterEnt);
+        RecruiterDTO recruiterDTO = recruiterMapper.toDTO(recruiterEnt);
+
+        log.info("User: {}, updated a recruiter: {} with data: {}", securityHelper.getCurrentUsername(), id, recruiterDTO);
+
+        return recruiterDTO;
     }
 
     @Override
     @Transactional
-    public RecruiterDTO deleteById(UUID id) {
+    public void deleteById(UUID id) {
         RecruiterEnt recruiterEnt = recruiterTools.getRecruiterOrThrow(id);
 
         try {
@@ -111,6 +98,6 @@ public class RecruiterServImpl implements RecruiterService {
             throw new BadRequestException("Error while deleting recruiter");
         }
 
-        return recruiterMapper.toDTO(recruiterEnt);
+        log.info("User: {}, deleted a recruiter: {} with data: {}", securityHelper.getCurrentUsername(), id, recruiterEnt);
     }
 }

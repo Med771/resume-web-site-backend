@@ -1,28 +1,21 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.recruiter.AddRecruiterReq;
-import ru.ai.sin.dto.recruiter.GetRecruiterNameReq;
-import ru.ai.sin.dto.recruiter.UpdateRecruiterReq;
-import ru.ai.sin.dto.recruiter.RecruiterDTO;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.recruiter.*;
+
 import java.util.UUID;
 
 public interface RecruiterService {
 
     // ---------- GET METHODS ----------
-    RecruiterDTO getById(
-            UUID id);
-
-    List<RecruiterDTO> getAll(
-            int pageRecruiterNumber, int pageRecruiterSize);
-    List<RecruiterDTO> getAllByCompanyName(
-            int pageRecruiterNumber, int pageRecruiterSize,
-            GetRecruiterNameReq getRecruiterNameReq);
+    RecruiterDTO getById(UUID id);
 
     // ---------- POST METHODS ----------
-    RecruiterDTO create(
-            AddRecruiterReq addRecruiterReq);
+    PageResponse<RecruiterDTO> getAllByFilter(
+            Pageable pageable,
+            RecruiterFilterReq recruiterFilterReq);
 
     // ---------- PUT METHODS ----------
     RecruiterDTO update(
@@ -30,6 +23,5 @@ public interface RecruiterService {
             UpdateRecruiterReq updateRecruiterReq);
 
     // ---------- DELETE METHODS ----------
-    RecruiterDTO deleteById(
-            UUID id);
+    void deleteById(UUID id);
 }
