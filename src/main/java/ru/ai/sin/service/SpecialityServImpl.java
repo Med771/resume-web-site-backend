@@ -4,26 +4,32 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SpecialityDTO;
+import ru.ai.sin.dto.PageResponse;
+
+import ru.ai.sin.dto.speciality.*;
 
 import ru.ai.sin.entity.SpecialityEnt;
+import ru.ai.sin.entity.spec.SpecialitySpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
+
+import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.mapper.SpecialityMapper;
 
 import ru.ai.sin.repository.SpecialityRepo;
 
 import ru.ai.sin.service.impl.SpecialityService;
-
 import ru.ai.sin.service.tools.SpecialityTools;
 
-import java.util.List;
 
 @Slf4j
 @Service
@@ -36,25 +42,28 @@ public class SpecialityServImpl implements SpecialityService {
 
     private final SpecialityTools specialityTools;
 
+    private final SecurityHelper securityHelper;
+
     @Override
     public SpecialityDTO getById(long id) {
         return specialityMapper.toDTO(specialityTools.getSpecialityOrThrow(id));
     }
 
     @Override
-    public List<SpecialityDTO> getAll(
-            int pageSpecialityNumber,
-            int pageSpecialitySize
-    ) {
-        List<SpecialityEnt> specialityEntList = specialityRepo
-                .findAll(
-                        PageRequest.of(pageSpecialityNumber, pageSpecialitySize))
-                .getContent();
+    public PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, SpecialityFilterReq specialityFilterReq) {
+        Page<SpecialityEnt> page = specialityRepo.findAll(
+                SpecialitySpecifications.byFilters(specialityFilterReq),
+                pageable
+        );
 
-        return specialityEntList.stream()
-                .map(specialityMapper::toDTO)
-                .toList();
+        return new PageResponse<>(
+                page.getContent().stream().map(specialityMapper::toDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
+
 
     @Override
     @Transactional
@@ -70,7 +79,11 @@ public class SpecialityServImpl implements SpecialityService {
             throw new BadRequestException("Speciality already exists: " + addSpecialityReq.name());
         }
 
-        return specialityMapper.toDTO(specialityEnt);
+        SpecialityDTO specialityDTO = specialityMapper.toDTO(specialityEnt);
+
+        log.info("User: {}, created a new speciality: {}", securityHelper.getCurrentUsername(), specialityDTO);
+
+        return specialityDTO;
     }
 
 
@@ -78,18 +91,22 @@ public class SpecialityServImpl implements SpecialityService {
     @Transactional
     public SpecialityDTO update(
             long id,
-            AddSpecialityReq addSpecialityReq
+            UpdateSpecialityReq updateSpecialityReq
     ) {
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(id);
 
-        specialityMapper.updateEntityFromDto(addSpecialityReq, specialityEnt);
+        specialityMapper.updateEntityFromDto(updateSpecialityReq, specialityEnt);
 
-        return specialityMapper.toDTO(specialityEnt);
+        SpecialityDTO specialityDTO = specialityMapper.toDTO(specialityEnt);
+
+        log.info("User: {}, updated a speciality: {} with data: {}", securityHelper.getCurrentUsername(), id, specialityDTO);
+
+        return specialityDTO;
     }
 
     @Override
     @Transactional
-    public SpecialityDTO deleteById(long id) {
+    public void deleteById(long id) {
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(id);
 
         try {
@@ -101,6 +118,6 @@ public class SpecialityServImpl implements SpecialityService {
             throw new BadRequestException("Error while deleting speciality");
         }
 
-        return specialityMapper.toDTO(specialityEnt);
+        log.info("User: {}, deleted a speciality: {} with data: {}", securityHelper.getCurrentUsername(), id, specialityEnt);
     }
 }

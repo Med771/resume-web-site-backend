@@ -2,21 +2,26 @@ package ru.ai.sin.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
 
-import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SpecialityDTO;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.speciality.*;
 
 import ru.ai.sin.service.impl.SpecialityService;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,55 +32,49 @@ public class SpecialityCnt {
     private final SpecialityService specialityService;
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getById/{id}")
-    public ResponseEntity<SpecialityDTO> getById(
-            @PathVariable long id
-    ) {
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<SpecialityDTO> getById(@PathVariable @Min(1) long id) {
         SpecialityDTO specialityDTO = specialityService.getById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
+        return ResponseEntity.ok(specialityDTO);
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getAll")
-    public ResponseEntity<List<SpecialityDTO>> getAll(
-            @Min(0) @RequestParam(defaultValue = "0") int pageSpecialityNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageSpecialitySize
-    ) {
-        List<SpecialityDTO> specialityDTOs = specialityService.getAll(pageSpecialityNumber, pageSpecialitySize);
+    @PostMapping(path = "/filter")
+    public ResponseEntity<PageResponse<SpecialityDTO>> filter(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-        return ResponseEntity.status(HttpStatus.OK).body(specialityDTOs);
+            @Valid @RequestBody SpecialityFilterReq specialityFilterReq
+    ) {
+        PageResponse<SpecialityDTO> specialityDTOs = specialityService.getAllByFilter(pageable, specialityFilterReq);
+
+        return ResponseEntity.ok(specialityDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/create")
-    public ResponseEntity<SpecialityDTO> create(
-            @Valid @RequestBody AddSpecialityReq specialityReq
-    ) {
+    @PostMapping()
+    public ResponseEntity<SpecialityDTO> create(@Valid @RequestBody AddSpecialityReq specialityReq) {
         SpecialityDTO specialityDTO = specialityService.create(specialityReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "updateById/{id}")
+    @PutMapping(path = "/{id}")
     public ResponseEntity<SpecialityDTO> update(
-            @PathVariable long id,
+            @PathVariable @Min(1) long id,
 
-            @Valid @RequestBody AddSpecialityReq addSpecialityReq
+            @Valid @RequestBody UpdateSpecialityReq updateSpecialityReq
     ) {
-        SpecialityDTO specialityDTO = specialityService.update(id, addSpecialityReq);
+        SpecialityDTO specialityDTO = specialityService.update(id, updateSpecialityReq);
 
-        return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
+        return ResponseEntity.ok(specialityDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(path = "/deleteById/{id}")
-    public ResponseEntity<SpecialityDTO> deleteById(
-            @PathVariable long id
-    ) {
-        SpecialityDTO specialityDTO = specialityService.deleteById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(specialityDTO);
+    @DeleteMapping(path = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable @Min(1) long id) {
+        specialityService.deleteById(id);
     }
 }
