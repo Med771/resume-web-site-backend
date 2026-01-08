@@ -2,53 +2,63 @@ package ru.ai.sin.entity.spec;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
+
+import ru.ai.sin.dto.student.StudentFilterReq;
+
+import ru.ai.sin.entity.SkillEnt;
 import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.entity.model.BusynessEnum;
-import ru.ai.sin.entity.model.CourseEnum;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-public class StudentSpecifications {
+public final class StudentSpecifications {
 
-    public static Specification<StudentEnt> courseIn(Set<CourseEnum> courses) {
+    private StudentSpecifications() {}
+
+    public static Specification<StudentEnt> byFilters(StudentFilterReq studentFilterReq) {
+
         return (root, query, cb) -> {
-            if (courses == null || courses.isEmpty()) return null;
-            return root.get("course").in(courses);
+
+            if (query == null || studentFilterReq == null) {
+                return null;
+            }
+
+            query.distinct(true);
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (studentFilterReq.course() != null && !studentFilterReq.course().isEmpty()) {
+                predicates.add(root.get("course").in(studentFilterReq.course()));
+            }
+
+            if (studentFilterReq.busyness() != null && !studentFilterReq.busyness().isEmpty()) {
+                predicates.add(root.get("busyness").in(studentFilterReq.busyness()));
+            }
+
+            if (studentFilterReq.bornBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("birthDate"), studentFilterReq.bornBefore()));
+            }
+
+            if (studentFilterReq.bornAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("birthDate"), studentFilterReq.bornAfter()));
+            }
+
+            if (studentFilterReq.specialitiesIds() != null && !studentFilterReq.specialitiesIds().isEmpty()) {
+                predicates.add(root.get("speciality").get("id").in(studentFilterReq.specialitiesIds()));
+            }
+
+            if (studentFilterReq.skillsIds() != null && !studentFilterReq.skillsIds().isEmpty()) {
+                Join<StudentEnt, SkillEnt> skillsJoin = root.join("skills", JoinType.INNER);
+
+                predicates.add(skillsJoin.get("id").in(studentFilterReq.skillsIds()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 
-    public static Specification<StudentEnt> busynessIn(Set<BusynessEnum> busynesses) {
-        return (root, query, cb) -> {
-            if (busynesses == null || busynesses.isEmpty()) return null;
-            return root.get("busyness").in(busynesses);
-        };
-    }
 
-    public static Specification<StudentEnt> bornBefore(LocalDate date) {
-        return (root, query, cb) ->
-                date == null ? null : cb.lessThanOrEqualTo(root.get("birthDate"), date);
-    }
-
-    public static Specification<StudentEnt> bornAfter(LocalDate date) {
-        return (root, query, cb) ->
-                date == null ? null : cb.greaterThan(root.get("birthDate"), date);
-    }
-
-    public static Specification<StudentEnt> hasSkills(List<Long> skillsIds) {
-        return (root, query, cb) -> {
-            if (skillsIds == null || skillsIds.isEmpty()) return null;
-            Join<Object, Object> skills = root.join("skills", JoinType.INNER);
-            return skills.get("id").in(skillsIds);
-        };
-    }
-
-    public static Specification<StudentEnt> hasSpecialities(List<Long> specialitiesIds) {
-        return (root, query, cb) -> {
-            if (specialitiesIds == null || specialitiesIds.isEmpty()) return null;
-            return root.get("speciality").get("id").in(specialitiesIds);
-        };
-    }
 }

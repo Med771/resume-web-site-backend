@@ -1,36 +1,23 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.institution.AddInstitutionReq;
-import ru.ai.sin.dto.institution.GetAboutStudentRes;
-import ru.ai.sin.dto.institution.GetAboutEducationRes;
-import ru.ai.sin.dto.institution.InstitutionDTO;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.UUID;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.institution.*;
 
 public interface InstitutionService {
 
     // ---------- GET METHODS ----------
-    InstitutionDTO getById(
-            long id);
-
-    GetAboutEducationRes getByEducationId(
-            long id,
-            int pageInstitutionNumber, int pageInstitutionSize);
-    GetAboutStudentRes getByStudentId(
-            UUID id,
-            int pageInstitutionNumber, int pageInstitutionSize);
-
-    List<InstitutionDTO> getAll(
-            int pageInstitutionNumber, int pageInstitutionSize);
+    InstitutionDTO getById(long id);
 
     // ---------- POST METHODS ----------
-    InstitutionDTO create(
-            AddInstitutionReq addInstitutionReq);
+    PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, InstitutionFilterReq institutionFilterReq);
+
+    InstitutionDTO create(AddInstitutionReq addInstitutionReq);
     InstitutionDTO update(
             long id,
-            AddInstitutionReq addInstitutionReq);
+            UpdateInstitutionReq updateInstitutionReq);
 
     // ---------- DELETE METHODS ----------
-    InstitutionDTO deleteById(long id);
+    void deleteById(long id);
 }

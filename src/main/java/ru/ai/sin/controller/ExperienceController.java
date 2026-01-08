@@ -21,50 +21,39 @@ import org.springframework.web.bind.annotation.*;
 import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.experience.*;
 
+import ru.ai.sin.helper.SecurityHelper;
+
 import ru.ai.sin.service.impl.ExperienceService;
-
-import java.util.UUID;
-
 
 @RestController
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/experience")
-public class ExperienceCnt {
+public class ExperienceController {
 
     private final ExperienceService experienceService;
 
+    private final SecurityHelper securityHelper;
+
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "{id}")
+    @GetMapping(path = "/{id}")
     public ResponseEntity<ExperienceDTO> getById(@PathVariable @Min(1) long id) {
         return ResponseEntity.ok(experienceService.getById(id));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "filter")
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
             @Valid @RequestBody ExperienceFilterReq experienceFilterReq) {
+        if (experienceFilterReq.companyId() != null) {
+            securityHelper.checkAdminRoleForFilter();
+        }
+
         PageResponse<ExperienceDTO> experienceDTOs = experienceService.getAllByFilter(pageable, experienceFilterReq);
 
         return ResponseEntity.ok(experienceDTOs);
-    }
-
-    @Deprecated
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/aboutGetByStudentId/{id}")
-    public ResponseEntity<GetAboutStudentRes> aboutGetByStudentId(
-            @PathVariable UUID id,
-
-            @Min(0) @RequestParam(defaultValue = "0") int pageExperienceNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageExperienceSize) {
-        GetAboutStudentRes getAboutStudentResDTO = experienceService
-                .getAboutStudentById(
-                        id,
-                        pageExperienceNumber, pageExperienceSize);
-
-        return ResponseEntity.status(HttpStatus.OK).body(getAboutStudentResDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

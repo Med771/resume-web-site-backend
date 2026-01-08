@@ -12,7 +12,6 @@ import ru.ai.sin.entity.ExperienceEnt;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Repository
 public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
@@ -23,9 +22,6 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long> {
     List<ExperienceEnt> findAllByCompanyId(Long companyId);
 
     Set<ExperienceEnt> findAllByCompanyIdIn(Set<Long> companyIds);
-
-    @EntityGraph(attributePaths = {"company"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<ExperienceEnt> findAllByStudentId(UUID studentId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"student", "company"})
     Page<ExperienceEnt> findAll(

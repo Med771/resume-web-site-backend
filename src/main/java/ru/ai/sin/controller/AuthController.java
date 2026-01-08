@@ -2,22 +2,28 @@ package ru.ai.sin.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import ru.ai.sin.dto.auth.LoginRequest;
 import ru.ai.sin.dto.auth.TokenPair;
+
 import ru.ai.sin.helper.CookieHelper;
+
 import ru.ai.sin.service.impl.AuthService;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthCnt {
+public class AuthController {
 
     private final AuthService authService;
     private final CookieHelper cookieHelper;

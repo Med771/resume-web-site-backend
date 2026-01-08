@@ -4,6 +4,7 @@ import org.mapstruct.*;
 
 import ru.ai.sin.dto.speciality.AddSpecialityReq;
 import ru.ai.sin.dto.speciality.SpecialityDTO;
+import ru.ai.sin.dto.speciality.UpdateSpecialityReq;
 
 import ru.ai.sin.entity.SpecialityEnt;
 
@@ -19,8 +20,8 @@ public interface SpecialityMapper {
     // ---------------- SpecialityEnt -> SpecialityDTO ----------------
     SpecialityDTO toDTO(SpecialityEnt entity);
 
-    // ---------------- AddSpecialityReq -> SpecialityEnt ----------------
+    // ---------------- UpdateSpecialityReq -> SpecialityEnt ----------------
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
-    void updateEntityFromDto(AddSpecialityReq dto, @MappingTarget SpecialityEnt entity);
+    void updateEntityFromDto(UpdateSpecialityReq dto, @MappingTarget SpecialityEnt entity);
 }

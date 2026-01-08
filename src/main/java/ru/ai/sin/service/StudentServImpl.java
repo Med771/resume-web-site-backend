@@ -4,14 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import ru.ai.sin.dto.skill.SkillDTO;
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.student.*;
 
 import ru.ai.sin.entity.SkillEnt;
@@ -23,8 +26,8 @@ import ru.ai.sin.entity.spec.StudentSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.FileHelper;
+import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.SkillMapper;
 import ru.ai.sin.mapper.StudentMapper;
 
 import ru.ai.sin.repository.SkillRepo;
@@ -35,7 +38,6 @@ import ru.ai.sin.service.tools.SkillTools;
 import ru.ai.sin.service.tools.SpecialityTools;
 import ru.ai.sin.service.tools.StudentTools;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -48,21 +50,13 @@ public class StudentServImpl implements StudentService {
     private final SkillRepo skillRepo;
 
     private final StudentMapper studentMapper;
-    private final SkillMapper skillMapper;
 
     private final StudentTools studentTools;
     private final SpecialityTools specialityTools;
     private final SkillTools skillTools;
 
     private final FileHelper fileHelper;
-
-    @Transactional
-    protected StudentCardDTO mapToCardDTO(StudentEnt studentEnt) {
-        List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
-                .stream().map(skillMapper::toDTO).toList();
-
-        return studentMapper.toCardDTO(studentEnt, skillDTOList);
-    }
+    private final SecurityHelper securityHelper;
 
     @Override
     public StudentDTO getById(UUID id) {
@@ -72,63 +66,60 @@ public class StudentServImpl implements StudentService {
     }
 
     @Override
-    public List<StudentCardDTO> getAllCards(
-            int pageStudentNumber,
-            int pageStudentSize
-    ) {
-        List<StudentEnt> studentEntList = studentRepo
-                .findAll(
-                        PageRequest.of(pageStudentNumber, pageStudentSize))
-                .getContent();
+    @Transactional
+    public void setPhoto(UUID id, MultipartFile file) {
+        fileHelper.validateMultipart(file);
 
-        return studentEntList.stream()
-                .map(this::mapToCardDTO).toList();
-    }
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
-    @Override
-    public List<StudentCardDTO> getAllByFilters(
-            int pageStudentNumber,
-            int pageStudentSize,
-            GetStudentFilterReq getStudentFilterReq
-    ) {
-        Specification<StudentEnt> spec = StudentSpecifications
-                .courseIn(getStudentFilterReq.course())
-                .and(StudentSpecifications.busynessIn(getStudentFilterReq.busyness()))
-                .and(StudentSpecifications.bornBefore(getStudentFilterReq.bornBefore()))
-                .and(StudentSpecifications.bornAfter(getStudentFilterReq.bornAfter()))
-                .and(StudentSpecifications.hasSkills(getStudentFilterReq.skillsIds()))
-                .and(StudentSpecifications.hasSpecialities(getStudentFilterReq.specialitiesIds()));
+        String filePath = fileHelper.saveFile(file, studentEnt.getId().toString());
 
-        return studentRepo
-                .findAll(
-                        spec,
-                        PageRequest.of(pageStudentNumber, pageStudentSize))
-                .stream()
-                .map(this::mapToCardDTO).toList();
-    }
+        if (filePath == null) {
+            throw new BadRequestException("Failed to save file");
+        }
 
-    @Override
-    public List<StudentDTO> getAll(
-            int pageStudentNumber,
-            int pageStudentSize
-    ) {
-        List<StudentEnt> studentEntList = studentRepo
-                .findAll(
-                        PageRequest.of(pageStudentNumber, pageStudentSize))
-                .getContent();
-
-        return studentEntList.stream()
-                .map(studentTools::mapToDTO).toList();
+        studentEnt.setImagePath(filePath);
     }
 
     @Override
     @Transactional
-    public StudentDTO create(
-            MultipartFile multipartFile,
-            AddStudentReq addStudentReq
+    public PageResponse<StudentCardDTO> getAllCardsByFilter(
+            Pageable pageable,
+            StudentFilterReq studentFilterReq
     ) {
-        fileHelper.validateMultipart(multipartFile);
+        Page<StudentEnt> page = studentRepo.findAll(
+                StudentSpecifications.byFilters(studentFilterReq),
+                pageable);
 
+        return new PageResponse<>(
+                page.getContent().stream().map(studentTools::mapToCardDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+    @Override
+    public PageResponse<StudentDTO> getAllByFilter(
+            Pageable pageable,
+            StudentFilterReq studentFilterReq
+    ) {
+        Page<StudentEnt> page = studentRepo.findAll(
+                StudentSpecifications.byFilters(studentFilterReq),
+                pageable);
+
+        return new PageResponse<>(
+                page.getContent().stream().map(studentTools::mapToDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+
+    @Override
+    @Transactional
+    public StudentDTO create(AddStudentReq addStudentReq) {
         StudentEnt studentEnt = studentMapper.toEntity(addStudentReq);
 
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(addStudentReq.specialityId());
@@ -140,14 +131,6 @@ public class StudentServImpl implements StudentService {
 
         studentEnt = studentRepo.save(studentEnt);
 
-        String filePath = fileHelper.saveFile(multipartFile, studentEnt.getId().toString());
-
-        if (filePath == null) {
-            throw new BadRequestException("Failed to save file");
-        }
-
-        studentEnt.setImagePath(filePath);
-
         try {
             studentEnt = studentRepo.save(studentEnt);
         }
@@ -158,47 +141,45 @@ public class StudentServImpl implements StudentService {
                     .formatted(addStudentReq.email(), addStudentReq.telegramUsername()));
         }
 
-        return studentTools.mapToDTO(studentEnt);
+        StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
+
+        log.info("User: {}, created a new student: {}", securityHelper.getCurrentUsername(), studentDTO);
+
+        return studentDTO;
     }
 
     @Override
     @Transactional
     public StudentDTO update(
             UUID id,
-            MultipartFile multipartFile,
             UpdateStudentReq updateStudentReq
     ) {
-        fileHelper.validateMultipart(multipartFile);
-        
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(updateStudentReq.specialityId());
-
         Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(updateStudentReq.skillsIds());
-
-        String filePath = fileHelper.saveFile(multipartFile, studentEnt.getId().toString());
-
-        if (filePath == null) {
-            throw new BadRequestException("Failed to save file");
-        }
 
         studentMapper.updateEntityFromDto(updateStudentReq, studentEnt);
 
         if (studentEnt.getContactInformation() == null) {
             studentEnt.setContactInformation(new ContactInformation());
         }
+
         studentEnt.getUserInformation().setFirstName(updateStudentReq.firstName());
         studentEnt.getUserInformation().setLastName(updateStudentReq.lastName());
         studentEnt.setSpeciality(specialityEnt);
         studentEnt.setSkills(skillEntSet);
-        studentEnt.setImagePath(filePath);
 
-        return studentTools.mapToDTO(studentEnt);
+        StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
+
+        log.info("User: {}, updated a student: {} with data: {}", securityHelper.getCurrentUsername(), id, studentDTO);
+
+        return studentDTO;
     }
 
     @Override
     @Transactional
-    public StudentDTO deleteById(UUID id) {
+    public void deleteById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         try {
@@ -210,6 +191,6 @@ public class StudentServImpl implements StudentService {
             throw new BadRequestException("Error while deleting student");
         }
 
-        return studentTools.mapToDTO(studentEnt);
+        log.info("User: {}, deleted a student: {} with data: {}", securityHelper.getCurrentUsername(), id, studentTools.mapToDTO(studentEnt));
     }
 }

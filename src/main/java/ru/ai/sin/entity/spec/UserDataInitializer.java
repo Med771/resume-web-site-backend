@@ -26,18 +26,12 @@ public class UserDataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
 
-        createIfNotExists(
-                userProperties.getLogins().get(0).getUsername(),
-                userProperties.getLogins().get(0).getPassword(),
-                RoleEnum.fromRole(userProperties.getLogins().get(0).getRole()));
-        createIfNotExists(
-                userProperties.getLogins().get(1).getUsername(),
-                userProperties.getLogins().get(1).getPassword(),
-                RoleEnum.fromRole(userProperties.getLogins().get(1).getRole()));
-        createIfNotExists(
-                userProperties.getLogins().get(2).getUsername(),
-                userProperties.getLogins().get(2).getPassword(),
-                RoleEnum.fromRole(userProperties.getLogins().get(2).getRole()));
+        userProperties.getLogins().forEach(
+                user -> createIfNotExists(
+                        user.getUsername(),
+                        user.getPassword(),
+                        RoleEnum.fromRole(user.getRole())
+                ));
     }
 
     private void createIfNotExists(

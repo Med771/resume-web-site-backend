@@ -31,10 +31,6 @@ public interface StudentRepo extends
 
     @NonNull
     @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<StudentEnt> findAll(@NonNull Pageable pageable);
-
-    @NonNull
-    @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<StudentEnt> findAll(Specification specification, @NonNull Pageable pageable);
 
     @Query("SELECT s.skills FROM StudentEnt s WHERE s.id = :studentId")

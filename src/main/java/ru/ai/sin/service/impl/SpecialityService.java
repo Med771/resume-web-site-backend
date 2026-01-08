@@ -1,9 +1,10 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.speciality.AddSpecialityReq;
-import ru.ai.sin.dto.speciality.SpecialityDTO;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.dto.speciality.*;
+
 
 public interface SpecialityService {
 
@@ -11,18 +12,15 @@ public interface SpecialityService {
     SpecialityDTO getById(
             long id);
 
-    List<SpecialityDTO> getAll(
-            int pageSpecialityNumber, int pageSpecialitySize);
-
     // ---------- POST METHODS ----------
-    SpecialityDTO create(
-            AddSpecialityReq addSpecialityReq);
+    PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, SpecialityFilterReq specialityFilterReq);
+
+    SpecialityDTO create(AddSpecialityReq addSpecialityReq);
 
     SpecialityDTO update(
             long id,
-            AddSpecialityReq addSpecialityReq);
+            UpdateSpecialityReq updateSpecialityReq);
 
     // ---------- POST METHODS ----------
-    SpecialityDTO deleteById(
-            long id);
+    void deleteById(long id);
 }

@@ -4,29 +4,34 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.portfolio.AddPortfolioReq;
 import ru.ai.sin.dto.portfolio.PortfolioDTO;
+import ru.ai.sin.dto.portfolio.PortfolioFilterReq;
 
 import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
 
+import ru.ai.sin.entity.spec.PortfolioSpecifications;
+
 import ru.ai.sin.exception.models.BadRequestException;
 
+import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.mapper.PortfolioMapper;
+
 import ru.ai.sin.repository.PortfolioRepo;
 
 import ru.ai.sin.service.impl.PortfolioService;
+
 import ru.ai.sin.service.tools.PortfolioTools;
 import ru.ai.sin.service.tools.StudentTools;
-
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,41 +45,25 @@ public class PortfolioServImpl implements PortfolioService {
     private final PortfolioTools portfolioTools;
     private final StudentTools studentTools;
 
+    private final SecurityHelper securityHelper;
+
     @Override
     public PortfolioDTO getById(long id) {
         return portfolioMapper.toDTO(portfolioTools.getPortfolioOrThrow(id));
     }
 
     @Override
-    public List<PortfolioDTO> getAll(
-            int pagePortfolioNumber,
-            int pagePortfolioSize
-    ) {
-        List<PortfolioEnt> portfolioEntList = portfolioRepo
-                .findAll(
-                        PageRequest.of(pagePortfolioNumber, pagePortfolioSize))
-                .getContent();
+    public PageResponse<PortfolioDTO> getAllByFilter(Pageable pageable, PortfolioFilterReq portfolioFilterReq) {
+        Page<PortfolioEnt> page = portfolioRepo.findAll(
+                PortfolioSpecifications.byFilters(portfolioFilterReq),
+                pageable);
 
-        return portfolioEntList.stream()
-                .map(portfolioMapper::toDTO)
-                .toList();
-    }
-
-    @Override
-    public List<PortfolioDTO> getAllByStudentId(
-            UUID studentId,
-            int pagePortfolioNumber,
-            int pagePortfolioSize
-    ) {
-        List<PortfolioEnt> portfolioEntList = portfolioRepo
-                .findAllByStudentId(
-                        studentId,
-                        PageRequest.of(pagePortfolioNumber, pagePortfolioSize))
-                .getContent();
-
-        return portfolioEntList.stream()
-                .map(portfolioMapper::toDTO)
-                .toList();
+        return new PageResponse<>(
+                page.getContent().stream().map(portfolioMapper::toDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override
@@ -93,7 +82,11 @@ public class PortfolioServImpl implements PortfolioService {
             throw new BadRequestException("Portfolio already exists: " + addPortfolioReq.name());
         }
 
-        return portfolioMapper.toDTO(portfolioEnt);
+        PortfolioDTO portfolioDTO = portfolioMapper.toDTO(portfolioEnt);
+
+        log.info("User: {}, created a new portfolio: {}", securityHelper.getCurrentUsername(), portfolioDTO);
+
+        return portfolioDTO;
     }
 
     @Override
@@ -109,12 +102,16 @@ public class PortfolioServImpl implements PortfolioService {
 
         portfolioEnt.setStudent(studentEnt);
 
-        return portfolioMapper.toDTO(portfolioEnt);
+        PortfolioDTO portfolioDTO = portfolioMapper.toDTO(portfolioEnt);
+
+        log.info("User: {}, updated a portfolio: {} with data: {}", securityHelper.getCurrentUsername(), id, portfolioDTO);
+
+        return portfolioDTO;
     }
 
     @Override
     @Transactional
-    public PortfolioDTO deleteById(long id) {
+    public void deleteById(long id) {
         PortfolioEnt portfolioEnt = portfolioTools.getPortfolioOrThrow(id);
 
         try {
@@ -126,6 +123,6 @@ public class PortfolioServImpl implements PortfolioService {
             throw new BadRequestException("Error while deleting portfolio");
         }
 
-        return portfolioMapper.toDTO(portfolioEnt);
+        log.info("User: {}, deleted a portfolio: {} with data: {}", securityHelper.getCurrentUsername(), id, portfolioEnt);
     }
 }

@@ -2,19 +2,31 @@ package ru.ai.sin.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
 
+import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.skill.AddSkillReq;
 import ru.ai.sin.dto.skill.SkillDTO;
+
+import ru.ai.sin.dto.skill.SkillFilterReq;
+import ru.ai.sin.dto.skill.UpdateSkillReq;
+
 import ru.ai.sin.service.impl.SkillService;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,55 +37,49 @@ public class SkillCnt {
     private final SkillService skillService;
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getById/{id}")
-    public ResponseEntity<SkillDTO> getById(
-            @PathVariable long id
-    ) {
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<SkillDTO> getById(@PathVariable @Min(1) long id) {
         SkillDTO skillDTO = skillService.getById(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
+        return ResponseEntity.ok(skillDTO);
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/getAll")
-    public ResponseEntity<List<SkillDTO>> getAll(
-            @Min(0) @RequestParam(defaultValue = "0") int pageSkillsNumber,
-            @Min(1) @RequestParam(defaultValue = "10") int pageSkillsSize
-    ) {
-        List<SkillDTO> skillDTOs = skillService.getAll(pageSkillsNumber, pageSkillsSize);
+    @PostMapping(path = "/filter")
+    public ResponseEntity<PageResponse<SkillDTO>> filter(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-        return ResponseEntity.status(HttpStatus.OK).body(skillDTOs);
+            @Valid @RequestBody SkillFilterReq skillFilterReq
+    ) {
+        PageResponse<SkillDTO> skillDTOs = skillService.getAllByFilter(pageable, skillFilterReq);
+
+        return ResponseEntity.ok(skillDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(path = "/create")
-    public ResponseEntity<SkillDTO> create(
-            @Valid @RequestBody AddSkillReq skillReq
-    ) {
+    @PostMapping()
+    public ResponseEntity<SkillDTO> create(@Valid @RequestBody AddSkillReq skillReq) {
         SkillDTO skillDTO = skillService.create(skillReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "/set/{id}/name")
+    @PutMapping(path = "/{id}")
     public ResponseEntity<SkillDTO> setNameById(
-            @PathVariable long id,
+            @PathVariable @Min(1) long id,
 
-            @Valid @RequestBody AddSkillReq addSkillReq
-    ) {
-        SkillDTO skillDTO = skillService.setNameById(id, addSkillReq);
+            @Valid @RequestBody UpdateSkillReq updateSkillReq
+            ) {
+        SkillDTO skillDTO = skillService.updateById(id, updateSkillReq);
 
-        return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
+        return ResponseEntity.ok(skillDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping(path = "/deleteById/{id}")
-    public ResponseEntity<SkillDTO> deleteById(
-            @PathVariable long id
-    ) {
-        SkillDTO skillDTO = skillService.deleteById(id);
-
-        return ResponseEntity.status(HttpStatus.OK).body(skillDTO);
+    @DeleteMapping(path = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable long id) {
+        skillService.deleteById(id);
     }
 }
