@@ -9,5 +9,4 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.fast")
 public class FastProperties {
     private String url;
-    private String botUsername;
 }

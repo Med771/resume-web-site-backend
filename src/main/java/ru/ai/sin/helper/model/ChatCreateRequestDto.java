@@ -7,9 +7,4 @@ import lombok.Builder;
 public record ChatCreateRequestDto(
 
         @JsonProperty("chat_name")
-        String chatName,
-
-        @JsonProperty("bot_username")
-        String botUsername
-
-) {}
+        String chatName) {}

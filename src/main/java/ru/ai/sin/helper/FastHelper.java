@@ -26,7 +26,7 @@ public class FastHelper {
 
     public ChatCreateResponseDto createChat(String chatName)
             throws Exception {
-        ChatCreateRequestDto requestDto = ChatCreateRequestDto.builder().chatName(chatName).botUsername(properties.getBotUsername()).build();
+        ChatCreateRequestDto requestDto = ChatCreateRequestDto.builder().chatName(chatName).build();
 
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         objectMapper.registerModule(new ParameterNamesModule());
