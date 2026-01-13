@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 public record StudentFilterReq(
+        String findString,
+
         Set<CourseEnum> course,
 
         Set<BusynessEnum> busyness,

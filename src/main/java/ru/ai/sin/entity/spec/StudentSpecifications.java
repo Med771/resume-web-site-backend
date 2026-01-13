@@ -1,5 +1,6 @@
 package ru.ai.sin.entity.spec;
 
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -29,6 +30,37 @@ public final class StudentSpecifications {
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
+
+            if (studentFilterReq.findString() != null && !studentFilterReq.findString().isBlank()) {
+                String filter = studentFilterReq.findString().toLowerCase();
+
+                double threshold = 0.3;
+                int len = filter.length();
+
+                if (len <= 3) {threshold = 0.1;}
+                else if (len <= 5) {threshold = 0.18;}
+                else if (len <= 8) {threshold = 0.25;}
+
+                Expression<String> fullName = cb.lower(cb.concat(
+                        cb.concat(
+                                root.get("userInformation").get("firstName"), " "),
+                                root.get("userInformation").get("lastName"))
+                );
+
+                Expression<String> bio = cb.lower(root.get("bio"));
+
+                Expression<Double> fullNameSimilarity = cb.function("word_similarity", Double.class, fullName, cb.literal(filter));
+
+                Expression<Double> bioSimilarity = cb.function("similarity", Double.class, bio, cb.literal(filter));
+
+                Predicate fullNameFuzzy = cb.greaterThanOrEqualTo(fullNameSimilarity, threshold);
+
+                Predicate bioFuzzy = cb.greaterThanOrEqualTo(bioSimilarity, threshold);
+
+                Predicate fullNameLike = cb.like(fullName, "%" + filter + "%");
+
+                predicates.add(cb.or(fullNameFuzzy, fullNameLike, bioFuzzy));
+            }
 
             if (studentFilterReq.course() != null && !studentFilterReq.course().isEmpty()) {
                 predicates.add(root.get("course").in(studentFilterReq.course()));
