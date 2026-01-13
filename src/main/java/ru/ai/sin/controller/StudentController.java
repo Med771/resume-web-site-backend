@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/student")
-public class StudentCnt {
+public class StudentController {
 
     private final StudentService studentService;
 
