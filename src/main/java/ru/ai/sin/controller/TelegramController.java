@@ -24,29 +24,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/telegram")
-public class TelegramCnt {
+public class TelegramController {
 
     private final TelegramService telegramService;
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(path = "/student/{telegramUsername}")
-    public ResponseEntity<StudentTelegramDTO> getStudentTelegramByUsername(
-            @PathVariable String telegramUsername
-    ) {
-        StudentTelegramDTO studentTelegramDTO = telegramService.getStudentTelegramByUsername(telegramUsername);
-
-        return ResponseEntity.ok(studentTelegramDTO);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping(path = "/recruiter/{telegramUsername}")
-    public ResponseEntity<RecruiterTelegramDTO> getRecruiterTelegramByUsername(
-            @PathVariable String telegramUsername
-    ) {
-        RecruiterTelegramDTO recruiterTelegramDTO = telegramService.getRecruiterTelegramByUsername(telegramUsername);
-
-        return ResponseEntity.ok(recruiterTelegramDTO);
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/student/{id}")

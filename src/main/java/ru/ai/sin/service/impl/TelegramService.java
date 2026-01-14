@@ -7,10 +7,6 @@ import ru.ai.sin.dto.telegram.StudentTelegramDTO;
 import java.util.UUID;
 
 public interface TelegramService {
-    StudentTelegramDTO getStudentTelegramByUsername(String telegramUsername);
-
-    RecruiterTelegramDTO getRecruiterTelegramByUsername(String telegramUsername);
-
     StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq);
 
     RecruiterTelegramDTO setRecruiterTelegramUserId(UUID recruiterId, SetTelegramUserIdReq setTelegramUserIdReq);

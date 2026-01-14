@@ -11,7 +11,6 @@ import ru.ai.sin.entity.RecruiterEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.ContactInformation;
 import ru.ai.sin.exception.models.BadRequestException;
-import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.repository.RecruiterRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.TelegramService;
@@ -28,26 +27,6 @@ public class TelegramServImpl implements TelegramService {
     private final RecruiterRepo recruiterRepo;
 
     private final TelegramTools telegramTools;
-
-    @Override
-    @Transactional(readOnly = true)
-    public StudentTelegramDTO getStudentTelegramByUsername(String telegramUsername) {
-        StudentEnt studentEnt = studentRepo
-                .findByContactInformationTelegramUsername(telegramUsername)
-                .orElseThrow(() -> new NotFoundException("Failed to find student by telegram username: " + telegramUsername));
-
-        return telegramTools.mapStudentToDTO(studentEnt);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RecruiterTelegramDTO getRecruiterTelegramByUsername(String telegramUsername) {
-        RecruiterEnt recruiterEnt = recruiterRepo
-                .findByContactInformationTelegramUsername(telegramUsername)
-                .orElseThrow(() -> new NotFoundException("Failed to find recruiter by telegram username: " + telegramUsername));
-
-        return telegramTools.mapRecruiterToDTO(recruiterEnt);
-    }
 
     @Override
     @Transactional
