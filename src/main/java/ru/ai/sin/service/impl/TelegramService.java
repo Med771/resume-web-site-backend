@@ -8,6 +8,7 @@ public interface TelegramService {
     StudentTelegramDTO getStudentByTelegramUserId(String telegramUserId);
     RecruiterTelegramDTO getRecruiterByTelegramUserId(String telegramUserId);
 
+    OffersDTO.Offer getById(long id);
     OffersDTO filter(String userId, OfferFilterReq offerFilterReq);
 
     StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq);

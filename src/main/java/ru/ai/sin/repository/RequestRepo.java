@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecificationExecutor<RequestEnt> {
 
-    @EntityGraph(attributePaths = {"recruiter", "student"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     RequestEnt findById(long id);
 
     @NonNull

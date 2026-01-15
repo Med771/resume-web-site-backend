@@ -60,6 +60,36 @@ public class TelegramServImpl implements TelegramService {
     }
 
     @Override
+    public OffersDTO.Offer getById(long id) {
+        RequestEnt requestEnt = requestRepo.findById(id);
+
+        StudentRes studentRes = new StudentRes(
+                requestEnt.getStudent().getId(),
+                requestEnt.getStudent().getSpeciality().getName(),
+                requestEnt.getStudent().getUserInformation().getFirstName() +
+                        " " +
+                        requestEnt.getStudent().getUserInformation().getLastName()
+        );
+
+        RecruiterRes recruiterRes = new RecruiterRes(
+                requestEnt.getRecruiter().getId(),
+                requestEnt.getRecruiter().getCompanyName(),
+                requestEnt.getRecruiter().getUserInformation().getFirstName() +
+                        " " +
+                        requestEnt.getRecruiter().getUserInformation().getLastName()
+        );
+
+        return new OffersDTO.Offer(
+                requestEnt.getId(),
+                requestEnt.getChatId(),
+                requestEnt.getResult(),
+                requestEnt.getChatUrl(),
+                studentRes,
+                recruiterRes
+        );
+    }
+
+    @Override
     @Transactional
     public OffersDTO filter(String userId, OfferFilterReq offerFilterReq) {
         List<RequestEnt> requests;
