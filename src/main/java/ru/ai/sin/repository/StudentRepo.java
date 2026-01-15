@@ -36,5 +36,5 @@ public interface StudentRepo extends
     @Query("SELECT s.skills FROM StudentEnt s WHERE s.id = :studentId")
     Set<SkillEnt> findSkillsByStudentId(UUID studentId);
 
-    //Optional<StudentEnt> findByContactInformationTelegramUserId(String telegramUserId);
+    Optional<StudentEnt> findByContactInformationTelegramUserId(String telegramUserId);
 }

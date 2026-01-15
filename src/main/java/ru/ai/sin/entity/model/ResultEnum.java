@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum ResultEnum {
     CREATION("creation"),
+    WAITING("waiting"),
     EXPECTATION("expectation"),
     SUCCESS("success"),
     REFUSAL("refusal");

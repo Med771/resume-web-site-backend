@@ -11,11 +11,13 @@ import ru.ai.sin.entity.RecruiterEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.ContactInformation;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.repository.RecruiterRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.TelegramService;
 import ru.ai.sin.service.tools.TelegramTools;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -29,8 +31,35 @@ public class TelegramServImpl implements TelegramService {
     private final TelegramTools telegramTools;
 
     @Override
+    public StudentTelegramDTO getStudentByTelegramUserId(String userId) {
+        Optional<StudentEnt> studentEnt = studentRepo.findByContactInformationTelegramUserId(userId);
+
+        if (studentEnt.isPresent()) {
+            return telegramTools.mapStudentToDTO(studentEnt.get());
+        }
+
+        throw new NotFoundException("Student not found");
+    }
+
+    @Override
+    public RecruiterTelegramDTO getRecruiterByTelegramUserId(String userId) {
+        Optional<RecruiterEnt> recruiterEnt = recruiterRepo.findByContactInformationTelegramUserId(userId);
+
+        if (recruiterEnt.isPresent()) {
+            return telegramTools.mapRecruiterToDTO(recruiterEnt.get());
+        }
+
+        throw new NotFoundException("Recruiter not found");
+    }
+
+
+    @Override
     @Transactional
     public StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq) {
+        if (recruiterRepo.findByContactInformationTelegramUserId(setTelegramUserIdReq.telegramUserId()).isPresent()) {
+            throw new BadRequestException("Telegram user id already set for recruiter when student: " + studentId);
+        }
+
         StudentEnt studentEnt = telegramTools.getStudentOrThrow(studentId);
 
         if (studentEnt.getContactInformation() == null) {
@@ -54,6 +83,10 @@ public class TelegramServImpl implements TelegramService {
     @Override
     @Transactional
     public RecruiterTelegramDTO setRecruiterTelegramUserId(UUID recruiterId, SetTelegramUserIdReq setTelegramUserIdReq) {
+        if (studentRepo.findByContactInformationTelegramUserId(setTelegramUserIdReq.telegramUserId()).isPresent()) {
+            throw new BadRequestException("Telegram user id already set for student when recruiter: " + recruiterId);
+        }
+
         RecruiterEnt recruiterEnt = telegramTools.getRecruiterOrThrow(recruiterId);
 
         if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {

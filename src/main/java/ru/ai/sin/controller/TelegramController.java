@@ -29,6 +29,22 @@ public class TelegramController {
     private final TelegramService telegramService;
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(path = "/student/{id}")
+    public ResponseEntity<StudentTelegramDTO> getStudent(@PathVariable String id) {
+        StudentTelegramDTO studentTelegramDTO = telegramService.getStudentByTelegramUserId(id);
+
+        return ResponseEntity.ok(studentTelegramDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(path = "/recruiter/{id}")
+    public ResponseEntity<RecruiterTelegramDTO> getRecruiter(@PathVariable String id) {
+        RecruiterTelegramDTO recruiterTelegramDTO = telegramService.getRecruiterByTelegramUserId(id);
+
+        return ResponseEntity.ok(recruiterTelegramDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/student/{id}")
     public ResponseEntity<StudentTelegramDTO> setStudentTelegramUserId(
             @PathVariable UUID id,
