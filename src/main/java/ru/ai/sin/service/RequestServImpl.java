@@ -2,25 +2,27 @@ package ru.ai.sin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.recruiter.AddRecruiterReq;
 import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
-import ru.ai.sin.dto.request.RequestNewChatReq;
 import ru.ai.sin.dto.request.RequestUpdateStatusReq;
+
 import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.spec.RequestSpecifications;
+
 import ru.ai.sin.exception.models.BadRequestException;
-import ru.ai.sin.helper.FastHelper;
-import ru.ai.sin.helper.model.ChatCreateResponseDto;
 import ru.ai.sin.repository.RequestRepo;
+
 import ru.ai.sin.service.impl.RequestService;
 import ru.ai.sin.service.tools.RecruiterTools;
 import ru.ai.sin.service.tools.RequestTools;
@@ -36,8 +38,6 @@ public class RequestServImpl implements RequestService {
     private final RequestTools requestTools;
     private final StudentTools studentTools;
     private final RecruiterTools recruiterTools;
-
-    private final FastHelper fastHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -86,19 +86,6 @@ public class RequestServImpl implements RequestService {
         requestEnt.setStudent(studentEnt);
 
         try {
-            ChatCreateResponseDto resp = fastHelper.createChat("Чат с кандидатом: %s %s и компанией: %s".formatted(
-                    studentEnt.getUserInformation().getLastName(),
-                    studentEnt.getUserInformation().getFirstName(),
-                    recruiterEnt.getCompanyName()));
-
-            requestEnt.setChatId(String.valueOf(resp.chatId()));
-            requestEnt.setChatUrl(resp.inviteLink());
-        }
-        catch (Exception e) {
-            log.warn("Error while creating chat: {}", e.getMessage());
-        }
-
-        try {
             requestEnt = requestRepo.save(requestEnt);
         } catch (DataIntegrityViolationException ex) {
             log.warn("Error while creating request: {}", ex.getMessage());
@@ -107,23 +94,6 @@ public class RequestServImpl implements RequestService {
 
         RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
-
-        return requestDTO;
-    }
-
-    @Override
-    @Transactional
-    public RequestDTO newChatById(long id, RequestNewChatReq requestNewChatReq) {
-        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
-
-        requestEnt.setChatId(requestNewChatReq.chatId());
-        requestEnt.setChatUrl(requestNewChatReq.chatUrl());
-
-        requestEnt = requestRepo.save(requestEnt);
-
-        RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
-
-        log.info("Updated request chat: {} with chatId: {} and chatUrl: {}", id, requestNewChatReq.chatId(), requestNewChatReq.chatUrl());
 
         return requestDTO;
     }

@@ -21,7 +21,6 @@ import ru.ai.sin.dto.PageResponse;
 import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
-import ru.ai.sin.dto.request.RequestNewChatReq;
 import ru.ai.sin.dto.request.RequestUpdateStatusReq;
 import ru.ai.sin.service.impl.RequestService;
 
@@ -61,18 +60,6 @@ public class RequestController {
         RequestDTO requestDTO = requestService.create(addRequestReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(requestDTO);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "/newChat/{id}")
-    public ResponseEntity<RequestDTO> newChatById(
-            @PathVariable @Min(1) long id,
-
-            @Valid @RequestBody RequestNewChatReq requestNewChatReq
-    ) {
-        RequestDTO requestDTO = requestService.newChatById(id, requestNewChatReq);
-
-        return ResponseEntity.ok(requestDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
