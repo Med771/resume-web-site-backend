@@ -1,14 +1,14 @@
 package ru.ai.sin.service.impl;
 
-import ru.ai.sin.dto.telegram.RecruiterTelegramDTO;
-import ru.ai.sin.dto.telegram.SetTelegramUserIdReq;
-import ru.ai.sin.dto.telegram.StudentTelegramDTO;
+import ru.ai.sin.dto.telegram.*;
 
 import java.util.UUID;
 
 public interface TelegramService {
     StudentTelegramDTO getStudentByTelegramUserId(String telegramUserId);
     RecruiterTelegramDTO getRecruiterByTelegramUserId(String telegramUserId);
+
+    OffersDTO filter(String userId, OfferFilterReq offerFilterReq);
 
     StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq);
 

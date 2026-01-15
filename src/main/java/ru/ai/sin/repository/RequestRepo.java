@@ -11,6 +11,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import ru.ai.sin.entity.RequestEnt;
 
+import java.util.List;
+
 @Repository
 public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecificationExecutor<RequestEnt> {
 
@@ -21,4 +23,8 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     @EntityGraph(attributePaths = {"recruiter", "student"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<RequestEnt> findAll(Specification<RequestEnt> spec,
                              @NonNull Pageable pageable);
+
+    @NonNull
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<RequestEnt> findAll(Specification<RequestEnt> spec);
 }

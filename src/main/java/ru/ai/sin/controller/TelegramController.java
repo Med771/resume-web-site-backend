@@ -2,6 +2,7 @@ package ru.ai.sin.controller;
 
 import jakarta.validation.Valid;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,7 @@ import org.springframework.validation.annotation.Validated;
 
 import org.springframework.web.bind.annotation.*;
 
-import ru.ai.sin.dto.telegram.RecruiterTelegramDTO;
-import ru.ai.sin.dto.telegram.SetTelegramUserIdReq;
-import ru.ai.sin.dto.telegram.StudentTelegramDTO;
+import ru.ai.sin.dto.telegram.*;
 
 import ru.ai.sin.service.impl.TelegramService;
 
@@ -42,6 +41,17 @@ public class TelegramController {
         RecruiterTelegramDTO recruiterTelegramDTO = telegramService.getRecruiterByTelegramUserId(id);
 
         return ResponseEntity.ok(recruiterTelegramDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(path = "/query/{userId}")
+    public ResponseEntity<OffersDTO> filter(
+            @PathVariable @NonNull String userId,
+            @RequestBody @Valid OfferFilterReq offerFilterReq
+            ) {
+        OffersDTO offersDTO = telegramService.filter(userId, offerFilterReq);
+
+        return ResponseEntity.ok(offersDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
