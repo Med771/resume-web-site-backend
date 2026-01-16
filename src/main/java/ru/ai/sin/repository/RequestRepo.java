@@ -20,9 +20,12 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     RequestEnt findById(long id);
 
     @NonNull
-    @EntityGraph(attributePaths = {"recruiter", "student"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<RequestEnt> findAll(Specification<RequestEnt> spec,
                              @NonNull Pageable pageable);
+
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<RequestEnt> findAllByIdIn(List<Long> ids);
 
     @NonNull
     @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)

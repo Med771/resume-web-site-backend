@@ -18,5 +18,7 @@ public interface TelegramService {
     RecruiterTelegramDTO clearRecruiterTelegramUserId(UUID recruiterId);
 
     OffersDTO.Offer createChat(long id);
+
+    OffersDTO batchStatus(StatusUpdateReq statusUpdateReq);
 }
 

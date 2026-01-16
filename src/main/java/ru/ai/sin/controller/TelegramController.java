@@ -113,5 +113,13 @@ public class TelegramController {
 
         return ResponseEntity.ok(recruiterTelegramDTO);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(path = "/batchStatus")
+    public ResponseEntity<OffersDTO> batchStatus(@RequestBody @Valid StatusUpdateReq statusUpdateReq) {
+        OffersDTO offersDTO = telegramService.batchStatus(statusUpdateReq);
+
+        return ResponseEntity.ok(offersDTO);
+    }
 }
 
