@@ -298,6 +298,7 @@ public class TelegramServImpl implements TelegramService {
     }
 
     @Override
+    @Transactional
     public OffersDTO batchStatus(StatusUpdateReq statusUpdateReq) {
         List<RequestEnt> requests = requestRepo.findAllByIdIn(statusUpdateReq.newStatuses().stream().map(StatusUpdateReq.Pair::id).toList());
 
