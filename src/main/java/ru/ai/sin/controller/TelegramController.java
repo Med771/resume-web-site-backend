@@ -54,6 +54,14 @@ public class TelegramController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(path = "/offers")
+    public ResponseEntity<OffersDTO> getAllOffersByResult(@RequestBody @Valid OffersFilterReq offersFilterReq) {
+        OffersDTO offersDTO = telegramService.getAllOffersByResult(offersFilterReq);
+
+        return ResponseEntity.ok(offersDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/query/{userId}")
     public ResponseEntity<OffersDTO> filter(
             @PathVariable @NonNull String userId,

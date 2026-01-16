@@ -94,6 +94,13 @@ public class TelegramServImpl implements TelegramService {
     }
 
     @Override
+    public OffersDTO getAllOffersByResult(OffersFilterReq offersFilterReq) {
+        List<RequestEnt> requestEntList = requestRepo.findAllByResultIn(offersFilterReq.results());
+
+        return new OffersDTO(getOffers(requestEntList));
+    }
+
+    @Override
     @Transactional
     public OffersDTO filter(String userId, OfferFilterReq offerFilterReq) {
         List<RequestEnt> requests;
