@@ -2,7 +2,6 @@ package ru.ai.sin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.dto.recruiter.RecruiterRes;
@@ -300,13 +299,13 @@ public class TelegramServImpl implements TelegramService {
 
     @Override
     public OffersDTO batchStatus(StatusUpdateReq statusUpdateReq) {
-        List<RequestEnt> requests = requestRepo.findAllByIdIn(statusUpdateReq.newStatuses().stream().map(pair -> pair.a).toList());
+        List<RequestEnt> requests = requestRepo.findAllByIdIn(statusUpdateReq.newStatuses().stream().map(StatusUpdateReq.Pair::id).toList());
 
         Map<Long, RequestEnt> requestMap = requests.stream().collect(Collectors.toMap(RequestEnt::getId, Function.identity()));
 
-        for (Pair<Long, ResultEnum> pair : statusUpdateReq.newStatuses()) {
-            if (requestMap.containsKey(pair.a)) {
-                requestMap.get(pair.a).setResult(pair.b);
+        for (StatusUpdateReq.Pair pair : statusUpdateReq.newStatuses()) {
+            if (requestMap.containsKey(pair.id())) {
+                requestMap.get(pair.id()).setResult(pair.result());
             }
         }
 
