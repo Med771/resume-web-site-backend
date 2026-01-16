@@ -13,6 +13,9 @@ public record StudentRes(
         String speciality,
 
         @Size(min = 1, max = 255, message = "First name must be less than 255 characters")
-        String fullName
+        String fullName,
+
+        @NotNull
+        String chatId
 ) {
 }

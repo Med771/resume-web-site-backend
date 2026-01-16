@@ -72,7 +72,8 @@ public class TelegramServImpl implements TelegramService {
                 requestEnt.getStudent().getSpeciality().getName(),
                 requestEnt.getStudent().getUserInformation().getFirstName() +
                         " " +
-                        requestEnt.getStudent().getUserInformation().getLastName()
+                        requestEnt.getStudent().getUserInformation().getLastName(),
+                requestEnt.getStudent().getContactInformation().getTelegramUserId()
         );
 
         RecruiterRes recruiterRes = new RecruiterRes(
@@ -80,7 +81,8 @@ public class TelegramServImpl implements TelegramService {
                 requestEnt.getRecruiter().getCompanyName(),
                 requestEnt.getRecruiter().getUserInformation().getFirstName() +
                         " " +
-                        requestEnt.getRecruiter().getUserInformation().getLastName()
+                        requestEnt.getRecruiter().getUserInformation().getLastName(),
+                requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
         );
 
         return new OffersDTO.Offer(
@@ -140,7 +142,8 @@ public class TelegramServImpl implements TelegramService {
                     requestEnt.getStudent().getSpeciality().getName(),
                     requestEnt.getStudent().getUserInformation().getFirstName() +
                             " " +
-                            requestEnt.getStudent().getUserInformation().getLastName()
+                            requestEnt.getStudent().getUserInformation().getLastName(),
+                    requestEnt.getStudent().getContactInformation().getTelegramUserId()
             );
 
             RecruiterRes recruiterRes = new RecruiterRes(
@@ -148,7 +151,8 @@ public class TelegramServImpl implements TelegramService {
                     requestEnt.getRecruiter().getCompanyName(),
                     requestEnt.getRecruiter().getUserInformation().getFirstName() +
                             " " +
-                            requestEnt.getRecruiter().getUserInformation().getLastName()
+                            requestEnt.getRecruiter().getUserInformation().getLastName(),
+                    requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
             );
 
             offers.add(new OffersDTO.Offer(
@@ -283,7 +287,8 @@ public class TelegramServImpl implements TelegramService {
                 requestEnt.getStudent().getSpeciality().getName(),
                 requestEnt.getStudent().getUserInformation().getFirstName() +
                         " " +
-                        requestEnt.getStudent().getUserInformation().getLastName()
+                        requestEnt.getStudent().getUserInformation().getLastName(),
+                requestEnt.getStudent().getContactInformation().getTelegramUserId()
         );
 
         RecruiterRes recruiterRes = new RecruiterRes(
@@ -291,7 +296,8 @@ public class TelegramServImpl implements TelegramService {
                 requestEnt.getRecruiter().getCompanyName(),
                 requestEnt.getRecruiter().getUserInformation().getFirstName() +
                         " " +
-                        requestEnt.getRecruiter().getUserInformation().getLastName()
+                        requestEnt.getRecruiter().getUserInformation().getLastName(),
+                requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
         );
 
         return new OffersDTO.Offer(
