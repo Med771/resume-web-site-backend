@@ -12,11 +12,11 @@ public interface TelegramService {
     OffersDTO filter(String userId, OfferFilterReq offerFilterReq);
 
     StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq);
-
     RecruiterTelegramDTO setRecruiterTelegramUserId(UUID recruiterId, SetTelegramUserIdReq setTelegramUserIdReq);
 
     StudentTelegramDTO clearStudentTelegramUserId(UUID studentId);
-
     RecruiterTelegramDTO clearRecruiterTelegramUserId(UUID recruiterId);
+
+    OffersDTO.Offer createChat(long id);
 }
 

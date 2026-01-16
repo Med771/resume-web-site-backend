@@ -12,9 +12,12 @@ import ru.ai.sin.entity.RecruiterEnt;
 import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.ContactInformation;
+import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.spec.RequestSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.helper.FastHelper;
+import ru.ai.sin.helper.model.ChatCreateResponseDto;
 import ru.ai.sin.repository.RecruiterRepo;
 import ru.ai.sin.repository.RequestRepo;
 import ru.ai.sin.repository.StudentRepo;
@@ -36,6 +39,8 @@ public class TelegramServImpl implements TelegramService {
     private final RequestRepo requestRepo;
 
     private final TelegramTools telegramTools;
+
+    private final FastHelper fastHelper;
 
     @Override
     public StudentTelegramDTO getStudentByTelegramUserId(String userId) {
@@ -199,7 +204,20 @@ public class TelegramServImpl implements TelegramService {
 
         log.info("Set telegram user id for recruiter: {} with telegramUserId: {}", recruiterId, setTelegramUserIdReq.telegramUserId());
 
+        updateAllStatus(recruiterId);
+
         return recruiterTelegramDTO;
+    }
+
+    @Transactional
+    protected void updateAllStatus(UUID recruiterId) {
+        List<RequestEnt> requests = requestRepo.findAll(
+                RequestSpecifications.byFilters(new RequestFilterReq(List.of(new ResultEnum[]{ResultEnum.CREATION}), recruiterId, null))
+        );
+
+        requests.forEach(requestEnt -> requestEnt.setResult(ResultEnum.SYNC));
+
+        requestRepo.saveAll(requests);
     }
 
     @Override
@@ -234,6 +252,50 @@ public class TelegramServImpl implements TelegramService {
         log.info("Cleared telegram user id for recruiter: {}", recruiterId);
 
         return recruiterTelegramDTO;
+    }
+
+    @Override
+    @Transactional
+    public OffersDTO.Offer createChat(long id) {
+        RequestEnt requestEnt = requestRepo.findById(id);
+
+        try {
+            ChatCreateResponseDto resp = fastHelper.createChat("Чат с кандидатом: %s %s и компанией: %s".formatted(
+                    requestEnt.getStudent().getUserInformation().getLastName(),
+                    requestEnt.getStudent().getUserInformation().getFirstName(),
+                    requestEnt.getRecruiter().getCompanyName()));
+
+            requestEnt.setChatId(String.valueOf(resp.chatId()));
+            requestEnt.setChatUrl(resp.inviteLink());
+        }
+        catch (Exception e) {
+            log.warn("Error while creating chat: {}", e.getMessage());
+        }
+
+        StudentRes studentRes = new StudentRes(
+                requestEnt.getStudent().getId(),
+                requestEnt.getStudent().getSpeciality().getName(),
+                requestEnt.getStudent().getUserInformation().getFirstName() +
+                        " " +
+                        requestEnt.getStudent().getUserInformation().getLastName()
+        );
+
+        RecruiterRes recruiterRes = new RecruiterRes(
+                requestEnt.getRecruiter().getId(),
+                requestEnt.getRecruiter().getCompanyName(),
+                requestEnt.getRecruiter().getUserInformation().getFirstName() +
+                        " " +
+                        requestEnt.getRecruiter().getUserInformation().getLastName()
+        );
+
+        return new OffersDTO.Offer(
+                requestEnt.getId(),
+                requestEnt.getChatId(),
+                requestEnt.getResult(),
+                requestEnt.getChatUrl(),
+                studentRes,
+                recruiterRes
+        );
     }
 }
 

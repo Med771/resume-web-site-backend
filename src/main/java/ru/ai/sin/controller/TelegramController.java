@@ -87,6 +87,14 @@ public class TelegramController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(path = "/chat/{id}")
+    public ResponseEntity<OffersDTO.Offer> createChat(@PathVariable long id) {
+        OffersDTO.Offer offer = telegramService.createChat(id);
+
+        return ResponseEntity.ok(offer);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/student/{id}")
     public ResponseEntity<StudentTelegramDTO> clearStudentTelegramUserId(
             @PathVariable UUID id
