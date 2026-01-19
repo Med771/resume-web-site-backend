@@ -22,6 +22,7 @@ import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.spec.RequestSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.repository.RequestRepo;
 
 import ru.ai.sin.service.impl.RequestService;
@@ -42,6 +43,8 @@ public class RequestServImpl implements RequestService {
     private final RequestTools requestTools;
     private final StudentTools studentTools;
     private final RecruiterTools recruiterTools;
+
+    private final SecurityHelper securityHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -132,5 +135,22 @@ public class RequestServImpl implements RequestService {
         log.info("Updated request status: {} with status: {}", id, requestUpdateStatusReq.resultEnum());
 
         return requestDTO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(long id) {
+        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
+
+        try {
+            requestRepo.delete(requestEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting request: {}", ex.getMessage());
+
+            throw new BadRequestException("Error while deleting request");
+        }
+
+        log.info("User: {}, deleted a request: {} with data: {}", securityHelper.getCurrentUsername(), id, requestEnt);
     }
 }

@@ -34,7 +34,8 @@ public class RequestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/{id}")
-    public ResponseEntity<RequestDTO> getById(@PathVariable("id") @Min(1) long id) {
+    public ResponseEntity<RequestDTO> getById(
+            @PathVariable @Min(1) long id) {
         RequestDTO requestDTO = requestService.getById(id);
 
         return ResponseEntity.ok(requestDTO);
@@ -72,5 +73,12 @@ public class RequestController {
         RequestDTO requestDTO = requestService.updateStatus(id, requestUpdateStatusReq);
 
         return ResponseEntity.ok(requestDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping(path = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable @Min(1) long id) {
+        requestService.deleteById(id);
     }
 }

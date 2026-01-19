@@ -15,4 +15,6 @@ public interface RequestService {
     RequestDTO create(AddRequestReq addRequestReq);
 
     RequestDTO updateStatus(long id, RequestUpdateStatusReq requestUpdateStatusReq);
+
+    void deleteById(long id);
 }
