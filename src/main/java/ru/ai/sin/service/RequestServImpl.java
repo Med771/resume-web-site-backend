@@ -18,6 +18,7 @@ import ru.ai.sin.dto.request.RequestUpdateStatusReq;
 
 import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.spec.RequestSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
@@ -27,6 +28,9 @@ import ru.ai.sin.service.impl.RequestService;
 import ru.ai.sin.service.tools.RecruiterTools;
 import ru.ai.sin.service.tools.RequestTools;
 import ru.ai.sin.service.tools.StudentTools;
+
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -95,7 +99,21 @@ public class RequestServImpl implements RequestService {
         RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
+        updateAllStatus(recruiterEnt.getId());
+
         return requestDTO;
+    }
+
+
+    @Transactional
+    protected void updateAllStatus(UUID recruiterId) {
+        List<RequestEnt> requests = requestRepo.findAll(
+                RequestSpecifications.byFilters(new RequestFilterReq(List.of(new ResultEnum[]{ResultEnum.CREATION}), recruiterId, null))
+        );
+
+        requests.forEach(requestEnt -> requestEnt.setResult(ResultEnum.SYNC));
+
+        requestRepo.saveAll(requests);
     }
 
     @Override
