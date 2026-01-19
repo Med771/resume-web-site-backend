@@ -34,7 +34,6 @@ public class RecruiterTools {
     public RecruiterEnt findOrCreateRecruiter(AddRecruiterReq addRecruiterReq) {
         RecruiterEnt recruiterEnt = recruiterRepo
                 .findByUserInformationEmail(addRecruiterReq.email())
-                .or(() -> recruiterRepo.findByContactInformationTelegramUsername(addRecruiterReq.telegramUsername()))
                 .orElse(null);
 
         // Если рекрутер не найден, создаем нового
