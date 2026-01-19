@@ -137,32 +137,38 @@ public class TelegramServImpl implements TelegramService {
         List<OffersDTO.Offer> offers = new ArrayList<>();
 
         for (RequestEnt requestEnt : requests) {
-            StudentRes studentRes = new StudentRes(
-                    requestEnt.getStudent().getId(),
-                    requestEnt.getStudent().getSpeciality().getName(),
-                    requestEnt.getStudent().getUserInformation().getFirstName() +
-                            " " +
-                            requestEnt.getStudent().getUserInformation().getLastName(),
-                    requestEnt.getStudent().getContactInformation().getTelegramUserId()
-            );
+            try {
+                StudentRes studentRes = new StudentRes(
+                        requestEnt.getStudent().getId(),
+                        requestEnt.getStudent().getSpeciality().getName(),
+                        requestEnt.getStudent().getUserInformation().getFirstName() +
+                                " " +
+                                requestEnt.getStudent().getUserInformation().getLastName(),
+                        requestEnt.getStudent().getContactInformation().getTelegramUserId()
+                );
 
-            RecruiterRes recruiterRes = new RecruiterRes(
-                    requestEnt.getRecruiter().getId(),
-                    requestEnt.getRecruiter().getCompanyName(),
-                    requestEnt.getRecruiter().getUserInformation().getFirstName() +
-                            " " +
-                            requestEnt.getRecruiter().getUserInformation().getLastName(),
-                    requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
-            );
+                RecruiterRes recruiterRes = new RecruiterRes(
+                        requestEnt.getRecruiter().getId(),
+                        requestEnt.getRecruiter().getCompanyName(),
+                        requestEnt.getRecruiter().getUserInformation().getFirstName() +
+                                " " +
+                                requestEnt.getRecruiter().getUserInformation().getLastName(),
+                        requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
+                );
 
-            offers.add(new OffersDTO.Offer(
-                    requestEnt.getId(),
-                    requestEnt.getChatId(),
-                    requestEnt.getResult(),
-                    requestEnt.getChatUrl(),
-                    studentRes,
-                    recruiterRes
-            ));
+                offers.add(new OffersDTO.Offer(
+                        requestEnt.getId(),
+                        requestEnt.getChatId(),
+                        requestEnt.getResult(),
+                        requestEnt.getChatUrl(),
+                        studentRes,
+                        recruiterRes
+                ));
+            }
+            catch (NullPointerException ex) {
+                log.warn("NPE in get offers. Request Entity: {}", requestEnt.getId());
+            }
+
         }
         return offers;
     }
