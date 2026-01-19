@@ -99,7 +99,9 @@ public class RequestServImpl implements RequestService {
         RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
-        updateAllStatus(recruiterEnt.getId());
+        if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {
+            updateAllStatus(recruiterEnt.getId());
+        }
 
         return requestDTO;
     }
