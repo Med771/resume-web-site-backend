@@ -56,7 +56,7 @@ public class StudentController {
         return ResponseEntity.ok(studentCardDTOs);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
