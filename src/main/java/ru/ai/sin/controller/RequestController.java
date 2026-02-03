@@ -22,6 +22,7 @@ import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
 import ru.ai.sin.dto.request.RequestUpdateStatusReq;
+import ru.ai.sin.dto.request.UpdateRequestByChatReq;
 import ru.ai.sin.service.impl.RequestService;
 
 @RestController
@@ -34,45 +35,38 @@ public class RequestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/{id}")
-    public ResponseEntity<RequestDTO> getById(
-            @PathVariable @Min(1) long id) {
-        RequestDTO requestDTO = requestService.getById(id);
-
-        return ResponseEntity.ok(requestDTO);
+    public ResponseEntity<RequestDTO> getById(@PathVariable @Min(1) long id) {
+        return ResponseEntity.ok(requestService.getById(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<RequestDTO>> getByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-
-            @Valid @RequestBody RequestFilterReq requestFilterReq
-            ) {
-        PageResponse<RequestDTO> requestDTOs = requestService.getByFilter(pageable, requestFilterReq);
-
-        return ResponseEntity.ok(requestDTOs);
+            @Valid @RequestBody RequestFilterReq requestFilterReq) {
+        return ResponseEntity.ok(requestService.getByFilter(pageable, requestFilterReq));
     }
 
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping()
-    public ResponseEntity<RequestDTO> create(
-            @Valid @RequestBody AddRequestReq addRequestReq
-    ) {
-        RequestDTO requestDTO = requestService.create(addRequestReq);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestDTO);
+    public ResponseEntity<RequestDTO> create(@Valid @RequestBody AddRequestReq addRequestReq) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.create(addRequestReq));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/status/{id}")
     public ResponseEntity<RequestDTO> updateStatus(
             @PathVariable @Min(1) long id,
+            @Valid @RequestBody RequestUpdateStatusReq requestUpdateStatusReq) {
+        return ResponseEntity.ok(requestService.updateStatus(id, requestUpdateStatusReq));
+    }
 
-            @Valid @RequestBody RequestUpdateStatusReq requestUpdateStatusReq
-    ) {
-        RequestDTO requestDTO = requestService.updateStatus(id, requestUpdateStatusReq);
-
-        return ResponseEntity.ok(requestDTO);
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping(path = "/by-chat/{chatId}")
+    public ResponseEntity<RequestDTO> updateByChatId(
+            @PathVariable String chatId,
+            @Valid @RequestBody UpdateRequestByChatReq updateRequestByChatReq) {
+        return ResponseEntity.ok(requestService.updateByChatId(chatId, updateRequestByChatReq));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

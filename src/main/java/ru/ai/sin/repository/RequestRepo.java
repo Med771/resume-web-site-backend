@@ -13,6 +13,7 @@ import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.model.ResultEnum;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecificationExecutor<RequestEnt> {
@@ -34,4 +35,7 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     @NonNull
     @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     List<RequestEnt> findAll(Specification<RequestEnt> spec);
+
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    Optional<RequestEnt> findFirstByChatId(String chatId);
 }

@@ -4,24 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ai.sin.dto.recruiter.RecruiterRes;
 import ru.ai.sin.dto.request.RequestFilterReq;
-import ru.ai.sin.dto.student.StudentRes;
 import ru.ai.sin.dto.telegram.*;
-import ru.ai.sin.entity.RecruiterEnt;
 import ru.ai.sin.entity.RequestEnt;
-import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.entity.model.ContactInformation;
-import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.spec.RequestSpecifications;
-import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.FastHelper;
-import ru.ai.sin.helper.model.ChatCreateResponseDto;
 import ru.ai.sin.repository.RecruiterRepo;
 import ru.ai.sin.repository.RequestRepo;
 import ru.ai.sin.repository.StudentRepo;
 import ru.ai.sin.service.impl.TelegramService;
+import ru.ai.sin.service.tools.RequestTools;
 import ru.ai.sin.service.tools.TelegramTools;
 
 import java.util.*;
@@ -38,302 +31,97 @@ public class TelegramServImpl implements TelegramService {
     private final RequestRepo requestRepo;
 
     private final TelegramTools telegramTools;
+    private final RequestTools requestTools;
 
     private final FastHelper fastHelper;
 
     @Override
-    public StudentTelegramDTO getStudentByTelegramUserId(String userId) {
-        Optional<StudentEnt> studentEnt = studentRepo.findByContactInformationTelegramUserId(userId);
-
-        if (studentEnt.isPresent()) {
-            return telegramTools.mapStudentToDTO(studentEnt.get());
+    public TelegramUserRes getByTelegramUserId(String telegramUserId) {
+        var studentOpt = studentRepo.findByContactInformationTelegramUserId(telegramUserId);
+        if (studentOpt.isPresent()) {
+            return TelegramUserRes.student(telegramTools.mapStudentToDTO(studentOpt.get()));
         }
-
-        throw new NotFoundException("Student not found");
-    }
-
-    @Override
-    public RecruiterTelegramDTO getRecruiterByTelegramUserId(String userId) {
-        Optional<RecruiterEnt> recruiterEnt = recruiterRepo.findByContactInformationTelegramUserId(userId);
-
-        if (recruiterEnt.isPresent()) {
-            return telegramTools.mapRecruiterToDTO(recruiterEnt.get());
+        var recruiterOpt = recruiterRepo.findByContactInformationTelegramUserId(telegramUserId);
+        if (recruiterOpt.isPresent()) {
+            return TelegramUserRes.recruiter(telegramTools.mapRecruiterToDTO(recruiterOpt.get()));
         }
-
-        throw new NotFoundException("Recruiter not found");
+        throw new NotFoundException("User not found by telegram user id: " + telegramUserId);
     }
 
     @Override
     public OffersDTO.Offer getById(long id) {
-        RequestEnt requestEnt = requestRepo.findById(id);
-
-        StudentRes studentRes = new StudentRes(
-                requestEnt.getStudent().getId(),
-                requestEnt.getStudent().getSpeciality().getName(),
-                requestEnt.getStudent().getUserInformation().getFirstName() +
-                        " " +
-                        requestEnt.getStudent().getUserInformation().getLastName(),
-                requestEnt.getStudent().getContactInformation().getTelegramUserId()
-        );
-
-        RecruiterRes recruiterRes = new RecruiterRes(
-                requestEnt.getRecruiter().getId(),
-                requestEnt.getRecruiter().getCompanyName(),
-                requestEnt.getRecruiter().getUserInformation().getFirstName() +
-                        " " +
-                        requestEnt.getRecruiter().getUserInformation().getLastName(),
-                requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
-        );
-
-        return new OffersDTO.Offer(
-                requestEnt.getId(),
-                requestEnt.getChatId(),
-                requestEnt.getResult(),
-                requestEnt.getChatUrl(),
-                studentRes,
-                recruiterRes
-        );
+        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
+        return telegramTools.mapRequestToOffer(requestEnt);
     }
 
     @Override
     public OffersDTO getAllOffersByResult(OffersFilterReq offersFilterReq) {
-        List<RequestEnt> requestEntList = requestRepo.findAllByResultIn(offersFilterReq.results());
-
-        return new OffersDTO(getOffers(requestEntList));
+        return new OffersDTO(getOffers(requestRepo.findAllByResultIn(offersFilterReq.results())));
     }
 
     @Override
     @Transactional
     public OffersDTO filter(String userId, OfferFilterReq offerFilterReq) {
-        List<RequestEnt> requests;
-        
+        UUID studentId = null;
+        UUID recruiterId = null;
         if (offerFilterReq.isStud()) {
-            Optional<StudentEnt> studentEnt = studentRepo.findByContactInformationTelegramUserId(userId);
-
-            if (studentEnt.isEmpty()) {
-                throw new NotFoundException("Student not found");
-            }
-            
-            requests = requestRepo.findAll(RequestSpecifications.byFilters(
-                    new RequestFilterReq(offerFilterReq.results(), null, studentEnt.get().getId())));
+            studentId = studentRepo.findByContactInformationTelegramUserId(userId)
+                    .orElseThrow(() -> new NotFoundException("Student not found"))
+                    .getId();
+        } else {
+            recruiterId = recruiterRepo.findByContactInformationTelegramUserId(userId)
+                    .orElseThrow(() -> new NotFoundException("Recruiter not found"))
+                    .getId();
         }
-        else {
-            Optional<RecruiterEnt> recruiterEnt = recruiterRepo.findByContactInformationTelegramUserId(userId);
-            
-            if (recruiterEnt.isEmpty()) {
-                throw new NotFoundException("Recruiter not found");
-            }
-
-            requests = requestRepo.findAll(RequestSpecifications.byFilters(
-                    new RequestFilterReq(offerFilterReq.results(), recruiterEnt.get().getId(), null)));
-        }
-
-        List<OffersDTO.Offer> offers = getOffers(requests);
-
-        return new OffersDTO(offers);
-    }
-
-    private static List<OffersDTO.Offer> getOffers(List<RequestEnt> requests) {
-        List<OffersDTO.Offer> offers = new ArrayList<>();
-
-        for (RequestEnt requestEnt : requests) {
-            try {
-                StudentRes studentRes = new StudentRes(
-                        requestEnt.getStudent().getId(),
-                        requestEnt.getStudent().getSpeciality().getName(),
-                        requestEnt.getStudent().getUserInformation().getFirstName() +
-                                " " +
-                                requestEnt.getStudent().getUserInformation().getLastName(),
-                        requestEnt.getStudent().getContactInformation().getTelegramUserId()
-                );
-
-                RecruiterRes recruiterRes = new RecruiterRes(
-                        requestEnt.getRecruiter().getId(),
-                        requestEnt.getRecruiter().getCompanyName(),
-                        requestEnt.getRecruiter().getUserInformation().getFirstName() +
-                                " " +
-                                requestEnt.getRecruiter().getUserInformation().getLastName(),
-                        requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
-                );
-
-                offers.add(new OffersDTO.Offer(
-                        requestEnt.getId(),
-                        requestEnt.getChatId(),
-                        requestEnt.getResult(),
-                        requestEnt.getChatUrl(),
-                        studentRes,
-                        recruiterRes
-                ));
-            }
-            catch (NullPointerException ex) {
-                log.warn("NPE in get offers. Request Entity: {}", requestEnt.getId());
-            }
-
-        }
-        return offers;
-    }
-
-    @Override
-    @Transactional
-    public StudentTelegramDTO setStudentTelegramUserId(UUID studentId, SetTelegramUserIdReq setTelegramUserIdReq) {
-        if (recruiterRepo.findByContactInformationTelegramUserId(setTelegramUserIdReq.telegramUserId()).isPresent()) {
-            throw new BadRequestException("Telegram user id already set for recruiter when student: " + studentId);
-        }
-
-        StudentEnt studentEnt = telegramTools.getStudentOrThrow(studentId);
-
-        if (studentEnt.getContactInformation() == null) {
-            studentEnt.setContactInformation(new ContactInformation());
-        }
-
-        if (studentEnt.getContactInformation().getTelegramUserId() != null) {
-            throw new BadRequestException("Telegram user id already set for student: " + studentId);
-        }
-
-        studentEnt.getContactInformation().setTelegramUserId(setTelegramUserIdReq.telegramUserId());
-        studentEnt = studentRepo.save(studentEnt);
-
-        StudentTelegramDTO studentTelegramDTO = telegramTools.mapStudentToDTO(studentEnt);
-
-        log.info("Set telegram user id for student: {} with telegramUserId: {}", studentId, setTelegramUserIdReq.telegramUserId());
-
-        return studentTelegramDTO;
-    }
-
-    @Override
-    @Transactional
-    public RecruiterTelegramDTO setRecruiterTelegramUserId(UUID recruiterId, SetTelegramUserIdReq setTelegramUserIdReq) {
-        if (studentRepo.findByContactInformationTelegramUserId(setTelegramUserIdReq.telegramUserId()).isPresent()) {
-            throw new BadRequestException("Telegram user id already set for student when recruiter: " + recruiterId);
-        }
-
-        RecruiterEnt recruiterEnt = telegramTools.getRecruiterOrThrow(recruiterId);
-
-        if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {
-            throw new BadRequestException("Telegram user id already set for recruiter: " + recruiterId);
-        }
-
-        recruiterEnt.getContactInformation().setTelegramUserId(setTelegramUserIdReq.telegramUserId());
-        recruiterEnt = recruiterRepo.save(recruiterEnt);
-
-        RecruiterTelegramDTO recruiterTelegramDTO = telegramTools.mapRecruiterToDTO(recruiterEnt);
-
-        log.info("Set telegram user id for recruiter: {} with telegramUserId: {}", recruiterId, setTelegramUserIdReq.telegramUserId());
-
-        updateAllStatus(recruiterId);
-
-        return recruiterTelegramDTO;
-    }
-
-    @Transactional
-    protected void updateAllStatus(UUID recruiterId) {
         List<RequestEnt> requests = requestRepo.findAll(
-                RequestSpecifications.byFilters(new RequestFilterReq(List.of(new ResultEnum[]{ResultEnum.CREATION}), recruiterId, null))
-        );
-
-        requests.forEach(requestEnt -> requestEnt.setResult(ResultEnum.SYNC));
-
-        requestRepo.saveAll(requests);
+                RequestSpecifications.byFilters(new RequestFilterReq(offerFilterReq.results(), recruiterId, studentId)));
+        return new OffersDTO(getOffers(requests));
     }
 
-    @Override
-    @Transactional
-    public StudentTelegramDTO clearStudentTelegramUserId(UUID studentId) {
-        StudentEnt studentEnt = telegramTools.getStudentOrThrow(studentId);
-
-        if (studentEnt.getContactInformation() == null) {
-            studentEnt.setContactInformation(new ContactInformation());
-        }
-        else {
-            studentEnt.getContactInformation().setTelegramUserId(null);
-        }
-
-        StudentTelegramDTO studentTelegramDTO = telegramTools.mapStudentToDTO(studentEnt);
-
-        log.info("Cleared telegram user id for student: {}", studentId);
-
-        return studentTelegramDTO;
-    }
-
-    @Override
-    @Transactional
-    public RecruiterTelegramDTO clearRecruiterTelegramUserId(UUID recruiterId) {
-        RecruiterEnt recruiterEnt = telegramTools.getRecruiterOrThrow(recruiterId);
-
-        recruiterEnt.getContactInformation().setTelegramUserId(null);
-        recruiterEnt = recruiterRepo.save(recruiterEnt);
-
-        RecruiterTelegramDTO recruiterTelegramDTO = telegramTools.mapRecruiterToDTO(recruiterEnt);
-
-        log.info("Cleared telegram user id for recruiter: {}", recruiterId);
-
-        return recruiterTelegramDTO;
+    private List<OffersDTO.Offer> getOffers(List<RequestEnt> requests) {
+        return requests.stream()
+                .map(req -> {
+                    try {
+                        return Optional.of(telegramTools.mapRequestToOffer(req));
+                    } catch (NullPointerException ex) {
+                        log.warn("NPE in get offers. Request Entity: {}", req.getId());
+                        return Optional.<OffersDTO.Offer>empty();
+                    }
+                })
+                .flatMap(Optional::stream)
+                .toList();
     }
 
     @Override
     @Transactional
     public OffersDTO.Offer createChat(long id) {
-        RequestEnt requestEnt = requestRepo.findById(id);
-
+        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
         try {
-            ChatCreateResponseDto resp = fastHelper.createChat("Чат с кандидатом: %s %s и компанией: %s".formatted(
+            var resp = fastHelper.createChat("Чат с кандидатом: %s %s и компанией: %s".formatted(
                     requestEnt.getStudent().getUserInformation().getLastName(),
                     requestEnt.getStudent().getUserInformation().getFirstName(),
                     requestEnt.getRecruiter().getCompanyName()));
-
             requestEnt.setChatId(String.valueOf(resp.chatId()));
             requestEnt.setChatUrl(resp.inviteLink());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.warn("Error while creating chat: {}", e.getMessage());
         }
-
-        StudentRes studentRes = new StudentRes(
-                requestEnt.getStudent().getId(),
-                requestEnt.getStudent().getSpeciality().getName(),
-                requestEnt.getStudent().getUserInformation().getFirstName() +
-                        " " +
-                        requestEnt.getStudent().getUserInformation().getLastName(),
-                requestEnt.getStudent().getContactInformation().getTelegramUserId()
-        );
-
-        RecruiterRes recruiterRes = new RecruiterRes(
-                requestEnt.getRecruiter().getId(),
-                requestEnt.getRecruiter().getCompanyName(),
-                requestEnt.getRecruiter().getUserInformation().getFirstName() +
-                        " " +
-                        requestEnt.getRecruiter().getUserInformation().getLastName(),
-                requestEnt.getRecruiter().getContactInformation().getTelegramUserId()
-        );
-
-        return new OffersDTO.Offer(
-                requestEnt.getId(),
-                requestEnt.getChatId(),
-                requestEnt.getResult(),
-                requestEnt.getChatUrl(),
-                studentRes,
-                recruiterRes
-        );
+        return telegramTools.mapRequestToOffer(requestEnt);
     }
 
     @Override
     @Transactional
     public OffersDTO batchStatus(StatusUpdateReq statusUpdateReq) {
-        List<RequestEnt> requests = requestRepo.findAllByIdIn(statusUpdateReq.newStatuses().stream().map(StatusUpdateReq.Pair::id).toList());
-
+        var ids = statusUpdateReq.newStatuses().stream().map(StatusUpdateReq.Pair::id).toList();
+        List<RequestEnt> requests = requestRepo.findAllByIdIn(ids);
         Map<Long, RequestEnt> requestMap = requests.stream().collect(Collectors.toMap(RequestEnt::getId, Function.identity()));
-
-        for (StatusUpdateReq.Pair pair : statusUpdateReq.newStatuses()) {
+        statusUpdateReq.newStatuses().forEach(pair -> {
             if (requestMap.containsKey(pair.id())) {
                 requestMap.get(pair.id()).setResult(pair.result());
             }
-        }
-
+        });
         requestRepo.saveAll(requests);
-
         return new OffersDTO(getOffers(requests));
     }
-
-
 }
 

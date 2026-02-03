@@ -35,6 +35,15 @@ public class RequestEnt {
     @Column(name = "chat_url")
     private String chatUrl;
 
+    @Column(name = "student_response_text", columnDefinition = "TEXT")
+    private String studentResponseText;
+
+    @Column(name = "has_recruiter_message", nullable = false)
+    private boolean hasRecruiterMessage = false;
+
+    @Column(name = "has_student_message", nullable = false)
+    private boolean hasStudentMessage = false;
+
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
 

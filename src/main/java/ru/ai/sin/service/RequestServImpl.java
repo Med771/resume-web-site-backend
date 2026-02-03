@@ -15,10 +15,10 @@ import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
 import ru.ai.sin.dto.request.RequestUpdateStatusReq;
+import ru.ai.sin.dto.request.UpdateRequestByChatReq;
 
 import ru.ai.sin.entity.RequestEnt;
 import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.spec.RequestSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
@@ -30,8 +30,6 @@ import ru.ai.sin.service.tools.RecruiterTools;
 import ru.ai.sin.service.tools.RequestTools;
 import ru.ai.sin.service.tools.StudentTools;
 
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -103,22 +101,10 @@ public class RequestServImpl implements RequestService {
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
         if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {
-            updateAllStatus(recruiterEnt.getId());
+            requestTools.updateAllStatusForRecruiter(recruiterEnt.getId());
         }
 
         return requestDTO;
-    }
-
-
-    @Transactional
-    protected void updateAllStatus(UUID recruiterId) {
-        List<RequestEnt> requests = requestRepo.findAll(
-                RequestSpecifications.byFilters(new RequestFilterReq(List.of(new ResultEnum[]{ResultEnum.CREATION}), recruiterId, null))
-        );
-
-        requests.forEach(requestEnt -> requestEnt.setResult(ResultEnum.SYNC));
-
-        requestRepo.saveAll(requests);
     }
 
     @Override
@@ -135,6 +121,33 @@ public class RequestServImpl implements RequestService {
         log.info("Updated request status: {} with status: {}", id, requestUpdateStatusReq.resultEnum());
 
         return requestDTO;
+    }
+
+    @Override
+    @Transactional
+    public RequestDTO updateByChatId(String chatId, UpdateRequestByChatReq req) {
+        RequestEnt requestEnt = requestTools.getRequestByChatIdOrThrow(chatId);
+        if (req.studentResponseText() != null) {
+            requestEnt.setStudentResponseText(req.studentResponseText());
+        }
+        if (Boolean.TRUE.equals(req.hasRecruiterMessage())) {
+            requestEnt.setHasRecruiterMessage(true);
+        }
+        if (Boolean.TRUE.equals(req.hasStudentMessage())) {
+            requestEnt.setHasStudentMessage(true);
+        }
+        if (req.result() != null) {
+            requestEnt.setResult(req.result());
+        }
+        if (req.chatId() != null) {
+            requestEnt.setChatId(req.chatId());
+        }
+        if (req.chatUrl() != null) {
+            requestEnt.setChatUrl(req.chatUrl());
+        }
+        requestEnt = requestRepo.save(requestEnt);
+        log.info("Updated request by chatId: {}", chatId);
+        return requestTools.mapToDTO(requestEnt);
     }
 
     @Override

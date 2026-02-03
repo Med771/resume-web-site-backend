@@ -6,6 +6,7 @@ import ru.ai.sin.dto.request.AddRequestReq;
 import ru.ai.sin.dto.request.RequestDTO;
 import ru.ai.sin.dto.request.RequestFilterReq;
 import ru.ai.sin.dto.request.RequestUpdateStatusReq;
+import ru.ai.sin.dto.request.UpdateRequestByChatReq;
 
 public interface RequestService {
     RequestDTO getById(long id);
@@ -15,6 +16,8 @@ public interface RequestService {
     RequestDTO create(AddRequestReq addRequestReq);
 
     RequestDTO updateStatus(long id, RequestUpdateStatusReq requestUpdateStatusReq);
+
+    RequestDTO updateByChatId(String chatId, UpdateRequestByChatReq updateRequestByChatReq);
 
     void deleteById(long id);
 }
