@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.speciality;
+package ru.ai.sin.logic.speciality.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

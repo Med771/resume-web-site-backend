@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.speciality;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,27 +14,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
 
-import ru.ai.sin.dto.speciality.*;
-
-import ru.ai.sin.entity.SpecialityEnt;
-import ru.ai.sin.entity.spec.SpecialitySpecifications;
-
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.SpecialityMapper;
+import ru.ai.sin.logic.speciality.dto.*;
 
-import ru.ai.sin.repository.SpecialityRepo;
-
-import ru.ai.sin.service.impl.SpecialityService;
-import ru.ai.sin.service.tools.SpecialityTools;
+import ru.ai.sin.tools.SpecialityTools;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SpecialityServImpl implements SpecialityService {
+public class SpecialityServiceImpl implements SpecialityService {
 
     private final SpecialityRepo specialityRepo;
 
@@ -50,9 +42,9 @@ public class SpecialityServImpl implements SpecialityService {
     }
 
     @Override
-    public PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, SpecialityFilterReq specialityFilterReq) {
+    public PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, FilterSpecialityReq filterSpecialityReq) {
         Page<SpecialityEnt> page = specialityRepo.findAll(
-                SpecialitySpecifications.byFilters(specialityFilterReq),
+                SpecialitySpecifications.byFilters(filterSpecialityReq),
                 pageable
         );
 

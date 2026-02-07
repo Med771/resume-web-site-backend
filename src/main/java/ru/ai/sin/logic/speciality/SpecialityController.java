@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.speciality;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,15 +19,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.speciality.*;
 
-import ru.ai.sin.service.impl.SpecialityService;
+import ru.ai.sin.logic.speciality.dto.*;
 
 @RestController
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/speciality")
-public class SpecialityCnt {
+public class SpecialityController {
 
     private final SpecialityService specialityService;
 
@@ -39,21 +38,21 @@ public class SpecialityCnt {
         return ResponseEntity.ok(specialityDTO);
     }
 
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<SpecialityDTO>> filter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody SpecialityFilterReq specialityFilterReq
+            @Valid @RequestBody FilterSpecialityReq filterSpecialityReq
     ) {
-        PageResponse<SpecialityDTO> specialityDTOs = specialityService.getAllByFilter(pageable, specialityFilterReq);
+        PageResponse<SpecialityDTO> specialityDTOs = specialityService.getAllByFilter(pageable, filterSpecialityReq);
 
         return ResponseEntity.ok(specialityDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<SpecialityDTO> create(@Valid @RequestBody AddSpecialityReq specialityReq) {
+    public ResponseEntity<SpecialityDTO> createById(@Valid @RequestBody AddSpecialityReq specialityReq) {
         SpecialityDTO specialityDTO = specialityService.create(specialityReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);
@@ -61,7 +60,7 @@ public class SpecialityCnt {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
-    public ResponseEntity<SpecialityDTO> update(
+    public ResponseEntity<SpecialityDTO> updateById(
             @PathVariable @Min(1) long id,
 
             @Valid @RequestBody UpdateSpecialityReq updateSpecialityReq

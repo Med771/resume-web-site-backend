@@ -1,9 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.speciality;
 
 import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
-import ru.ai.sin.dto.speciality.SpecialityFilterReq;
-import ru.ai.sin.entity.SpecialityEnt;
+
+import ru.ai.sin.logic.speciality.dto.FilterSpecialityReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,10 @@ public class SpecialitySpecifications {
 
     private SpecialitySpecifications() {}
 
-    public static Specification<SpecialityEnt> byFilters(SpecialityFilterReq specialityFilterReq) {
+    public static Specification<SpecialityEnt> byFilters(FilterSpecialityReq filterSpecialityReq) {
         return (root, query, cb) -> {
 
-            if (query == null || specialityFilterReq == null) {
+            if (query == null || filterSpecialityReq == null) {
                 return null;
             }
 
@@ -23,11 +24,11 @@ public class SpecialitySpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (specialityFilterReq.name() != null) {
+            if (filterSpecialityReq.name() != null) {
                 predicates.add(
                         cb.like(
                                 cb.lower(root.get("name")),
-                                "%" + specialityFilterReq.name().toLowerCase() + "%"
+                                "%" + filterSpecialityReq.name().toLowerCase() + "%"
                         )
                 );
             }

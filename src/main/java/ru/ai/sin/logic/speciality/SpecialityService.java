@@ -1,19 +1,18 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.speciality;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.speciality.*;
 
+import ru.ai.sin.logic.speciality.dto.*;
 
 public interface SpecialityService {
 
     // ---------- GET METHODS ----------
-    SpecialityDTO getById(
-            long id);
+    SpecialityDTO getById(long id);
 
     // ---------- POST METHODS ----------
-    PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, SpecialityFilterReq specialityFilterReq);
+    PageResponse<SpecialityDTO> getAllByFilter(Pageable pageable, FilterSpecialityReq filterSpecialityReq);
 
     SpecialityDTO create(AddSpecialityReq addSpecialityReq);
 
