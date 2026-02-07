@@ -1,12 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.recruiter;
 
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import ru.ai.sin.dto.recruiter.RecruiterFilterReq;
-
-import ru.ai.sin.entity.RecruiterEnt;
+import ru.ai.sin.logic.recruiter.dto.FilterRecruiterReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +13,10 @@ public final class RecruiterSpecifications {
 
     private RecruiterSpecifications() {}
 
-    public static Specification<RecruiterEnt> byFilters(RecruiterFilterReq recruiterFilterReq) {
+    public static Specification<RecruiterEnt> byFilters(FilterRecruiterReq filterRecruiterReq) {
         return (root, query, cb) -> {
 
-            if (query == null || recruiterFilterReq == null) {
+            if (query == null || filterRecruiterReq == null) {
                 return null;
             }
 
@@ -26,11 +24,11 @@ public final class RecruiterSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (recruiterFilterReq.name() != null) {
+            if (filterRecruiterReq.name() != null) {
                 predicates.add(
                         cb.like(
                                 cb.lower(root.get("name")),
-                                "%" + recruiterFilterReq.name().toLowerCase() + "%"
+                                "%" + filterRecruiterReq.name().toLowerCase() + "%"
                         )
                 );
             }

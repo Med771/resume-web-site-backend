@@ -1,13 +1,8 @@
-package ru.ai.sin.dto.recruiter;
+package ru.ai.sin.logic.recruiter.dto;
 
 import jakarta.validation.constraints.*;
 
-import java.util.UUID;
-
-public record RecruiterDTO(
-        @NotNull
-        UUID id,
-
+public record UpdateRecruiterReq(
         @NotBlank
         @Size(min = 1, max = 255, message = "Company name must be less than 255 characters")
         String companyName,
@@ -28,8 +23,6 @@ public record RecruiterDTO(
         String phoneNumber,
 
         @Size(min = 1, max = 32, message = "Telegram username must be less than 32 characters")
-        String telegramUsername,
-
-        @Size(min = 1, max = 32, message = "Telegram user id must be less than 32 characters")
-        String telegramUserId) {
+        String telegramUsername
+) {
 }

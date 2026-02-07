@@ -1,10 +1,8 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.recruiter;
 
 import org.mapstruct.*;
-import ru.ai.sin.dto.recruiter.AddRecruiterReq;
-import ru.ai.sin.dto.recruiter.UpdateRecruiterReq;
-import ru.ai.sin.dto.recruiter.RecruiterDTO;
-import ru.ai.sin.entity.RecruiterEnt;
+
+import ru.ai.sin.logic.recruiter.dto.*;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RecruiterMapper {

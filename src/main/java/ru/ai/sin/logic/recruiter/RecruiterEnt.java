@@ -1,8 +1,7 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.recruiter;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +21,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class RecruiterEnt {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)

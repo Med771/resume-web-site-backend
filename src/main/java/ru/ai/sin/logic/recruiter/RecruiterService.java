@@ -1,9 +1,10 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.recruiter;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.recruiter.*;
+
+import ru.ai.sin.logic.recruiter.dto.*;
 
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public interface RecruiterService {
     // ---------- POST METHODS ----------
     PageResponse<RecruiterDTO> getAllByFilter(
             Pageable pageable,
-            RecruiterFilterReq recruiterFilterReq);
+            FilterRecruiterReq filterRecruiterReq);
 
     // ---------- PUT METHODS ----------
     RecruiterDTO update(

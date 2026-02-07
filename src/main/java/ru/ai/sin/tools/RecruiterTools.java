@@ -1,16 +1,19 @@
-package ru.ai.sin.service.tools;
+package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ai.sin.dto.recruiter.AddRecruiterReq;
-import ru.ai.sin.entity.RecruiterEnt;
+
+import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
+import ru.ai.sin.logic.recruiter.RecruiterEnt;
+import ru.ai.sin.logic.recruiter.RecruiterMapper;
+import ru.ai.sin.logic.recruiter.RecruiterRepo;
+
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
-import ru.ai.sin.mapper.RecruiterMapper;
-import ru.ai.sin.repository.RecruiterRepo;
 
 import java.util.UUID;
 
@@ -36,7 +39,6 @@ public class RecruiterTools {
                 .findByUserInformationEmail(addRecruiterReq.email())
                 .orElse(null);
 
-        // Если рекрутер не найден, создаем нового
         if (recruiterEnt == null) {
             recruiterEnt = recruiterMapper.toEntity(addRecruiterReq);
 

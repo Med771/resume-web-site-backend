@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.recruiter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,29 +13,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.recruiter.*;
-
-import ru.ai.sin.entity.RecruiterEnt;
-import ru.ai.sin.entity.spec.RecruiterSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.RecruiterMapper;
+import ru.ai.sin.logic.recruiter.dto.*;
 
-import ru.ai.sin.repository.RecruiterRepo;
-
-import ru.ai.sin.service.impl.RecruiterService;
-
-import ru.ai.sin.service.tools.RecruiterTools;
+import ru.ai.sin.tools.RecruiterTools;
 
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RecruiterServImpl implements RecruiterService {
+public class RecruiterServiceImpl implements RecruiterService {
 
     private final RecruiterRepo recruiterRepo;
 
@@ -53,10 +45,10 @@ public class RecruiterServImpl implements RecruiterService {
     @Override
     public PageResponse<RecruiterDTO> getAllByFilter(
             Pageable pageable,
-            RecruiterFilterReq recruiterFilterReq
+            FilterRecruiterReq filterRecruiterReq
     ) {
         Page<RecruiterEnt> page = recruiterRepo.findAll(
-                RecruiterSpecifications.byFilters(recruiterFilterReq),
+                RecruiterSpecifications.byFilters(filterRecruiterReq),
                 pageable);
 
         return new PageResponse<>(

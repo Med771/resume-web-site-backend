@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.recruiter;
 
 import jakarta.validation.Valid;
 
@@ -20,11 +20,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.recruiter.RecruiterFilterReq;
-import ru.ai.sin.dto.recruiter.UpdateRecruiterReq;
-import ru.ai.sin.dto.recruiter.RecruiterDTO;
 
-import ru.ai.sin.service.impl.RecruiterService;
+import ru.ai.sin.logic.recruiter.dto.*;
 
 import java.util.UUID;
 
@@ -51,8 +48,9 @@ public class RecruiterController {
     public ResponseEntity<PageResponse<RecruiterDTO>> filter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody RecruiterFilterReq recruiterFilterReq) {
-        PageResponse<RecruiterDTO> recruiterDTOs = recruiterService.getAllByFilter(pageable, recruiterFilterReq);
+            @Valid @RequestBody FilterRecruiterReq filterRecruiterReq
+    ) {
+        PageResponse<RecruiterDTO> recruiterDTOs = recruiterService.getAllByFilter(pageable, filterRecruiterReq);
 
         return ResponseEntity.ok(recruiterDTOs);
     }
