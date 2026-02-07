@@ -1,8 +1,8 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
-import ru.ai.sin.dto.auth.LoginRequest;
-import ru.ai.sin.dto.auth.TokenPair;
+import ru.ai.sin.logic.auth.dto.LoginRequest;
+import ru.ai.sin.logic.auth.dto.TokenPair;
 
 public interface AuthService {
 

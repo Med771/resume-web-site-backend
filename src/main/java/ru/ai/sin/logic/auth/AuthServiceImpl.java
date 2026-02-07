@@ -1,20 +1,22 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.auth;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Service;
-import ru.ai.sin.dto.auth.LoginRequest;
-import ru.ai.sin.dto.auth.TokenPair;
+
+import ru.ai.sin.logic.auth.dto.*;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.property.JwtProperties;
-import ru.ai.sin.service.impl.AuthService;
 
 import java.util.Arrays;
 
