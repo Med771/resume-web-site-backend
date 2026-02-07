@@ -43,7 +43,8 @@ public class PortfolioController {
     public ResponseEntity<PageResponse<PortfolioDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody FilterPortfolioReq filterPortfolioReq) {
+            @Valid @RequestBody FilterPortfolioReq filterPortfolioReq
+    ) {
         PageResponse<PortfolioDTO> portfolioDTOs = portfolioService.getAllByFilter(pageable, filterPortfolioReq);
 
         return ResponseEntity.ok(portfolioDTOs);
