@@ -1,4 +1,4 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.education;
 
 import jakarta.persistence.*;
 
@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import ru.ai.sin.entity.InstitutionEnt;
 import ru.ai.sin.entity.model.TimeStamped;
 
 import java.util.HashSet;

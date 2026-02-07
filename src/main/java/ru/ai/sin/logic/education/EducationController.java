@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.education;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -18,9 +19,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.education.*;
 
-import ru.ai.sin.service.impl.EducationService;
+import ru.ai.sin.logic.education.dto.*;
 
 
 @RestController
@@ -39,12 +39,14 @@ public class EducationController {
         return ResponseEntity.ok(educationDTO);
     }
 
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
-    @GetMapping(path = "/all")
-    public ResponseEntity<PageResponse<EducationDTO>> getAll(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(path = "/filter")
+    public ResponseEntity<PageResponse<EducationDTO>> filter(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+
+            @Valid @RequestBody FilterEducationReq filterEducationReq
     ) {
-        PageResponse<EducationDTO> educationDTOs = educationService.getAll(pageable);
+        PageResponse<EducationDTO> educationDTOs = educationService.getAllByFilter(pageable, filterEducationReq);
 
         return ResponseEntity.ok(educationDTOs);
     }
@@ -59,7 +61,7 @@ public class EducationController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
-    public ResponseEntity<EducationDTO> update(
+    public ResponseEntity<EducationDTO> updateById(
             @PathVariable @Min(1) long id,
 
             @Valid @RequestBody UpdateEducationReq updateEducationReq

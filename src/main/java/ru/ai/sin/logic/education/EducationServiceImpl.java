@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.education;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,24 +13,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.education.*;
-
-import ru.ai.sin.entity.EducationEnt;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.mapper.EducationMapper;
-import ru.ai.sin.repository.EducationRepo;
 
-import ru.ai.sin.service.impl.EducationService;
-import ru.ai.sin.service.tools.EducationTools;
+import ru.ai.sin.logic.education.dto.*;
+
+import ru.ai.sin.tools.EducationTools;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EducationServImpl implements EducationService {
+public class EducationServiceImpl implements EducationService {
 
     private final EducationRepo educationRepo;
 
@@ -47,15 +43,17 @@ public class EducationServImpl implements EducationService {
     }
 
     @Override
-    public PageResponse<EducationDTO> getAll(Pageable pageable) {
-        Page<EducationEnt> educationPage = educationRepo.findAll(pageable);
+    public PageResponse<EducationDTO> getAllByFilter(Pageable pageable, FilterEducationReq filterEducationReq) {
+        Page<EducationEnt> page = educationRepo.findAll(
+                EducationSpecifications.byFilters(filterEducationReq),
+                pageable);
 
         return new PageResponse<>(
-                educationPage.getContent().stream().map(educationMapper::toDTO).toList(),
+                page.getContent().stream().map(educationMapper::toDTO).toList(),
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                educationPage.getTotalElements(),
-                educationPage.getTotalPages());
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override

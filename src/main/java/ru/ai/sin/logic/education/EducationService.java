@@ -1,16 +1,19 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.education;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.education.*;
+
+import ru.ai.sin.logic.education.dto.*;
 
 public interface EducationService {
 
     // ---------- GET METHODS ----------
     EducationDTO getById(long id);
 
-    PageResponse<EducationDTO> getAll(Pageable pageable);
+    PageResponse<EducationDTO> getAllByFilter(
+            Pageable pageable,
+            FilterEducationReq filterEducationReq);
 
     // ---------- POST METHODS ----------
     EducationDTO create(AddEducationReq addEducationReq);
