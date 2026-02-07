@@ -1,14 +1,10 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.skill;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
 
-import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SkillDTO;
-import ru.ai.sin.dto.skill.SkillFilterReq;
-import ru.ai.sin.dto.skill.UpdateSkillReq;
-
+import ru.ai.sin.logic.skill.dto.*;
 
 public interface SkillService {
 
@@ -18,7 +14,7 @@ public interface SkillService {
     // ---------- POST METHODS ----------
     PageResponse<SkillDTO> getAllByFilter(
             Pageable pageable,
-            SkillFilterReq skillFilterReq);
+            FilterSkillReq filterSkillReq);
 
     SkillDTO create(AddSkillReq addSkillReq);
 

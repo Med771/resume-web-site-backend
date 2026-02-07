@@ -1,9 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.skill;
 
 import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
-import ru.ai.sin.dto.skill.SkillFilterReq;
-import ru.ai.sin.entity.SkillEnt;
+
+import ru.ai.sin.logic.skill.dto.FilterSkillReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,10 @@ public class SkillSpecifications {
 
     private SkillSpecifications() {}
 
-    public static Specification<SkillEnt> byFilters(SkillFilterReq skillFilterReq) {
+    public static Specification<SkillEnt> byFilters(FilterSkillReq filterSkillReq) {
         return (root, query, cb) -> {
 
-            if (query == null || skillFilterReq == null) {
+            if (query == null || filterSkillReq == null) {
                 return null;
             }
 
@@ -23,11 +24,11 @@ public class SkillSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (skillFilterReq.name() != null) {
+            if (filterSkillReq.name() != null) {
                 predicates.add(
                         cb.like(
                                 cb.lower(root.get("name")),
-                                "%" + skillFilterReq.name().toLowerCase() + "%"
+                                "%" + filterSkillReq.name().toLowerCase() + "%"
                         )
                 );
             }

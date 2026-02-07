@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.skill;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,20 +19,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SkillDTO;
 
-import ru.ai.sin.dto.skill.SkillFilterReq;
-import ru.ai.sin.dto.skill.UpdateSkillReq;
-
-import ru.ai.sin.service.impl.SkillService;
+import ru.ai.sin.logic.skill.dto.*;
 
 
 @RestController
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/skill")
-public class SkillCnt {
+public class SkillController {
 
     private final SkillService skillService;
 
@@ -44,21 +39,21 @@ public class SkillCnt {
         return ResponseEntity.ok(skillDTO);
     }
 
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<SkillDTO>> filter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody SkillFilterReq skillFilterReq
+            @Valid @RequestBody FilterSkillReq filterSkillReq
     ) {
-        PageResponse<SkillDTO> skillDTOs = skillService.getAllByFilter(pageable, skillFilterReq);
+        PageResponse<SkillDTO> skillDTOs = skillService.getAllByFilter(pageable, filterSkillReq);
 
         return ResponseEntity.ok(skillDTOs);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<SkillDTO> create(@Valid @RequestBody AddSkillReq skillReq) {
+    public ResponseEntity<SkillDTO> createById(@Valid @RequestBody AddSkillReq skillReq) {
         SkillDTO skillDTO = skillService.create(skillReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
@@ -66,11 +61,11 @@ public class SkillCnt {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
-    public ResponseEntity<SkillDTO> setNameById(
+    public ResponseEntity<SkillDTO> updateById(
             @PathVariable @Min(1) long id,
 
             @Valid @RequestBody UpdateSkillReq updateSkillReq
-            ) {
+    ) {
         SkillDTO skillDTO = skillService.updateById(id, updateSkillReq);
 
         return ResponseEntity.ok(skillDTO);

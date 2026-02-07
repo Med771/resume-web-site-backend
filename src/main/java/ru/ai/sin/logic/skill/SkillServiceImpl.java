@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.skill;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,30 +13,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.skill.AddSkillReq;
-import ru.ai.sin.dto.skill.SkillDTO;
-import ru.ai.sin.dto.skill.SkillFilterReq;
-import ru.ai.sin.dto.skill.UpdateSkillReq;
 
-import ru.ai.sin.entity.SkillEnt;
+import ru.ai.sin.logic.skill.dto.*;
 
-import ru.ai.sin.entity.spec.SkillSpecifications;
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.SkillMapper;
-
-import ru.ai.sin.repository.SkillRepo;
-
-import ru.ai.sin.service.impl.SkillService;
-import ru.ai.sin.service.tools.SkillTools;
+import ru.ai.sin.tools.SkillTools;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SkillServImpl implements SkillService {
+public class SkillServiceImpl implements SkillService {
 
     private final SkillRepo skillRepo;
 
@@ -52,9 +42,9 @@ public class SkillServImpl implements SkillService {
     }
 
     @Override
-    public PageResponse<SkillDTO> getAllByFilter(Pageable pageable, SkillFilterReq skillFilterReq) {
+    public PageResponse<SkillDTO> getAllByFilter(Pageable pageable, FilterSkillReq filterSkillReq) {
         Page<SkillEnt> page = skillRepo.findAll(
-                SkillSpecifications.byFilters(skillFilterReq),
+                SkillSpecifications.byFilters(filterSkillReq),
                 pageable
         );
 

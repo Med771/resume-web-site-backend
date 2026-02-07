@@ -1,10 +1,7 @@
-package ru.ai.sin.dto.skill;
+package ru.ai.sin.logic.skill.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import java.time.LocalDateTime;
 
 public record SkillDTO(
         long id,

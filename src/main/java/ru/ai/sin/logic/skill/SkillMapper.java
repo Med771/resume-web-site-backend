@@ -1,11 +1,9 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.skill;
 
 import org.mapstruct.*;
 
-import ru.ai.sin.dto.skill.SkillDTO;
-import ru.ai.sin.dto.skill.UpdateSkillReq;
-
-import ru.ai.sin.entity.SkillEnt;
+import ru.ai.sin.logic.skill.dto.SkillDTO;
+import ru.ai.sin.logic.skill.dto.UpdateSkillReq;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SkillMapper {

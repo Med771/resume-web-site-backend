@@ -1,13 +1,13 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.skill;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import ru.ai.sin.entity.model.TimeStamped;
 
 @Entity
@@ -16,7 +16,6 @@ import ru.ai.sin.entity.model.TimeStamped;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SkillEnt {
 
     @Id
