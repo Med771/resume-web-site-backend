@@ -52,7 +52,7 @@ public class SpecialityController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<SpecialityDTO> createById(@Valid @RequestBody AddSpecialityReq specialityReq) {
+    public ResponseEntity<SpecialityDTO> create(@Valid @RequestBody AddSpecialityReq specialityReq) {
         SpecialityDTO specialityDTO = specialityService.create(specialityReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(specialityDTO);

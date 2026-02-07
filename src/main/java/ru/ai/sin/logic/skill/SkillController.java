@@ -53,7 +53,7 @@ public class SkillController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<SkillDTO> createById(@Valid @RequestBody AddSkillReq skillReq) {
+    public ResponseEntity<SkillDTO> create(@Valid @RequestBody AddSkillReq skillReq) {
         SkillDTO skillDTO = skillService.create(skillReq);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
