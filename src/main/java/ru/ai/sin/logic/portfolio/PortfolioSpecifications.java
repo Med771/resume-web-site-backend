@@ -1,9 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.portfolio;
 
 import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
-import ru.ai.sin.dto.portfolio.PortfolioFilterReq;
-import ru.ai.sin.entity.PortfolioEnt;
+
+import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +12,10 @@ import java.util.List;
 public final class PortfolioSpecifications {
     private PortfolioSpecifications() {}
 
-    public static Specification<PortfolioEnt> byFilters(PortfolioFilterReq portfolioFilterReq) {
+    public static Specification<PortfolioEnt> byFilters(FilterPortfolioReq filterPortfolioReq) {
         return (root, query, cb) -> {
 
-            if (query == null || portfolioFilterReq == null) {
+            if (query == null || filterPortfolioReq == null) {
                 return null;
             }
 
@@ -22,8 +23,8 @@ public final class PortfolioSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (portfolioFilterReq.studentId() != null) {
-                predicates.add(cb.equal(root.get("student").get("id"), portfolioFilterReq.studentId()));
+            if (filterPortfolioReq.studentId() != null) {
+                predicates.add(cb.equal(root.get("student").get("id"), filterPortfolioReq.studentId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

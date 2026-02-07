@@ -1,11 +1,10 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.portfolio;
 
 import org.mapstruct.*;
 
-import ru.ai.sin.dto.portfolio.AddPortfolioReq;
-import ru.ai.sin.dto.portfolio.PortfolioDTO;
+import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
+import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
 
-import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)

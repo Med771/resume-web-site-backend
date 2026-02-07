@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.portfolio;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,31 +12,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.portfolio.AddPortfolioReq;
-import ru.ai.sin.dto.portfolio.PortfolioDTO;
-import ru.ai.sin.dto.portfolio.PortfolioFilterReq;
+import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
+import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
+import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;
 
-import ru.ai.sin.entity.PortfolioEnt;
 import ru.ai.sin.entity.StudentEnt;
-
-import ru.ai.sin.entity.spec.PortfolioSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.mapper.PortfolioMapper;
 
-import ru.ai.sin.repository.PortfolioRepo;
-
-import ru.ai.sin.service.impl.PortfolioService;
-
-import ru.ai.sin.service.tools.PortfolioTools;
+import ru.ai.sin.tools.PortfolioTools;
 import ru.ai.sin.service.tools.StudentTools;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PortfolioServImpl implements PortfolioService {
+public class PortfolioServiceImpl implements PortfolioService {
 
     private final PortfolioRepo portfolioRepo;
 
@@ -53,9 +45,9 @@ public class PortfolioServImpl implements PortfolioService {
     }
 
     @Override
-    public PageResponse<PortfolioDTO> getAllByFilter(Pageable pageable, PortfolioFilterReq portfolioFilterReq) {
+    public PageResponse<PortfolioDTO> getAllByFilter(Pageable pageable, FilterPortfolioReq filterPortfolioReq) {
         Page<PortfolioEnt> page = portfolioRepo.findAll(
-                PortfolioSpecifications.byFilters(portfolioFilterReq),
+                PortfolioSpecifications.byFilters(filterPortfolioReq),
                 pageable);
 
         return new PageResponse<>(

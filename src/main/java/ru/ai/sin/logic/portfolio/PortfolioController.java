@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.portfolio;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -18,11 +19,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.portfolio.AddPortfolioReq;
-import ru.ai.sin.dto.portfolio.PortfolioDTO;
 
-import ru.ai.sin.dto.portfolio.PortfolioFilterReq;
-import ru.ai.sin.service.impl.PortfolioService;
+import ru.ai.sin.logic.portfolio.dto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,8 +43,8 @@ public class PortfolioController {
     public ResponseEntity<PageResponse<PortfolioDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody PortfolioFilterReq portfolioFilterReq) {
-        PageResponse<PortfolioDTO> portfolioDTOs = portfolioService.getAllByFilter(pageable, portfolioFilterReq);
+            @Valid @RequestBody FilterPortfolioReq filterPortfolioReq) {
+        PageResponse<PortfolioDTO> portfolioDTOs = portfolioService.getAllByFilter(pageable, filterPortfolioReq);
 
         return ResponseEntity.ok(portfolioDTOs);
     }
@@ -62,7 +60,7 @@ public class PortfolioController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
-    public ResponseEntity<PortfolioDTO> update(
+    public ResponseEntity<PortfolioDTO> updateById(
             @PathVariable @Min(1) long id,
 
             @Valid @RequestBody AddPortfolioReq portfolioReq

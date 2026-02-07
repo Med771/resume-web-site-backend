@@ -1,12 +1,10 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.portfolio;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
 
-import ru.ai.sin.dto.portfolio.AddPortfolioReq;
-import ru.ai.sin.dto.portfolio.PortfolioDTO;
-import ru.ai.sin.dto.portfolio.PortfolioFilterReq;
+import ru.ai.sin.logic.portfolio.dto.*;
 
 
 public interface PortfolioService {
@@ -17,7 +15,7 @@ public interface PortfolioService {
     // ---------- POST METHODS ----------
     PageResponse<PortfolioDTO> getAllByFilter(
             Pageable pageable,
-            PortfolioFilterReq portfolioFilterReq);
+            FilterPortfolioReq filterPortfolioReq);
 
     PortfolioDTO create(AddPortfolioReq  addPortfolioReq);
     PortfolioDTO update(
