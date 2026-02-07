@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.experience;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,23 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.experience.*;
-
-import ru.ai.sin.entity.ExperienceEnt;
-import ru.ai.sin.entity.spec.ExperienceSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.ExperienceMapper;
+import ru.ai.sin.logic.experience.dto.*;
 
-import ru.ai.sin.repository.ExperienceRepo;
+import ru.ai.sin.tools.CompanyTools;
+import ru.ai.sin.tools.ExperienceTools;
 
-import ru.ai.sin.service.impl.ExperienceService;
-
-import ru.ai.sin.service.tools.CompanyTools;
-import ru.ai.sin.service.tools.ExperienceTools;
 import ru.ai.sin.service.tools.StudentTools;
 
 import java.util.Objects;
@@ -38,7 +31,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ExperienceServImpl implements ExperienceService {
+public class ExperienceServiceImpl implements ExperienceService {
 
     private final ExperienceRepo experienceRepo;
 
@@ -66,9 +59,9 @@ public class ExperienceServImpl implements ExperienceService {
 
     @Override
     @Transactional
-    public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, ExperienceFilterReq experienceFilterReq) {
+    public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, FilterExperienceReq filterExperienceReq) {
         Page<ExperienceEnt> page = experienceRepo.findAll(
-                ExperienceSpecifications.byFilters(experienceFilterReq),
+                ExperienceSpecifications.byFilters(filterExperienceReq),
                 pageable);
 
         return new PageResponse<>(

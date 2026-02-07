@@ -1,16 +1,11 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.experience;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
-import ru.ai.sin.dto.experience.AddExperienceReq;
-import ru.ai.sin.dto.experience.ExperienceRes;
-import ru.ai.sin.dto.experience.ExperienceDTO;
-import ru.ai.sin.dto.experience.UpdateExperienceReq;
-
-import ru.ai.sin.entity.ExperienceEnt;
+import ru.ai.sin.logic.experience.dto.*;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ExperienceMapper {

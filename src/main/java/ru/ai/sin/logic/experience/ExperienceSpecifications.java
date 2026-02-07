@@ -1,11 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.experience;
 
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import ru.ai.sin.dto.experience.ExperienceFilterReq;
-import ru.ai.sin.entity.ExperienceEnt;
+import ru.ai.sin.logic.experience.dto.FilterExperienceReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +14,11 @@ public final class ExperienceSpecifications {
     private ExperienceSpecifications() {}
 
     public static Specification<ExperienceEnt> byFilters(
-            ExperienceFilterReq experienceFilterReq
+            FilterExperienceReq filterExperienceReq
     ) {
         return (root, query, cb) -> {
 
-            if (query == null || experienceFilterReq == null) {
+            if (query == null || filterExperienceReq == null) {
                 return null;
             }
 
@@ -27,15 +26,15 @@ public final class ExperienceSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (experienceFilterReq.studentId() != null) {
+            if (filterExperienceReq.studentId() != null) {
                 predicates.add(
-                    cb.equal(root.get("student").get("id"), experienceFilterReq.studentId())
+                    cb.equal(root.get("student").get("id"), filterExperienceReq.studentId())
                 );
             }
 
-            if (experienceFilterReq.companyId() != null) {
+            if (filterExperienceReq.companyId() != null) {
                 predicates.add(
-                    cb.equal(root.get("company").get("id"), experienceFilterReq.companyId())
+                    cb.equal(root.get("company").get("id"), filterExperienceReq.companyId())
                 );
             }
 

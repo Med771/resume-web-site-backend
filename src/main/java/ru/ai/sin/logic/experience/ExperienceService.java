@@ -1,9 +1,10 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.experience;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.experience.*;
+
+import ru.ai.sin.logic.experience.dto.*;
 
 public interface ExperienceService {
 
@@ -15,7 +16,7 @@ public interface ExperienceService {
     // ---------- POST METHODS ----------
     PageResponse<ExperienceDTO> getAllByFilter(
             Pageable pageable,
-            ExperienceFilterReq experienceFilterReq);
+            FilterExperienceReq filterExperienceReq);
 
     ExperienceDTO create(AddExperienceReq addExperienceReq);
     ExperienceDTO update(

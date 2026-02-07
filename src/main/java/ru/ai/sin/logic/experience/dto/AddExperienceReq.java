@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.experience;
+package ru.ai.sin.logic.experience.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

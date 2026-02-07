@@ -1,13 +1,18 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.experience;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.TimeStamped;
+
+import ru.ai.sin.logic.company.CompanyEnt;
 
 import java.time.LocalDate;
 
@@ -17,7 +22,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ExperienceEnt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

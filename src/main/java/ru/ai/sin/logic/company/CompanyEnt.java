@@ -8,7 +8,7 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import ru.ai.sin.entity.ExperienceEnt;
+import ru.ai.sin.logic.experience.ExperienceEnt;
 import ru.ai.sin.entity.model.TimeStamped;
 
 import java.util.HashSet;

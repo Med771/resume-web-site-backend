@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.experience;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,11 +19,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.experience.*;
 
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.service.impl.ExperienceService;
+import ru.ai.sin.logic.experience.dto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,12 +45,12 @@ public class ExperienceController {
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody ExperienceFilterReq experienceFilterReq) {
-        if (experienceFilterReq.companyId() != null) {
+            @Valid @RequestBody FilterExperienceReq filterExperienceReq) {
+        if (filterExperienceReq.companyId() != null) {
             securityHelper.checkAdminRoleForFilter();
         }
 
-        PageResponse<ExperienceDTO> experienceDTOs = experienceService.getAllByFilter(pageable, experienceFilterReq);
+        PageResponse<ExperienceDTO> experienceDTOs = experienceService.getAllByFilter(pageable, filterExperienceReq);
 
         return ResponseEntity.ok(experienceDTOs);
     }

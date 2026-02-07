@@ -1,8 +1,8 @@
-package ru.ai.sin.dto.experience;
+package ru.ai.sin.logic.experience.dto;
 
 import java.util.UUID;
 
-public record ExperienceFilterReq(
+public record FilterExperienceReq(
         UUID studentId,
         Long companyId) {
 }
