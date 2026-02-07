@@ -1,14 +1,14 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.company;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.entity.model.TimeStamped;
 
 import java.util.HashSet;
@@ -20,7 +20,6 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CompanyEnt {
 
     @Id

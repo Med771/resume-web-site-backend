@@ -1,17 +1,18 @@
-package ru.ai.sin.service.tools;
+package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.company.CompanyDTO;
+import ru.ai.sin.logic.company.dto.CompanyDTO;
 
-import ru.ai.sin.entity.CompanyEnt;
+import ru.ai.sin.logic.company.CompanyEnt;
 
 import ru.ai.sin.exception.models.NotFoundException;
-import ru.ai.sin.mapper.CompanyMapper;
-import ru.ai.sin.repository.CompanyRepo;
+import ru.ai.sin.logic.company.CompanyMapper;
+import ru.ai.sin.logic.company.CompanyRepo;
+import ru.ai.sin.service.tools.ExperienceTools;
 
 import java.util.ArrayList;
 import java.util.List;

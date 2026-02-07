@@ -1,13 +1,10 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.company;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
 
-import ru.ai.sin.dto.company.AddCompanyReq;
-import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyFilterReq;
-import ru.ai.sin.dto.company.UpdateCompanyReq;
+import ru.ai.sin.logic.company.dto.*;
 
 
 public interface CompanyService {
@@ -18,7 +15,7 @@ public interface CompanyService {
     // ---------- POST METHODS ----------
     PageResponse<CompanyDTO> getAllByFilter(
             Pageable pageable,
-            CompanyFilterReq companyFilterReq);
+            FilterCompanyReq filterCompanyReq);
 
     CompanyDTO create(AddCompanyReq addCompanyReq);
 

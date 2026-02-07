@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.company;
+package ru.ai.sin.logic.company.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

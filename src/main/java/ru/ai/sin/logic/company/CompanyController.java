@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.company;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -20,13 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
 
-import ru.ai.sin.dto.company.AddCompanyReq;
-import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyFilterReq;
-import ru.ai.sin.dto.company.UpdateCompanyReq;
-
-import ru.ai.sin.service.impl.CompanyService;
-
+import ru.ai.sin.logic.company.dto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,13 +40,13 @@ public class CompanyController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
-    public ResponseEntity<PageResponse<CompanyDTO>> getAllByFilter(
+    public ResponseEntity<PageResponse<CompanyDTO>> filter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody CompanyFilterReq companyFilterReq
+            @Valid @RequestBody FilterCompanyReq filterCompanyReq
     ) {
         PageResponse<CompanyDTO> companyDTOs = companyService.getAllByFilter(
-                pageable, companyFilterReq);
+                pageable, filterCompanyReq);
 
         return ResponseEntity.ok(companyDTOs);
     }

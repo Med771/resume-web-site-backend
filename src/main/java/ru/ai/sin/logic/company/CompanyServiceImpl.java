@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.company;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,25 +13,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.company.AddCompanyReq;
-import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyFilterReq;
-import ru.ai.sin.dto.company.UpdateCompanyReq;
+import ru.ai.sin.logic.company.dto.AddCompanyReq;
+import ru.ai.sin.logic.company.dto.CompanyDTO;
+import ru.ai.sin.logic.company.dto.FilterCompanyReq;
+import ru.ai.sin.logic.company.dto.UpdateCompanyReq;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
-import ru.ai.sin.entity.CompanyEnt;
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.repository.CompanyRepo;
 
-import ru.ai.sin.service.impl.CompanyService;
-import ru.ai.sin.service.tools.CompanyTools;
+import ru.ai.sin.tools.CompanyTools;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CompanyServImpl implements CompanyService {
+public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepo companyRepo;
 
@@ -49,24 +46,35 @@ public class CompanyServImpl implements CompanyService {
     @Transactional(readOnly = true)
     public PageResponse<CompanyDTO> getAllByFilter(
             Pageable pageable,
-            CompanyFilterReq companyFilterReq
+            FilterCompanyReq filterCompanyReq
     ) {
-        Page<CompanyEnt> companies = companyRepo
-                .findAllByNameIgnoreCase(
-                        companyFilterReq.name(),
-                        pageable);
+        Page<CompanyEnt> page = companyRepo.findAll(
+                CompanySpecifications.byFilters(filterCompanyReq),
+                pageable
+        );
 
         return new PageResponse<>(
-                companyTools.mapToDTOs(companies.getContent()),
+                companyTools.mapToDTOs(page.getContent()),
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                companies.getTotalElements(),
-                companies.getTotalPages());
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override
     public CompanyDTO create(AddCompanyReq addCompanyReq) {
-        CompanyDTO companyDTO = companyTools.newObjMapToDTO(companyRepo.save(new CompanyEnt(addCompanyReq.name())));
+        CompanyEnt companyEnt = new CompanyEnt(addCompanyReq.name());
+
+        try {
+            companyRepo.save(companyEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Company already exists: {}", addCompanyReq.name());
+
+            throw new BadRequestException("Company already exists: " + addCompanyReq.name());
+        }
+
+        CompanyDTO companyDTO = companyTools.newObjMapToDTO(companyEnt);
 
         log.info("User: {}, created a new company: {}", securityHelper.getCurrentUsername(), companyDTO);
 

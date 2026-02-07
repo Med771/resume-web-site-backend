@@ -1,9 +1,8 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.company;
 
 import org.mapstruct.*;
-import ru.ai.sin.dto.company.CompanyDTO;
-import ru.ai.sin.dto.company.CompanyRes;
-import ru.ai.sin.entity.CompanyEnt;
+import ru.ai.sin.logic.company.dto.CompanyDTO;
+import ru.ai.sin.logic.company.dto.CompanyRes;
 
 import java.util.List;
 
