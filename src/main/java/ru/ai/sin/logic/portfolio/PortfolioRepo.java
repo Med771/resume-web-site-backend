@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 
 import org.springframework.stereotype.Repository;
@@ -14,12 +15,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PortfolioRepo extends JpaRepository<PortfolioEnt, Long> {
+public interface PortfolioRepo extends JpaRepository<PortfolioEnt, Long>, JpaSpecificationExecutor<PortfolioEnt> {
 
     @NonNull
     @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<PortfolioEnt> findById(@NonNull Long id);
 
+    @NonNull
     @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
-    Page<PortfolioEnt> findAll(Specification<PortfolioEnt> spec, Pageable pageable);
+    Page<PortfolioEnt> findAll(Specification<PortfolioEnt> spec, @NonNull Pageable pageable);
 }
