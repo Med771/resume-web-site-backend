@@ -9,13 +9,11 @@ public interface RecruiterMapper {
 
     // ---------------- AddRecruiterReq -> RecruiterEnt ----------------
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userInformation.passwordHash", ignore = true)
-    @Mapping(target = "contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "userInformation.firstName", source = "firstName")
     @Mapping(target = "userInformation.lastName", source = "lastName")
-    @Mapping(target = "userInformation.username", source = "username")
     @Mapping(target = "userInformation.email", source = "email")
+    @Mapping(target = "contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "contactInformation.phoneNumber", source = "phoneNumber")
     @Mapping(target = "contactInformation.telegramUsername", source = "telegramUsername")
     RecruiterEnt toEntity(AddRecruiterReq dto);
@@ -23,7 +21,6 @@ public interface RecruiterMapper {
     // ---------------- RecruiterEnt -> RecruiterDTO ----------------
     @Mapping(source = "userInformation.firstName", target = "firstName")
     @Mapping(source = "userInformation.lastName", target = "lastName")
-    @Mapping(source = "userInformation.username", target = "username")
     @Mapping(source = "userInformation.email", target = "email")
     @Mapping(source = "contactInformation.phoneNumber", target = "phoneNumber")
     @Mapping(source = "contactInformation.telegramUsername", target = "telegramUsername")
@@ -33,9 +30,8 @@ public interface RecruiterMapper {
     // ---------------- UpdateRecruiterReq -> RecruiterEnt ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userInformation.passwordHash", ignore = true)
-    @Mapping(target = "contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "contactInformation.telegramUserId", ignore = true)
     void updateEntityFromDto(UpdateRecruiterReq dto, @MappingTarget RecruiterEnt entity);
 
 }

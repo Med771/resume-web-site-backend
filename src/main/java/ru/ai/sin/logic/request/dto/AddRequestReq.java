@@ -19,9 +19,6 @@ public record AddRequestReq(
         @Size(min = 1, max = 255, message = "Last name must be less than 255 characters")
         String lastName,
 
-        @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
-        String username,
-
         @Email(message = "Email should be valid")
         String email,
 

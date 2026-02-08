@@ -38,7 +38,7 @@ public class UserDataInitializer implements ApplicationRunner {
             RoleEnum role
     ) {
 
-        if (userRepo.existsByUserInformationUsername(username)) return;
+        if (userRepo.existsByUsername(username)) return;
 
         UserEnt user = userRepo.save(new UserEnt(role, username, passwordEncoder.encode(rawPassword)));
 

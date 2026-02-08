@@ -70,7 +70,6 @@ public class RequestServiceImpl implements RequestService {
                 addRequestReq.companyName(),
                 addRequestReq.firstName(),
                 addRequestReq.lastName(),
-                addRequestReq.username(),
                 addRequestReq.email(),
                 addRequestReq.phoneNumber(),
                 addRequestReq.telegramUsername()

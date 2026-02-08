@@ -19,11 +19,11 @@ public class UserHelper implements UserDetailsService {
     @Override
     @NonNull
     public UserDetails loadUserByUsername(@NonNull String username) {
-        UserEnt user = userRepo.findByUserInformationUsername(username)
+        UserEnt user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Failed to find user with username " + username));
 
-        return  User.withUsername(user.getUserInformation().getUsername())
-                .password(user.getUserInformation().getPasswordHash())
+        return  User.withUsername(user.getUsername())
+                .password(user.getPasswordHash())
                 .roles(user.getRole().getRole())
                 .build();
     }

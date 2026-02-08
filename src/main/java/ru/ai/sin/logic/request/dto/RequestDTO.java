@@ -18,6 +18,11 @@ public record RequestDTO(
         @Size(min = 1, max = 255, message = "Chat url must be less than 255 characters")
         String chatUrl,
 
+        String studentResponseText,
+
+        boolean hasRecruiterMessage,
+        boolean hasStudentMessage,
+
         @NotNull
         UUID recruiterId,
 
@@ -28,12 +33,6 @@ public record RequestDTO(
         UUID studentId,
 
         @Size(min = 1, max = 16, message = "Chat id must be less than 16 characters")
-        String studentTelegramUserId,
-
-        String studentResponseText,
-
-        boolean hasRecruiterMessage,
-
-        boolean hasStudentMessage
+        String studentTelegramUserId
 ) {
 }

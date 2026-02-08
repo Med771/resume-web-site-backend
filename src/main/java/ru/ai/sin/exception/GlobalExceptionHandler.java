@@ -1,7 +1,5 @@
 package ru.ai.sin.exception;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -24,12 +22,9 @@ import ru.ai.sin.exception.models.NotFoundException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    private static final Counter businessErrors = Metrics.counter("business_errors_total");
-
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
         log.warn("Authentication failed: {}", ex.getMessage());
-        businessErrors.increment();
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -42,7 +37,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());
-        businessErrors.increment();
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
@@ -59,7 +53,6 @@ public class GlobalExceptionHandler {
                 : ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
 
         log.warn("Validation failed: {}", msg);
-        businessErrors.increment();
 
         return ResponseEntity
                 .status(ex.getStatusCode())
@@ -70,8 +63,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex) {
         log.warn("Bad Request: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
 
-        businessErrors.increment();
-
         return ResponseEntity
                 .status(ex.getStatus())
                 .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
@@ -80,7 +71,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
         log.warn("Not Found: code={}, status={}, msg={}", ex.getCode(), ex.getStatus(), ex.getMessage());
-        businessErrors.increment();
         return ResponseEntity
                 .status(ex.getStatus())
                 .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
@@ -92,8 +82,6 @@ public class GlobalExceptionHandler {
                 "Api error: code={}, status={}, msg={}",
                 ex.getCode(), ex.getStatus(), ex.getMessage()
         );
-
-        businessErrors.increment();
 
         return ResponseEntity
                 .status(ex.getStatus())
@@ -107,7 +95,6 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleBadRequestValidation(Exception ex) {
         log.warn("Request parse/validation error: {}", ex.getMessage());
-        businessErrors.increment();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("BAD_REQUEST", ex.getMessage()));
@@ -116,7 +103,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleUploadTooLarge(MaxUploadSizeExceededException ex) {
         log.warn("Upload too large: {}", ex.getMessage());
-        businessErrors.increment();
         return ResponseEntity
                 .status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .body(new ErrorResponse("UPLOAD_TOO_LARGE", "File is too large"));
@@ -125,7 +111,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FileNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleFileNotFound(FileNotFoundException ex) {
         log.warn("File not found: {}", ex.getMessage());
-        businessErrors.increment();
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));

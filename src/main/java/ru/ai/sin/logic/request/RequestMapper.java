@@ -11,8 +11,8 @@ public interface RequestMapper {
 
     // ---------------- RequestEnt -> RequestDTO ----------------
     @Mapping(source = "recruiter.id", target = "recruiterId")
-    @Mapping(source = "recruiter.contactInformation.telegramUserId", target = "recruiterTelegramUserId")
     @Mapping(source = "student.id", target = "studentId")
+    @Mapping(source = "recruiter.contactInformation.telegramUserId", target = "recruiterTelegramUserId")
     @Mapping(source = "student.contactInformation.telegramUserId", target = "studentTelegramUserId")
     RequestDTO toDTO(RequestEnt entity);
 }

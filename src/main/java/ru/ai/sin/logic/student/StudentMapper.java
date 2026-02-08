@@ -38,7 +38,6 @@ public interface StudentMapper {
     // ---------------- UpdateStudentReq -> StudentEnt ----------------
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "student.userInformation.passwordHash", ignore = true)
     @Mapping(target = "student.contactInformation.telegramUserId", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "imagePath", ignore = true)
