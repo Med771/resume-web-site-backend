@@ -8,8 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.stereotype.Component;
-import ru.ai.sin.entity.UserEnt;
-import ru.ai.sin.entity.model.RoleEnum;
+import ru.ai.sin.logic.user.UserEnt;
+import ru.ai.sin.models.enums.RoleEnum;
 
 @Component
 public class SecurityHelper {

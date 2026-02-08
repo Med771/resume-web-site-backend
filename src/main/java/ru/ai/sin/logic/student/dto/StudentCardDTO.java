@@ -3,7 +3,7 @@ package ru.ai.sin.logic.student.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import ru.ai.sin.logic.skill.dto.SkillDTO;
-import ru.ai.sin.entity.model.CourseEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.util.List;
 import java.util.UUID;

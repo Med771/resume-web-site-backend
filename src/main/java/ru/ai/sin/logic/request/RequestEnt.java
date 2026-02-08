@@ -8,9 +8,9 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import ru.ai.sin.entity.converter.ResultEnumConverter;
-import ru.ai.sin.entity.model.ResultEnum;
-import ru.ai.sin.entity.model.TimeStamped;
+import ru.ai.sin.models.enums.convertor.ResultEnumConverter;
+import ru.ai.sin.models.enums.ResultEnum;
+import ru.ai.sin.models.embeddables.TimeStamped;
 
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;

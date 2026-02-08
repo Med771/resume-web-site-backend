@@ -11,8 +11,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import ru.ai.sin.entity.model.ResultEnum;
-
 import java.util.List;
 
 
@@ -26,12 +24,6 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<RequestEnt> findAll(Specification<RequestEnt> spec,
                              @NonNull Pageable pageable);
-
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<RequestEnt> findAllByIdIn(List<Long> ids);
-
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<RequestEnt> findAllByResultIn(List<ResultEnum> resultEnums);
 
     @NonNull
     @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)

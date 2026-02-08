@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
 import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
 import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;

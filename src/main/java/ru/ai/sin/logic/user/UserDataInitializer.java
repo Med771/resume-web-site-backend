@@ -1,4 +1,4 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,10 +7,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ai.sin.entity.UserEnt;
-import ru.ai.sin.entity.model.RoleEnum;
-import ru.ai.sin.property.UserProperties;
-import ru.ai.sin.repository.UserRepo;
+import ru.ai.sin.models.enums.RoleEnum;
+import ru.ai.sin.config.property.UserProperties;
 
 @Slf4j
 @Component

@@ -2,7 +2,7 @@ package ru.ai.sin.logic.request.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import ru.ai.sin.entity.model.ResultEnum;
+import ru.ai.sin.models.enums.ResultEnum;
 
 import java.util.UUID;
 

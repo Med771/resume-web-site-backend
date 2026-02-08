@@ -1,6 +1,6 @@
 package ru.ai.sin.logic.request.dto;
 
-import ru.ai.sin.entity.model.ResultEnum;
+import ru.ai.sin.models.enums.ResultEnum;
 
 import java.util.List;
 import java.util.UUID;

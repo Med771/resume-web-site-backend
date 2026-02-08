@@ -2,8 +2,8 @@ package ru.ai.sin.logic.student.dto;
 
 import jakarta.validation.constraints.*;
 import ru.ai.sin.logic.skill.dto.SkillDTO;
-import ru.ai.sin.entity.model.BusynessEnum;
-import ru.ai.sin.entity.model.CourseEnum;
+import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.List;

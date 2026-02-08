@@ -1,4 +1,4 @@
-package ru.ai.sin.property;
+package ru.ai.sin.config.property;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -19,7 +19,7 @@ import org.springframework.validation.annotation.Validated;
 
 import org.springframework.web.bind.annotation.*;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.logic.recruiter.dto.*;
 

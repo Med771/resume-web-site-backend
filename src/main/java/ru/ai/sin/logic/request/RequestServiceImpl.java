@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
 import ru.ai.sin.logic.request.dto.*;

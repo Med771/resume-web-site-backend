@@ -1,8 +1,8 @@
-package ru.ai.sin.entity.converter;
+package ru.ai.sin.models.enums.convertor;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import ru.ai.sin.entity.model.ResultEnum;
+import ru.ai.sin.models.enums.ResultEnum;
 
 @Converter(autoApply = true)
 public class ResultEnumConverter implements AttributeConverter<ResultEnum, String> {

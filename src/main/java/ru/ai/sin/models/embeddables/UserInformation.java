@@ -1,4 +1,4 @@
-package ru.ai.sin.entity.model;
+package ru.ai.sin.models.embeddables;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

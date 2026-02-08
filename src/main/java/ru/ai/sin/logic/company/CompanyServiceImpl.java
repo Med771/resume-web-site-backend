@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.logic.company.dto.AddCompanyReq;
 import ru.ai.sin.logic.company.dto.CompanyDTO;
 import ru.ai.sin.logic.company.dto.FilterCompanyReq;

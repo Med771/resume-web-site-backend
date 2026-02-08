@@ -3,8 +3,8 @@ package ru.ai.sin.logic.student.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import ru.ai.sin.entity.model.BusynessEnum;
-import ru.ai.sin.entity.model.CourseEnum;
+import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.List;

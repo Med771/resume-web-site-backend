@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.logic.request.dto.RequestDTO;
 import ru.ai.sin.logic.request.dto.FilterRequestReq;
 import ru.ai.sin.logic.request.RequestEnt;
-import ru.ai.sin.entity.model.ResultEnum;
+import ru.ai.sin.models.enums.ResultEnum;
 import ru.ai.sin.logic.request.RequestSpecifications;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.request.RequestMapper;

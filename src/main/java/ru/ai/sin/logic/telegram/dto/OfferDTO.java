@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.lang.NonNull;
 import ru.ai.sin.logic.recruiter.dto.RecruiterRes;
 import ru.ai.sin.logic.student.dto.StudentRes;
-import ru.ai.sin.entity.model.ResultEnum;
+import ru.ai.sin.models.enums.ResultEnum;
 
 public record OfferDTO(
         long id,

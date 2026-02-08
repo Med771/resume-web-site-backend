@@ -1,4 +1,4 @@
-package ru.ai.sin.dto;
+package ru.ai.sin.models;
 
 import java.util.List;
 

@@ -75,12 +75,6 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- Monitoring resources -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
         <!-- Swagger API dependency-->
         <dependency>
             <groupId>org.springdoc</groupId>

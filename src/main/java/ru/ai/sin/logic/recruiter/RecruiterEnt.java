@@ -9,9 +9,9 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import ru.ai.sin.entity.model.ContactInformation;
-import ru.ai.sin.entity.model.TimeStamped;
-import ru.ai.sin.entity.model.UserInformation;
+import ru.ai.sin.models.embeddables.ContactInformation;
+import ru.ai.sin.models.embeddables.TimeStamped;
+import ru.ai.sin.models.embeddables.UserInformation;
 
 import java.util.UUID;
 

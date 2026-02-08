@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.logic.student.dto.*;
 

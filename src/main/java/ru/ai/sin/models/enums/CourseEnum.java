@@ -1,4 +1,4 @@
-package ru.ai.sin.entity.model;
+package ru.ai.sin.models.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

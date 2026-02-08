@@ -1,8 +1,7 @@
-package ru.ai.sin.repository;
+package ru.ai.sin.logic.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.ai.sin.entity.UserEnt;
 
 import java.util.Optional;
 import java.util.UUID;

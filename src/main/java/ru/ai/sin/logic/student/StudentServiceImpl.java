@@ -14,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 
-import ru.ai.sin.entity.model.ContactInformation;
+import ru.ai.sin.models.embeddables.ContactInformation;
 
 import ru.ai.sin.exception.models.BadRequestException;
 

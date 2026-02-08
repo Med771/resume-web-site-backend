@@ -10,15 +10,19 @@ import org.hibernate.annotations.UuidGenerator;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import ru.ai.sin.entity.converter.BusynessEnumConverter;
-import ru.ai.sin.entity.converter.CourseEnumConverter;
-import ru.ai.sin.entity.model.*;
+import ru.ai.sin.models.enums.convertor.BusynessEnumConverter;
+import ru.ai.sin.models.enums.convertor.CourseEnumConverter;
 
 import ru.ai.sin.logic.experience.ExperienceEnt;
 import ru.ai.sin.logic.institution.InstitutionEnt;
 import ru.ai.sin.logic.portfolio.PortfolioEnt;
 import ru.ai.sin.logic.skill.SkillEnt;
 import ru.ai.sin.logic.speciality.SpecialityEnt;
+import ru.ai.sin.models.embeddables.ContactInformation;
+import ru.ai.sin.models.embeddables.TimeStamped;
+import ru.ai.sin.models.embeddables.UserInformation;
+import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.*;

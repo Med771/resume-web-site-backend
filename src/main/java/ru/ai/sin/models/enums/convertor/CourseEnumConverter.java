@@ -1,9 +1,9 @@
-package ru.ai.sin.entity.converter;
+package ru.ai.sin.models.enums.convertor;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-import ru.ai.sin.entity.model.CourseEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 @Converter(autoApply = true)
 public class CourseEnumConverter implements AttributeConverter<CourseEnum, String> {

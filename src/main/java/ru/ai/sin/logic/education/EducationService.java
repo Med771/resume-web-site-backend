@@ -2,7 +2,7 @@ package ru.ai.sin.logic.education;
 
 import org.springframework.data.domain.Pageable;
 
-import ru.ai.sin.dto.PageResponse;
+import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.logic.education.dto.*;
 

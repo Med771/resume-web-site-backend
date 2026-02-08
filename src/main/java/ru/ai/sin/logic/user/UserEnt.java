@@ -1,4 +1,4 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import ru.ai.sin.entity.converter.RoleEnumConverter;
-import ru.ai.sin.entity.model.RoleEnum;
-import ru.ai.sin.entity.model.UserInformation;
+import ru.ai.sin.models.enums.convertor.RoleEnumConverter;
+import ru.ai.sin.models.enums.RoleEnum;
+import ru.ai.sin.models.embeddables.UserInformation;
 
 import java.util.UUID;
 

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import ru.ai.sin.logic.auth.dto.*;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.JwtHelper;
-import ru.ai.sin.property.JwtProperties;
+import ru.ai.sin.config.property.JwtProperties;
 
 import java.util.Arrays;
 

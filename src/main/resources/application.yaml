@@ -107,18 +107,6 @@ app:
       - url: "https://api.example.com"
         description: "Production Server"
 
-  fast:
-    url: "http://localhost:8000/create_chat"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-
 springdoc:
   swagger-ui:
     enabled: true
