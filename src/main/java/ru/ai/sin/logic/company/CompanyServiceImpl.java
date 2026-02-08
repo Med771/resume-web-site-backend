@@ -66,7 +66,7 @@ public class CompanyServiceImpl implements CompanyService {
         CompanyEnt companyEnt = new CompanyEnt(addCompanyReq.name());
 
         try {
-            companyRepo.save(companyEnt);
+            companyEnt = companyRepo.save(companyEnt);
         }
         catch (DataIntegrityViolationException ex) {
             log.warn("Company already exists: {}", addCompanyReq.name());

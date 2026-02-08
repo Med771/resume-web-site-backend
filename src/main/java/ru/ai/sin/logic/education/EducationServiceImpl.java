@@ -58,7 +58,18 @@ public class EducationServiceImpl implements EducationService {
 
     @Override
     public EducationDTO create(AddEducationReq addEducationReq) {
-        EducationDTO educationDTO = educationMapper.toDTO(educationRepo.save(educationMapper.toEntity(addEducationReq)));
+        EducationEnt educationEnt = educationMapper.toEntity(addEducationReq);
+
+        try {
+            educationEnt = educationRepo.save(educationEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Education already exists");
+
+            throw new BadRequestException("Education already exists");
+        }
+
+        EducationDTO educationDTO = educationMapper.toDTO(educationEnt);
 
         log.info("User: {}, created a new education: {}", securityHelper.getCurrentUsername(), educationDTO);
 

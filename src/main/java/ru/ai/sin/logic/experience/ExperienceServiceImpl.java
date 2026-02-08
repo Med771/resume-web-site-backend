@@ -80,7 +80,14 @@ public class ExperienceServiceImpl implements ExperienceService {
         updateActiveCompanyOrThrow(addExperienceReq.companyId(), experienceEnt);
         updateActiveStudentOrThrow(addExperienceReq.studentId(), experienceEnt);
 
-        experienceEnt = experienceRepo.save(experienceEnt);
+        try {
+            experienceEnt = experienceRepo.save(experienceEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Experience already exists");
+
+            throw new BadRequestException("Experience already exists");
+        }
 
         ExperienceDTO experienceDTO = experienceTools.mapToDTO(experienceEnt);
 

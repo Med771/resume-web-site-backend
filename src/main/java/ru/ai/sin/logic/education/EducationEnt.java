@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import ru.ai.sin.entity.InstitutionEnt;
+import ru.ai.sin.logic.institution.InstitutionEnt;
 import ru.ai.sin.entity.model.TimeStamped;
 
 import java.util.HashSet;
