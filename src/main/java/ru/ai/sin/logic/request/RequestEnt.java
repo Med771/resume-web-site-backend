@@ -1,14 +1,19 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.request;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import ru.ai.sin.entity.converter.ResultEnumConverter;
 import ru.ai.sin.entity.model.ResultEnum;
 import ru.ai.sin.entity.model.TimeStamped;
+
+import ru.ai.sin.logic.recruiter.RecruiterEnt;
+import ru.ai.sin.logic.student.StudentEnt;
 
 @Entity
 @Table(name = "requests")
@@ -16,7 +21,6 @@ import ru.ai.sin.entity.model.TimeStamped;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class RequestEnt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

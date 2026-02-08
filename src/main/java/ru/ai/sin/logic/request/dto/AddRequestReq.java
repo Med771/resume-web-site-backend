@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.request;
+package ru.ai.sin.logic.request.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -1,40 +1,34 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataIntegrityViolationException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.recruiter.AddRecruiterReq;
-import ru.ai.sin.dto.request.AddRequestReq;
-import ru.ai.sin.dto.request.RequestDTO;
-import ru.ai.sin.dto.request.RequestFilterReq;
-import ru.ai.sin.dto.request.RequestUpdateStatusReq;
-import ru.ai.sin.dto.request.UpdateRequestByChatReq;
 
-import ru.ai.sin.entity.RequestEnt;
-import ru.ai.sin.entity.StudentEnt;
-import ru.ai.sin.entity.spec.RequestSpecifications;
+import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
+import ru.ai.sin.logic.request.dto.*;
+import ru.ai.sin.logic.student.StudentEnt;
 
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.repository.RequestRepo;
 
-import ru.ai.sin.service.impl.RequestService;
-import ru.ai.sin.service.tools.RecruiterTools;
-import ru.ai.sin.service.tools.RequestTools;
-import ru.ai.sin.service.tools.StudentTools;
+import ru.ai.sin.tools.RecruiterTools;
+import ru.ai.sin.tools.RequestTools;
+import ru.ai.sin.tools.StudentTools;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RequestServImpl implements RequestService {
+public class RequestServiceImpl implements RequestService {
 
     private final RequestRepo requestRepo;
 
@@ -54,10 +48,10 @@ public class RequestServImpl implements RequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<RequestDTO> getByFilter(Pageable pageable, RequestFilterReq requestFilterReq) {
+    public PageResponse<RequestDTO> getByFilter(Pageable pageable, FilterRequestReq filterRequestReq) {
         Page<RequestEnt> page = requestRepo
                 .findAll(
-                        RequestSpecifications.byFilters(requestFilterReq),
+                        RequestSpecifications.byFilters(filterRequestReq),
                         pageable
                 );
 
@@ -105,49 +99,6 @@ public class RequestServImpl implements RequestService {
         }
 
         return requestDTO;
-    }
-
-    @Override
-    @Transactional
-    public RequestDTO updateStatus(long id, RequestUpdateStatusReq requestUpdateStatusReq) {
-        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
-
-        requestEnt.setResult(requestUpdateStatusReq.resultEnum());
-
-        requestEnt = requestRepo.save(requestEnt);
-
-        RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
-
-        log.info("Updated request status: {} with status: {}", id, requestUpdateStatusReq.resultEnum());
-
-        return requestDTO;
-    }
-
-    @Override
-    @Transactional
-    public RequestDTO updateByChatId(String chatId, UpdateRequestByChatReq req) {
-        RequestEnt requestEnt = requestTools.getRequestByChatIdOrThrow(chatId);
-        if (req.studentResponseText() != null) {
-            requestEnt.setStudentResponseText(req.studentResponseText());
-        }
-        if (Boolean.TRUE.equals(req.hasRecruiterMessage())) {
-            requestEnt.setHasRecruiterMessage(true);
-        }
-        if (Boolean.TRUE.equals(req.hasStudentMessage())) {
-            requestEnt.setHasStudentMessage(true);
-        }
-        if (req.result() != null) {
-            requestEnt.setResult(req.result());
-        }
-        if (req.chatId() != null) {
-            requestEnt.setChatId(req.chatId());
-        }
-        if (req.chatUrl() != null) {
-            requestEnt.setChatUrl(req.chatUrl());
-        }
-        requestEnt = requestRepo.save(requestEnt);
-        log.info("Updated request by chatId: {}", chatId);
-        return requestTools.mapToDTO(requestEnt);
     }
 
     @Override

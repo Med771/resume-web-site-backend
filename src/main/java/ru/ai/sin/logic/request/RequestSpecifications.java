@@ -1,9 +1,8 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.request;
 
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-import ru.ai.sin.dto.request.RequestFilterReq;
-import ru.ai.sin.entity.RequestEnt;
+import ru.ai.sin.logic.request.dto.FilterRequestReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +12,11 @@ public final class RequestSpecifications {
     private RequestSpecifications() {}
 
     public static Specification<RequestEnt> byFilters(
-            RequestFilterReq requestFilterReq
+            FilterRequestReq filterRequestReq
     ) {
         return (root, query, cb) -> {
 
-            if (query == null || requestFilterReq == null) {
+            if (query == null || filterRequestReq == null) {
                 return null;
             }
 
@@ -25,21 +24,21 @@ public final class RequestSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (requestFilterReq.results() != null && !requestFilterReq.results().isEmpty()) {
+            if (filterRequestReq.results() != null && !filterRequestReq.results().isEmpty()) {
                 predicates.add(
-                    root.get("result").in(requestFilterReq.results())
+                    root.get("result").in(filterRequestReq.results())
                 );
             }
 
-            if (requestFilterReq.recruiterId() != null) {
+            if (filterRequestReq.recruiterId() != null) {
                 predicates.add(
-                    cb.equal(root.get("recruiter").get("id"), requestFilterReq.recruiterId())
+                    cb.equal(root.get("recruiter").get("id"), filterRequestReq.recruiterId())
                 );
             }
 
-            if (requestFilterReq.studentId() != null) {
+            if (filterRequestReq.studentId() != null) {
                 predicates.add(
-                    cb.equal(root.get("student").get("id"), requestFilterReq.studentId())
+                    cb.equal(root.get("student").get("id"), filterRequestReq.studentId())
                 );
             }
 

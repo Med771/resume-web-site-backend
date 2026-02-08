@@ -1,7 +1,8 @@
-package ru.ai.sin.repository;
+package ru.ai.sin.logic.request;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,11 +10,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
-import ru.ai.sin.entity.RequestEnt;
+
 import ru.ai.sin.entity.model.ResultEnum;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Repository
 public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecificationExecutor<RequestEnt> {
@@ -35,7 +36,4 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     @NonNull
     @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
     List<RequestEnt> findAll(Specification<RequestEnt> spec);
-
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
-    Optional<RequestEnt> findFirstByChatId(String chatId);
 }
