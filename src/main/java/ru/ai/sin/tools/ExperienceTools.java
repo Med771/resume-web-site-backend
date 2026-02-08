@@ -1,4 +1,4 @@
-package ru.ai.sin.service.tools;
+package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,12 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.experience.ExperienceDTO;
-import ru.ai.sin.dto.experience.ExperienceRes;
-import ru.ai.sin.entity.ExperienceEnt;
 import ru.ai.sin.exception.models.NotFoundException;
-import ru.ai.sin.mapper.ExperienceMapper;
-import ru.ai.sin.repository.ExperienceRepo;
+
+import ru.ai.sin.logic.experience.dto.ExperienceDTO;
+import ru.ai.sin.logic.experience.dto.ExperienceRes;
+
+import ru.ai.sin.logic.experience.ExperienceEnt;
+import ru.ai.sin.logic.experience.ExperienceMapper;
+import ru.ai.sin.logic.experience.ExperienceRepo;
 
 import java.util.List;
 import java.util.Map;

@@ -12,7 +12,6 @@ import ru.ai.sin.logic.company.CompanyEnt;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.company.CompanyMapper;
 import ru.ai.sin.logic.company.CompanyRepo;
-import ru.ai.sin.service.tools.ExperienceTools;
 
 import java.util.ArrayList;
 import java.util.List;
