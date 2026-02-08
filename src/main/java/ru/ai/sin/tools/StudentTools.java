@@ -1,21 +1,21 @@
-package ru.ai.sin.service.tools;
+package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.ai.sin.dto.skill.SkillDTO;
-import ru.ai.sin.dto.student.StudentCardDTO;
-import ru.ai.sin.dto.student.StudentDTO;
+import ru.ai.sin.logic.skill.dto.SkillDTO;
+import ru.ai.sin.logic.skill.SkillMapper;
 
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.student.dto.StudentCardDTO;
+import ru.ai.sin.logic.student.dto.StudentDTO;
+import ru.ai.sin.logic.student.StudentEnt;
+
+import ru.ai.sin.logic.student.StudentMapper;
+import ru.ai.sin.logic.student.StudentRepo;
+
 import ru.ai.sin.exception.models.NotFoundException;
-
-import ru.ai.sin.mapper.SkillMapper;
-import ru.ai.sin.mapper.StudentMapper;
-
-import ru.ai.sin.repository.StudentRepo;
 
 import java.util.List;
 import java.util.UUID;

@@ -23,7 +23,7 @@ import ru.ai.sin.logic.experience.dto.*;
 import ru.ai.sin.tools.CompanyTools;
 import ru.ai.sin.tools.ExperienceTools;
 
-import ru.ai.sin.service.tools.StudentTools;
+import ru.ai.sin.tools.StudentTools;
 
 import java.util.Objects;
 import java.util.UUID;

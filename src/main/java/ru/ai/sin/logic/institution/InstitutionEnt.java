@@ -11,7 +11,7 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.entity.model.TimeStamped;
 
 import ru.ai.sin.logic.education.EducationEnt;

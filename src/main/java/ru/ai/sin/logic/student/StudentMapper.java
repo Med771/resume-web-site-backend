@@ -1,15 +1,10 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.student;
 
 import org.mapstruct.*;
 
-import ru.ai.sin.dto.skill.SkillDTO;
+import ru.ai.sin.logic.skill.dto.SkillDTO;
 
-import ru.ai.sin.dto.student.AddStudentReq;
-import ru.ai.sin.dto.student.StudentCardDTO;
-import ru.ai.sin.dto.student.StudentDTO;
-import ru.ai.sin.dto.student.UpdateStudentReq;
-
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.student.dto.*;
 
 import java.util.List;
 

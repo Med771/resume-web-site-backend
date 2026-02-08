@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.student;
+package ru.ai.sin.logic.student.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;

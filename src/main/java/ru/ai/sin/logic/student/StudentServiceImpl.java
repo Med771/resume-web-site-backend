@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.student;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,28 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.student.*;
 
-import ru.ai.sin.entity.SkillEnt;
-import ru.ai.sin.entity.SpecialityEnt;
-import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.ContactInformation;
-import ru.ai.sin.entity.spec.StudentSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.mapper.StudentMapper;
+import ru.ai.sin.logic.student.dto.*;
+import ru.ai.sin.logic.speciality.SpecialityEnt;
+import ru.ai.sin.logic.skill.SkillEnt;
+import ru.ai.sin.logic.skill.SkillRepo;
 
-import ru.ai.sin.repository.SkillRepo;
-import ru.ai.sin.repository.StudentRepo;
+import ru.ai.sin.tools.SkillTools;
+import ru.ai.sin.tools.SpecialityTools;
 
-import ru.ai.sin.service.impl.StudentService;
-import ru.ai.sin.service.tools.SkillTools;
-import ru.ai.sin.service.tools.SpecialityTools;
-import ru.ai.sin.service.tools.StudentTools;
+import ru.ai.sin.tools.StudentTools;
 
 import java.util.Set;
 import java.util.UUID;
@@ -44,7 +39,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StudentServImpl implements StudentService {
+public class StudentServiceImpl implements StudentService {
 
     private final StudentRepo studentRepo;
     private final SkillRepo skillRepo;
@@ -85,10 +80,10 @@ public class StudentServImpl implements StudentService {
     @Transactional
     public PageResponse<StudentCardDTO> getAllCardsByFilter(
             Pageable pageable,
-            StudentFilterReq studentFilterReq
+            FilterStudentReq filterStudentReq
     ) {
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(studentFilterReq),
+                StudentSpecifications.byFilters(filterStudentReq),
                 pageable);
 
         return new PageResponse<>(
@@ -102,10 +97,10 @@ public class StudentServImpl implements StudentService {
     @Override
     public PageResponse<StudentDTO> getAllByFilter(
             Pageable pageable,
-            StudentFilterReq studentFilterReq
+            FilterStudentReq filterStudentReq
     ) {
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(studentFilterReq),
+                StudentSpecifications.byFilters(filterStudentReq),
                 pageable);
 
         return new PageResponse<>(

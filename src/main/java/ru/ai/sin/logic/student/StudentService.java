@@ -1,11 +1,11 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.student;
 
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.student.*;
+import ru.ai.sin.logic.student.dto.*;
 
 import java.util.UUID;
 
@@ -21,12 +21,12 @@ public interface StudentService {
 
     PageResponse<StudentCardDTO> getAllCardsByFilter(
             Pageable pageable,
-            StudentFilterReq studentFilterReq);
+            FilterStudentReq filterStudentReq);
     PageResponse<StudentDTO> getAllByFilter(
             Pageable pageable,
-            StudentFilterReq studentFilterReq);
+            FilterStudentReq filterStudentReq);
 
-    StudentDTO create(AddStudentReq  addStudentReq);
+    StudentDTO create(AddStudentReq addStudentReq);
 
     StudentDTO update(
             UUID id,

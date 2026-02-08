@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.student;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.student.*;
 
-import ru.ai.sin.service.impl.StudentService;
+import ru.ai.sin.logic.student.dto.*;
 
 import java.util.UUID;
 
@@ -49,9 +48,9 @@ public class StudentController {
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody StudentFilterReq studentFilterReq
+            @Valid @RequestBody FilterStudentReq filterStudentReq
     ) {
-        PageResponse<StudentCardDTO> studentCardDTOs = studentService.getAllCardsByFilter(pageable, studentFilterReq);
+        PageResponse<StudentCardDTO> studentCardDTOs = studentService.getAllCardsByFilter(pageable, filterStudentReq);
 
         return ResponseEntity.ok(studentCardDTOs);
     }
@@ -61,9 +60,9 @@ public class StudentController {
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody StudentFilterReq studentFilterReq
+            @Valid @RequestBody FilterStudentReq filterStudentReq
     ) {
-        PageResponse<StudentDTO> studentDTOs = studentService.getAllByFilter(pageable, studentFilterReq);
+        PageResponse<StudentDTO> studentDTOs = studentService.getAllByFilter(pageable, filterStudentReq);
 
         return ResponseEntity.ok(studentDTOs);
     }
@@ -72,7 +71,7 @@ public class StudentController {
     @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setPhoto(
-            @PathVariable("id") @NotNull UUID id,
+            @PathVariable @NotNull UUID id,
 
             @RequestPart("avatarFile") MultipartFile multipartFile
     ) {
@@ -90,7 +89,7 @@ public class StudentController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> updateById(
-            @PathVariable("id")@NotNull UUID id,
+            @PathVariable @NotNull UUID id,
 
             @Valid @RequestBody UpdateStudentReq updateStudentReq
     ) {

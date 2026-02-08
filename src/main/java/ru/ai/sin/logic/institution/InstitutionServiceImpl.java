@@ -22,7 +22,7 @@ import ru.ai.sin.logic.institution.dto.*;
 
 import ru.ai.sin.tools.EducationTools;
 import ru.ai.sin.tools.InstitutionTools;
-import ru.ai.sin.service.tools.StudentTools;
+import ru.ai.sin.tools.StudentTools;
 
 import java.util.Objects;
 import java.util.UUID;

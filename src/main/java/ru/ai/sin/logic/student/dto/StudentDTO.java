@@ -1,7 +1,7 @@
-package ru.ai.sin.dto.student;
+package ru.ai.sin.logic.student.dto;
 
 import jakarta.validation.constraints.*;
-import ru.ai.sin.dto.skill.SkillDTO;
+import ru.ai.sin.logic.skill.dto.SkillDTO;
 import ru.ai.sin.entity.model.BusynessEnum;
 import ru.ai.sin.entity.model.CourseEnum;
 

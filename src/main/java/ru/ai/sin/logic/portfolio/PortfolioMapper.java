@@ -5,7 +5,7 @@ import org.mapstruct.*;
 import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
 import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
 
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.student.StudentEnt;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PortfolioMapper {

@@ -1,4 +1,4 @@
-package ru.ai.sin.dto.student;
+package ru.ai.sin.logic.student.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

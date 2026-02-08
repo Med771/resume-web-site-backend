@@ -1,4 +1,4 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.student;
 
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
@@ -7,10 +7,9 @@ import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import ru.ai.sin.dto.student.StudentFilterReq;
+import ru.ai.sin.logic.student.dto.FilterStudentReq;
 
-import ru.ai.sin.entity.SkillEnt;
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.skill.SkillEnt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +18,11 @@ public final class StudentSpecifications {
 
     private StudentSpecifications() {}
 
-    public static Specification<StudentEnt> byFilters(StudentFilterReq studentFilterReq) {
+    public static Specification<StudentEnt> byFilters(FilterStudentReq filterStudentReq) {
 
         return (root, query, cb) -> {
 
-            if (query == null || studentFilterReq == null) {
+            if (query == null || filterStudentReq == null) {
                 return null;
             }
 
@@ -31,8 +30,8 @@ public final class StudentSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (studentFilterReq.findString() != null && !studentFilterReq.findString().isBlank()) {
-                String filter = studentFilterReq.findString().toLowerCase();
+            if (filterStudentReq.findString() != null && !filterStudentReq.findString().isBlank()) {
+                String filter = filterStudentReq.findString().toLowerCase();
 
                 double threshold = 0.3;
                 int len = filter.length();
@@ -62,30 +61,30 @@ public final class StudentSpecifications {
                 predicates.add(cb.or(fullNameFuzzy, fullNameLike, bioFuzzy));
             }
 
-            if (studentFilterReq.course() != null && !studentFilterReq.course().isEmpty()) {
-                predicates.add(root.get("course").in(studentFilterReq.course()));
+            if (filterStudentReq.course() != null && !filterStudentReq.course().isEmpty()) {
+                predicates.add(root.get("course").in(filterStudentReq.course()));
             }
 
-            if (studentFilterReq.busyness() != null && !studentFilterReq.busyness().isEmpty()) {
-                predicates.add(root.get("busyness").in(studentFilterReq.busyness()));
+            if (filterStudentReq.busyness() != null && !filterStudentReq.busyness().isEmpty()) {
+                predicates.add(root.get("busyness").in(filterStudentReq.busyness()));
             }
 
-            if (studentFilterReq.bornBefore() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("birthDate"), studentFilterReq.bornBefore()));
+            if (filterStudentReq.bornBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("birthDate"), filterStudentReq.bornBefore()));
             }
 
-            if (studentFilterReq.bornAfter() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("birthDate"), studentFilterReq.bornAfter()));
+            if (filterStudentReq.bornAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("birthDate"), filterStudentReq.bornAfter()));
             }
 
-            if (studentFilterReq.specialitiesIds() != null && !studentFilterReq.specialitiesIds().isEmpty()) {
-                predicates.add(root.get("speciality").get("id").in(studentFilterReq.specialitiesIds()));
+            if (filterStudentReq.specialitiesIds() != null && !filterStudentReq.specialitiesIds().isEmpty()) {
+                predicates.add(root.get("speciality").get("id").in(filterStudentReq.specialitiesIds()));
             }
 
-            if (studentFilterReq.skillsIds() != null && !studentFilterReq.skillsIds().isEmpty()) {
+            if (filterStudentReq.skillsIds() != null && !filterStudentReq.skillsIds().isEmpty()) {
                 Join<StudentEnt, SkillEnt> skillsJoin = root.join("skills", JoinType.INNER);
 
-                predicates.add(skillsJoin.get("id").in(studentFilterReq.skillsIds()));
+                predicates.add(skillsJoin.get("id").in(filterStudentReq.skillsIds()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

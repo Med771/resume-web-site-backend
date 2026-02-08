@@ -1,20 +1,19 @@
-package ru.ai.sin.repository;
+package ru.ai.sin.logic.student;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.domain.Specification;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.lang.NonNull;
-
 import org.springframework.stereotype.Repository;
 
-import ru.ai.sin.entity.SkillEnt;
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.skill.SkillEnt;
 
 import java.util.Optional;
 import java.util.Set;

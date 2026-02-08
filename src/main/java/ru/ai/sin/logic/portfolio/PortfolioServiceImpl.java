@@ -16,14 +16,14 @@ import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
 import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
 import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;
 
-import ru.ai.sin.entity.StudentEnt;
+import ru.ai.sin.logic.student.StudentEnt;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.tools.PortfolioTools;
-import ru.ai.sin.service.tools.StudentTools;
+import ru.ai.sin.tools.StudentTools;
 
 @Slf4j
 @Service
