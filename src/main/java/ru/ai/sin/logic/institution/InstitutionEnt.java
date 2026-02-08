@@ -1,14 +1,20 @@
-package ru.ai.sin.entity;
+package ru.ai.sin.logic.institution;
 
 import jakarta.persistence.*;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import ru.ai.sin.entity.StudentEnt;
 import ru.ai.sin.entity.model.TimeStamped;
+
+import ru.ai.sin.logic.education.EducationEnt;
 
 @Entity
 @Table(name = "institution")
@@ -16,7 +22,6 @@ import ru.ai.sin.entity.model.TimeStamped;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class InstitutionEnt {
 
     @Id

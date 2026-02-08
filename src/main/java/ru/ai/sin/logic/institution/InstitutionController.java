@@ -1,4 +1,4 @@
-package ru.ai.sin.controller;
+package ru.ai.sin.logic.institution;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,14 +19,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.institution.AddInstitutionReq;
-import ru.ai.sin.dto.institution.InstitutionDTO;
-import ru.ai.sin.dto.institution.InstitutionFilterReq;
-import ru.ai.sin.dto.institution.UpdateInstitutionReq;
+
+import ru.ai.sin.logic.institution.dto.*;
 
 import ru.ai.sin.helper.SecurityHelper;
-
-import ru.ai.sin.service.impl.InstitutionService;
 
 
 @RestController
@@ -52,13 +48,13 @@ public class InstitutionController {
     public ResponseEntity<PageResponse<InstitutionDTO>> findAllByFilter(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 
-            @Valid @RequestBody InstitutionFilterReq institutionFilterReq
+            @Valid @RequestBody FilterInstitutionReq filterInstitutionReq
     ) {
-        if (institutionFilterReq.educationId() != null) {
+        if (filterInstitutionReq.educationId() != null) {
             securityHelper.checkAdminRoleForFilter();
         }
 
-        PageResponse<InstitutionDTO> experienceDTOs = institutionService.getAllByFilter(pageable, institutionFilterReq);
+        PageResponse<InstitutionDTO> experienceDTOs = institutionService.getAllByFilter(pageable, filterInstitutionReq);
 
         return ResponseEntity.ok(experienceDTOs);
     }
@@ -72,7 +68,7 @@ public class InstitutionController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping(path = "/updateById/{id}")
+    @PutMapping(path = "/{id}")
     public ResponseEntity<InstitutionDTO> update(
             @PathVariable @Min(1) long id,
 

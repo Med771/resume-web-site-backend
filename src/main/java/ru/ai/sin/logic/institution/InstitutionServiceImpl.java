@@ -1,4 +1,4 @@
-package ru.ai.sin.service;
+package ru.ai.sin.logic.institution;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,22 +13,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.institution.*;
-
-import ru.ai.sin.entity.InstitutionEnt;
-import ru.ai.sin.entity.spec.InstitutionSpecifications;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.mapper.InstitutionMapper;
 
-import ru.ai.sin.repository.InstitutionRepo;
+import ru.ai.sin.logic.institution.dto.*;
 
-import ru.ai.sin.service.impl.InstitutionService;
-
-import ru.ai.sin.service.tools.EducationTools;
-import ru.ai.sin.service.tools.InstitutionTools;
+import ru.ai.sin.tools.EducationTools;
+import ru.ai.sin.tools.InstitutionTools;
 import ru.ai.sin.service.tools.StudentTools;
 
 import java.util.Objects;
@@ -37,7 +30,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class InstitutionServImpl implements InstitutionService {
+public class InstitutionServiceImpl implements InstitutionService {
 
     private final InstitutionRepo institutionRepo;
 
@@ -67,9 +60,9 @@ public class InstitutionServImpl implements InstitutionService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, InstitutionFilterReq institutionFilterReq) {
+    public PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, FilterInstitutionReq filterInstitutionReq) {
         Page<InstitutionEnt> page = institutionRepo.findAll(
-                InstitutionSpecifications.byFilters(institutionFilterReq),
+                InstitutionSpecifications.byFilters(filterInstitutionReq),
                 pageable);
 
         return new PageResponse<>(
@@ -88,7 +81,14 @@ public class InstitutionServImpl implements InstitutionService {
         updateActiveEducationOrThrow(addInstitutionReq.educationId(), institutionEnt);
         updateActiveStudentOrThrow(addInstitutionReq.studentId(), institutionEnt);
 
-        institutionEnt = institutionRepo.save(institutionEnt);
+        try {
+            institutionEnt = institutionRepo.save(institutionEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Institution already exists");
+
+            throw new BadRequestException("Institution already exists");
+        }
 
         InstitutionDTO institutionDTO = institutionTools.mapToDTO(institutionEnt);
 

@@ -1,9 +1,11 @@
-package ru.ai.sin.service.impl;
+package ru.ai.sin.logic.institution;
 
 import org.springframework.data.domain.Pageable;
 
 import ru.ai.sin.dto.PageResponse;
-import ru.ai.sin.dto.institution.*;
+
+import ru.ai.sin.logic.institution.dto.*;
+
 
 public interface InstitutionService {
 
@@ -11,7 +13,7 @@ public interface InstitutionService {
     InstitutionDTO getById(long id);
 
     // ---------- POST METHODS ----------
-    PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, InstitutionFilterReq institutionFilterReq);
+    PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, FilterInstitutionReq filterInstitutionReq);
 
     InstitutionDTO create(AddInstitutionReq addInstitutionReq);
     InstitutionDTO update(

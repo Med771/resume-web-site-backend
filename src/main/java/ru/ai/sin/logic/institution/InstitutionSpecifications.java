@@ -1,9 +1,10 @@
-package ru.ai.sin.entity.spec;
+package ru.ai.sin.logic.institution;
 
 import jakarta.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
-import ru.ai.sin.dto.institution.InstitutionFilterReq;
-import ru.ai.sin.entity.InstitutionEnt;
+
+import ru.ai.sin.logic.institution.dto.FilterInstitutionReq;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +14,11 @@ public final class InstitutionSpecifications {
     private InstitutionSpecifications() {}
 
     public static Specification<InstitutionEnt> byFilters(
-            InstitutionFilterReq institutionFilterReq
+            FilterInstitutionReq filterInstitutionReq
     ) {
         return (root, query, cb) -> {
 
-            if (query == null || institutionFilterReq == null) {
+            if (query == null || filterInstitutionReq == null) {
                 return null;
             }
 
@@ -25,15 +26,15 @@ public final class InstitutionSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (institutionFilterReq.studentId() != null) {
+            if (filterInstitutionReq.studentId() != null) {
                 predicates.add(
-                        cb.equal(root.get("student").get("id"), institutionFilterReq.studentId())
+                        cb.equal(root.get("student").get("id"), filterInstitutionReq.studentId())
                 );
             }
 
-            if (institutionFilterReq.educationId() != null) {
+            if (filterInstitutionReq.educationId() != null) {
                 predicates.add(
-                        cb.equal(root.get("education").get("id"), institutionFilterReq.educationId())
+                        cb.equal(root.get("education").get("id"), filterInstitutionReq.educationId())
                 );
             }
 

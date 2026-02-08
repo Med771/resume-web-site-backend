@@ -1,14 +1,19 @@
-package ru.ai.sin.service.tools;
+package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ai.sin.dto.institution.InstitutionDTO;
-import ru.ai.sin.dto.institution.InstitutionRes;
-import ru.ai.sin.entity.InstitutionEnt;
+
+import ru.ai.sin.logic.institution.dto.InstitutionDTO;
+import ru.ai.sin.logic.institution.dto.InstitutionRes;
+
+import ru.ai.sin.logic.institution.InstitutionEnt;
+import ru.ai.sin.logic.institution.InstitutionMapper;
+import ru.ai.sin.logic.institution.InstitutionRepo;
+
 import ru.ai.sin.exception.models.NotFoundException;
-import ru.ai.sin.mapper.InstitutionMapper;
-import ru.ai.sin.repository.InstitutionRepo;
+
 
 @Component
 @RequiredArgsConstructor

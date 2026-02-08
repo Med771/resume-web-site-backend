@@ -1,10 +1,13 @@
-package ru.ai.sin.dto.institution;
+package ru.ai.sin.logic.institution.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-public record InstitutionRes(
-        long id,
+import java.util.UUID;
+
+public record UpdateInstitutionReq(
+        long educationId,
+        UUID studentId,
 
         @Min(1900)
         @Max(2100)

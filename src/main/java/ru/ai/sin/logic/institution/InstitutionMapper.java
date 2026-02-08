@@ -1,16 +1,11 @@
-package ru.ai.sin.mapper;
+package ru.ai.sin.logic.institution;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
-import ru.ai.sin.dto.institution.AddInstitutionReq;
-import ru.ai.sin.dto.institution.InstitutionDTO;
-import ru.ai.sin.dto.institution.InstitutionRes;
-import ru.ai.sin.dto.institution.UpdateInstitutionReq;
-
-import ru.ai.sin.entity.InstitutionEnt;
+import ru.ai.sin.logic.institution.dto.*;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface InstitutionMapper {
@@ -30,7 +25,7 @@ public interface InstitutionMapper {
     // ---------------- InstitutionEnt -> InstitutionRes ----------------
     InstitutionRes toRes(InstitutionEnt entity);
 
-    // ---------------- UpdateInstitutionReq -> ExperienceEnt ----------------
+    // ---------------- UpdateInstitutionReq -> InstitutionEnt ----------------
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
     @Mapping(target = "education", ignore = true)
