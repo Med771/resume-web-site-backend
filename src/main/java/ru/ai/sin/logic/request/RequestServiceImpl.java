@@ -1,0 +1,119 @@
+package ru.ai.sin.logic.request;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ru.ai.sin.models.PageResponse;
+
+import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
+import ru.ai.sin.logic.request.dto.*;
+import ru.ai.sin.logic.student.StudentEnt;
+
+import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.helper.SecurityHelper;
+
+import ru.ai.sin.tools.RecruiterTools;
+import ru.ai.sin.tools.RequestTools;
+import ru.ai.sin.tools.StudentTools;
+
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class RequestServiceImpl implements RequestService {
+
+    private final RequestRepo requestRepo;
+
+    private final RequestTools requestTools;
+    private final StudentTools studentTools;
+    private final RecruiterTools recruiterTools;
+
+    private final SecurityHelper securityHelper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public RequestDTO getById(long id) {
+        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
+
+        return requestTools.mapToDTO(requestEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RequestDTO> getByFilter(Pageable pageable, FilterRequestReq filterRequestReq) {
+        Page<RequestEnt> page = requestRepo
+                .findAll(
+                        RequestSpecifications.byFilters(filterRequestReq),
+                        pageable
+                );
+
+        return new PageResponse<>(
+                page.getContent().stream().map(requestTools::mapToDTO).toList(),
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+    @Override
+    @Transactional
+    public RequestDTO create(AddRequestReq addRequestReq) {
+        AddRecruiterReq addRecruiterReq = new AddRecruiterReq(
+                addRequestReq.companyName(),
+                addRequestReq.firstName(),
+                addRequestReq.lastName(),
+                addRequestReq.email(),
+                addRequestReq.phoneNumber(),
+                addRequestReq.telegramUsername()
+        );
+
+        var recruiterEnt = recruiterTools.findOrCreateRecruiter(addRecruiterReq);
+
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(addRequestReq.studentId());
+
+        RequestEnt requestEnt = new RequestEnt();
+        requestEnt.setRecruiter(recruiterEnt);
+        requestEnt.setStudent(studentEnt);
+
+        try {
+            requestEnt = requestRepo.save(requestEnt);
+        } catch (DataIntegrityViolationException ex) {
+            log.warn("Error while creating request: {}", ex.getMessage());
+            throw new BadRequestException("Error while creating request");
+        }
+
+        RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
+        log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
+
+        if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {
+            requestTools.updateAllStatusForRecruiter(recruiterEnt.getId());
+        }
+
+        return requestDTO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(long id) {
+        RequestEnt requestEnt = requestTools.getRequestOrThrow(id);
+
+        try {
+            requestRepo.delete(requestEnt);
+        }
+        catch (DataIntegrityViolationException ex) {
+            log.warn("Error while deleting request: {}", ex.getMessage());
+
+            throw new BadRequestException("Error while deleting request");
+        }
+
+        log.info("User: {}, deleted a request: {} with data: {}", securityHelper.getCurrentUsername(), id, requestEnt);
+    }
+}

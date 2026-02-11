@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import ru.ai.sin.property.SwaggerProperties;
+import ru.ai.sin.config.property.SwaggerProperties;
 
 
 @Configuration

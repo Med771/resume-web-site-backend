@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.ai.sin.helper.CookieHelper;
 import ru.ai.sin.helper.JwtHelper;
-import ru.ai.sin.property.JwtProperties;
+import ru.ai.sin.config.property.JwtProperties;
 
 import java.util.Arrays;
 

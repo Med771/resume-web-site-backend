@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.ai.sin.property.JwtProperties;
+import ru.ai.sin.config.property.JwtProperties;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;

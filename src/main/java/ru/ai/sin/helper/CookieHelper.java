@@ -3,7 +3,7 @@ package ru.ai.sin.helper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-import ru.ai.sin.property.JwtProperties;
+import ru.ai.sin.config.property.JwtProperties;
 
 import java.time.Duration;
 

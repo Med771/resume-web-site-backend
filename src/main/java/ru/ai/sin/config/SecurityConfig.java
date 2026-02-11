@@ -27,7 +27,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import ru.ai.sin.filter.JwtCookieAuthenticationFilter;
-import ru.ai.sin.property.SecurityProperties;
+import ru.ai.sin.config.property.SecurityProperties;
 
 @Configuration
 @RequiredArgsConstructor
