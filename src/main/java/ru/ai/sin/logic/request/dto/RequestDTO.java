@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import ru.ai.sin.models.enums.ResultEnum;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record RequestDTO(
@@ -20,6 +21,9 @@ public record RequestDTO(
 
         @Size(min = 1, max = 255, message = "Chat url must be less than 255 characters")
         String chatUrl,
+
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
 
         String studentResponseText,
 

@@ -15,6 +15,8 @@ public interface RequestMapper {
     @Mapping(source = "chatTitle", target = "chatTitle")
     @Mapping(source = "result", target = "result")
     @Mapping(source = "chatUrl", target = "chatUrl")
+    @Mapping(source = "timestamps.createdAt", target = "createdAt")
+    @Mapping(source = "timestamps.updatedAt", target = "updatedAt")
     @Mapping(source = "studentResponseText", target = "studentResponseText")
     @Mapping(source = "hasRecruiterMessage", target = "hasRecruiterMessage")
     @Mapping(source = "hasStudentMessage", target = "hasStudentMessage")

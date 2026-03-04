@@ -10,6 +10,8 @@ public enum ResultEnum {
     SYNC("sync"),
     WAITING("waiting"),
     EXPECTATION("expectation"),
+    STUDENT_CONFIRMED("student_confirm"),
+    RECRUITER_CONFIRMED("recruiter_conf"),
     SUCCESS("success"),
     REFUSAL("refusal");
 
