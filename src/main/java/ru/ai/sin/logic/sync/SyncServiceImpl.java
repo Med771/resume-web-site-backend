@@ -14,6 +14,7 @@ import ru.ai.sin.logic.sync.dto.SyncDTO;
 import ru.ai.sin.logic.sync.dto.SyncUpdateReq;
 import ru.ai.sin.models.embeddables.ContactInformation;
 import ru.ai.sin.models.enums.SyncTypeEnum;
+import ru.ai.sin.tools.RequestTools;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,8 @@ public class SyncServiceImpl implements SyncService {
 
     private final RecruiterRepo recruiterRepo;
     private final StudentRepo studentRepo;
+
+    private final RequestTools requestTools;
 
     @Override
     @Transactional(readOnly = true)
@@ -51,6 +54,8 @@ public class SyncServiceImpl implements SyncService {
                 }
 
                 ent.get().getContactInformation().setTelegramUserId(newUserId);
+
+                requestTools.updateAllStatusForRecruiter(ent.get().getId());
 
                 return;
             }
