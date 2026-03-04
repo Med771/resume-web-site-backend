@@ -23,6 +23,9 @@ public class TelegramServiceImpl implements TelegramService {
     public RequestDTO updateRequest(long id, UpdateRequestTelegramReq req) {
         RequestEnt ent = requestTools.getRequestOrThrow(id);
 
+        if (req.chatId() != null) {
+            ent.setChatId(req.chatId());
+        }
         if (req.result() != null) {
             ent.setResult(req.result());
         }
