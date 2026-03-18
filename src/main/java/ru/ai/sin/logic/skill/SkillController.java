@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.skill;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,12 @@ import ru.ai.sin.logic.skill.dto.*;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/skill")
+@Tag(name = "Skill", description = "Операции управления навыками")
 public class SkillController {
 
     private final SkillService skillService;
 
+    @Operation(summary = "Получить навык по ID", description = "Возвращает карточку навыка")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<SkillDTO> getById(@PathVariable @Min(1) long id) {
@@ -39,10 +42,11 @@ public class SkillController {
         return ResponseEntity.ok(skillDTO);
     }
 
+    @Operation(summary = "Фильтр навыков", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<SkillDTO>> filter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterSkillReq filterSkillReq
     ) {
@@ -51,6 +55,7 @@ public class SkillController {
         return ResponseEntity.ok(skillDTOs);
     }
 
+    @Operation(summary = "Создать навык", description = "Создает новый навык")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<SkillDTO> create(@Valid @RequestBody AddSkillReq skillReq) {
@@ -59,6 +64,7 @@ public class SkillController {
         return ResponseEntity.status(HttpStatus.CREATED).body(skillDTO);
     }
 
+    @Operation(summary = "Обновить навык", description = "Обновляет навык по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<SkillDTO> updateById(
@@ -71,6 +77,7 @@ public class SkillController {
         return ResponseEntity.ok(skillDTO);
     }
 
+    @Operation(summary = "Удалить навык", description = "Удаляет навык по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

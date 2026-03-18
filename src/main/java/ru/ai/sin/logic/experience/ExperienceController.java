@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.experience;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -28,22 +29,25 @@ import ru.ai.sin.logic.experience.dto.*;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/experience")
+@Tag(name = "Experience", description = "Операции управления опытом работы студентов")
 public class ExperienceController {
 
     private final ExperienceService experienceService;
 
     private final SecurityHelper securityHelper;
 
+    @Operation(summary = "Получить опыт по ID", description = "Возвращает запись опыта работы")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<ExperienceDTO> getById(@PathVariable @Min(1) long id) {
         return ResponseEntity.ok(experienceService.getById(id));
     }
 
+    @Operation(summary = "Фильтр опыта", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterExperienceReq filterExperienceReq) {
         if (filterExperienceReq.companyId() != null) {
@@ -55,6 +59,7 @@ public class ExperienceController {
         return ResponseEntity.ok(experienceDTOs);
     }
 
+    @Operation(summary = "Создать опыт", description = "Создает новую запись опыта работы")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<ExperienceDTO> create(@Valid @RequestBody AddExperienceReq addExperienceReq) {
@@ -63,6 +68,7 @@ public class ExperienceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(experienceDTO);
     }
 
+    @Operation(summary = "Обновить опыт", description = "Обновляет запись опыта работы по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<ExperienceDTO> update(
@@ -75,6 +81,7 @@ public class ExperienceController {
         return ResponseEntity.ok(experienceDTO);
     }
 
+    @Operation(summary = "Удалить опыт", description = "Удаляет запись опыта работы по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

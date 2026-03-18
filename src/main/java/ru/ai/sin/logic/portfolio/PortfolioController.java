@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.portfolio;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -26,10 +27,12 @@ import ru.ai.sin.logic.portfolio.dto.*;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/portfolio")
+@Tag(name = "Portfolio", description = "Операции управления портфолио студентов")
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
 
+    @Operation(summary = "Получить портфолио по ID", description = "Возвращает запись портфолио")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<PortfolioDTO> getById(@PathVariable @Min(1) long id) {
@@ -38,10 +41,11 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioDTO);
     }
 
+    @Operation(summary = "Фильтр портфолио", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<PortfolioDTO>> findAllByFilter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterPortfolioReq filterPortfolioReq
     ) {
@@ -51,6 +55,7 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "Создать портфолио", description = "Создает новую запись портфолио")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<PortfolioDTO> create(@Valid @RequestBody AddPortfolioReq portfolioReq) {
@@ -59,6 +64,7 @@ public class PortfolioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(portfolioDTO);
     }
 
+    @Operation(summary = "Обновить портфолио", description = "Обновляет запись портфолио по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<PortfolioDTO> updateById(
@@ -71,6 +77,7 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioDTO);
     }
 
+    @Operation(summary = "Удалить портфолио", description = "Удаляет запись портфолио по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

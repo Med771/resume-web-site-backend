@@ -1,5 +1,6 @@
 package ru.ai.sin.logic.student.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import ru.ai.sin.logic.skill.dto.SkillDTO;
 import ru.ai.sin.models.enums.BusynessEnum;
@@ -9,36 +10,49 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Schema(name = "StudentDTO", description = "Полная карточка студента")
 public record StudentDTO(
+        @Schema(description = "ID студента")
         @NotNull
         UUID id,
 
+        @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
         String city,
 
+        @Schema(description = "Ссылка на HH-профиль")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
         String hhLink,
 
+        @Schema(description = "Дата рождения")
         @NotNull
         LocalDate birthDate,
 
+        @Schema(description = "Краткая информация")
         @Size(max = 2000, message = "Additional info must be less than 2000 characters")
         String bio,
 
+        @Schema(description = "Путь к изображению профиля")
         String imagePath,
 
+        @Schema(description = "Текущий курс")
         @NotNull
         CourseEnum course,
 
+        @Schema(description = "Тип занятости")
         @NotNull
         BusynessEnum busyness,
 
+        @Schema(description = "Имя")
         String firstName,
+        @Schema(description = "Фамилия")
         String lastName,
 
+        @Schema(description = "Название специальности")
         @NotNull
         String speciality,
 
+        @Schema(description = "Навыки студента")
         @NotNull
         List<SkillDTO> skills) {
 }

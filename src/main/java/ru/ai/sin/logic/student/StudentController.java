@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.student;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -31,10 +32,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/student")
+@Tag(name = "Student", description = "Операции управления студентами")
 public class StudentController {
 
     private final StudentService studentService;
 
+    @Operation(summary = "Получить студента по ID", description = "Возвращает полную карточку студента по UUID")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
@@ -43,10 +46,11 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
+    @Operation(summary = "Фильтр карточек студентов", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/cardsFilter")
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterStudentReq filterStudentReq
     ) {
@@ -55,10 +59,11 @@ public class StudentController {
         return ResponseEntity.ok(studentCardDTOs);
     }
 
+    @Operation(summary = "Фильтр студентов", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterStudentReq filterStudentReq
     ) {
@@ -67,6 +72,7 @@ public class StudentController {
         return ResponseEntity.ok(studentDTOs);
     }
 
+    @Operation(summary = "Загрузить фото студента", description = "Устанавливает или обновляет аватар студента")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -78,6 +84,7 @@ public class StudentController {
         studentService.setPhoto(id, multipartFile);
     }
 
+    @Operation(summary = "Создать студента", description = "Создает студента по базовому DTO")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<StudentDTO> create(@Valid @RequestBody AddStudentReq addStudentReq) {
@@ -86,6 +93,7 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
+    @Operation(summary = "Создать студента расширенно", description = "Создает студента и опционально связанные portfolio, experiences, institutions и skills")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/extended")
     public ResponseEntity<StudentDTO> createExtended(@Valid @RequestBody CreateStudentExtendedReq createStudentExtendedReq) {
@@ -94,6 +102,7 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
+    @Operation(summary = "Обновить студента полностью", description = "Полное обновление карточки студента (PUT)")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> updateById(
@@ -106,6 +115,7 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
+    @Operation(summary = "Обновить студента частично", description = "Частичное обновление карточки студента (PATCH)")
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> patchById(
@@ -118,6 +128,7 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
+    @Operation(summary = "Удалить студента", description = "Удаляет студента по UUID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

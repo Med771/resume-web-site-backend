@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.education;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,12 @@ import ru.ai.sin.logic.education.dto.*;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/education")
+@Tag(name = "Education", description = "Операции управления справочником образования")
 public class EducationController {
 
     private final EducationService educationService;
 
+    @Operation(summary = "Получить образование по ID", description = "Возвращает запись справочника образования")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<EducationDTO> getById(@PathVariable @Min(1) long id) {
@@ -39,10 +42,11 @@ public class EducationController {
         return ResponseEntity.ok(educationDTO);
     }
 
+    @Operation(summary = "Фильтр образования", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<EducationDTO>> filter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterEducationReq filterEducationReq
     ) {
@@ -51,6 +55,7 @@ public class EducationController {
         return ResponseEntity.ok(educationDTOs);
     }
 
+    @Operation(summary = "Создать образование", description = "Создает новую запись справочника образования")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<EducationDTO> create(@Valid @RequestBody AddEducationReq addEducationReq) {
@@ -59,6 +64,7 @@ public class EducationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(educationDTO);
     }
 
+    @Operation(summary = "Обновить образование", description = "Обновляет запись образования по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<EducationDTO> updateById(
@@ -71,6 +77,7 @@ public class EducationController {
         return ResponseEntity.ok(educationDTO);
     }
 
+    @Operation(summary = "Удалить образование", description = "Удаляет запись образования по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

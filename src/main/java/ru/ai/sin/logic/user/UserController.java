@@ -1,11 +1,12 @@
 package ru.ai.sin.logic.user;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.ResponseEntity;
@@ -28,24 +29,28 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/user")
+@Tag(name = "User", description = "Операции управления пользователями системы")
 public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "Фильтр пользователей", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<UserDTO>> getByFilter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
             @Valid @RequestBody FilterUserReq filterUserReq) {
         return ResponseEntity.ok(userService.getByFilter(pageable, filterUserReq));
     }
 
+    @Operation(summary = "Создать пользователя", description = "Создает нового пользователя")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<UserDTO> create(@Valid @RequestBody AddUserReq addUserReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(addUserReq));
     }
 
+    @Operation(summary = "Удалить пользователя", description = "Удаляет пользователя с ролью USER по UUID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

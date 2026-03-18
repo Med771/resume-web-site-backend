@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.recruiter;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import org.springframework.data.web.PageableDefault;
 
@@ -29,10 +30,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/recruiter")
+@Tag(name = "Recruiter", description = "Операции управления рекрутерами")
 public class RecruiterController {
 
     private final RecruiterService recruiterService;
 
+    @Operation(summary = "Получить рекрутера по ID", description = "Возвращает карточку рекрутера")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<RecruiterDTO> getById(
@@ -43,10 +46,11 @@ public class RecruiterController {
         return ResponseEntity.ok(recruiterDTO);
     }
 
+    @Operation(summary = "Фильтр рекрутеров", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<RecruiterDTO>> filter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterRecruiterReq filterRecruiterReq
     ) {
@@ -55,6 +59,7 @@ public class RecruiterController {
         return ResponseEntity.ok(recruiterDTOs);
     }
 
+    @Operation(summary = "Обновить рекрутера", description = "Обновляет данные рекрутера по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<RecruiterDTO> updateById(
@@ -67,6 +72,7 @@ public class RecruiterController {
         return ResponseEntity.ok(recruiterDTO);
     }
 
+    @Operation(summary = "Удалить рекрутера", description = "Удаляет рекрутера по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

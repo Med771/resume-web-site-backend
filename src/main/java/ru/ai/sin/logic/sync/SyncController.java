@@ -1,5 +1,7 @@
 package ru.ai.sin.logic.sync;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
@@ -22,10 +24,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/sync")
+@Tag(name = "Sync", description = "Операции синхронизации внешних данных")
 public class SyncController {
 
     private final SyncService syncService;
 
+    @Operation(summary = "Получить sync по userId", description = "Возвращает состояние синхронизации по идентификатору пользователя")
     @GetMapping(path = "/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SyncDTO> getByUserId(
@@ -33,6 +37,7 @@ public class SyncController {
         return ResponseEntity.ok(syncService.getByUserId(userId));
     }
 
+    @Operation(summary = "Обновить sync", description = "Обновляет состояние синхронизации по ID")
     @PostMapping(path = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)

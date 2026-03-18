@@ -1,12 +1,13 @@
 package ru.ai.sin.logic.company;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.http.HttpStatus;
@@ -26,10 +27,12 @@ import ru.ai.sin.logic.company.dto.*;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/company")
+@Tag(name = "Company", description = "Операции управления компаниями")
 public class CompanyController {
 
     private final CompanyService companyService;
 
+    @Operation(summary = "Получить компанию по ID", description = "Возвращает компанию с данными по связям")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<CompanyDTO> getById(@PathVariable @Min(1) long id) {
@@ -38,10 +41,11 @@ public class CompanyController {
         return ResponseEntity.ok(companyDTO);
     }
 
+    @Operation(summary = "Фильтр компаний", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<CompanyDTO>> filter(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault Pageable pageable,
 
             @Valid @RequestBody FilterCompanyReq filterCompanyReq
     ) {
@@ -51,6 +55,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyDTOs);
     }
 
+    @Operation(summary = "Создать компанию", description = "Создает новую компанию")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<CompanyDTO> create(@Valid @RequestBody AddCompanyReq companyReq) {
@@ -59,6 +64,7 @@ public class CompanyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(companyDTO);
     }
 
+    @Operation(summary = "Обновить компанию", description = "Обновляет данные компании по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<CompanyDTO> updateById(
@@ -71,6 +77,7 @@ public class CompanyController {
         return ResponseEntity.ok(companyDTO);
     }
 
+    @Operation(summary = "Удалить компанию", description = "Удаляет компанию по ID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
