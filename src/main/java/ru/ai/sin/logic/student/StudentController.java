@@ -87,6 +87,14 @@ public class StudentController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(path = "/extended")
+    public ResponseEntity<StudentDTO> createExtended(@Valid @RequestBody CreateStudentExtendedReq createStudentExtendedReq) {
+        StudentDTO studentDTO = studentService.createExtended(createStudentExtendedReq);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> updateById(
             @PathVariable @NotNull UUID id,
@@ -94,6 +102,18 @@ public class StudentController {
             @Valid @RequestBody UpdateStudentReq updateStudentReq
     ) {
         StudentDTO studentDTO = studentService.update(id, updateStudentReq);
+
+        return ResponseEntity.ok(studentDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<StudentDTO> patchById(
+            @PathVariable @NotNull UUID id,
+
+            @Valid @RequestBody PatchStudentReq patchStudentReq
+    ) {
+        StudentDTO studentDTO = studentService.patch(id, patchStudentReq);
 
         return ResponseEntity.ok(studentDTO);
     }

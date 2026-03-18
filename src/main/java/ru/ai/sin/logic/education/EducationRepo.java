@@ -10,9 +10,13 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 
 @Repository
 public interface EducationRepo extends JpaRepository<EducationEnt, Long>, JpaSpecificationExecutor<EducationEnt> {
+    Optional<EducationEnt> findFirstByInstitutionIgnoreCase(String institution);
+
     @NonNull
     Page<EducationEnt> findAll(Specification<EducationEnt> spec, @NonNull Pageable pageable);
 }

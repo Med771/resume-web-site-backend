@@ -20,6 +20,8 @@ public interface CompanyRepo extends JpaRepository<CompanyEnt, Long>, JpaSpecifi
     @EntityGraph(attributePaths = {"experiences"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<CompanyEnt> findWithExperiencesById(Long id);
 
+    Optional<CompanyEnt> findFirstByNameIgnoreCase(String name);
+
     @NonNull
     Page<CompanyEnt> findAll(Specification<CompanyEnt> spec, @NonNull Pageable pageable);
 }

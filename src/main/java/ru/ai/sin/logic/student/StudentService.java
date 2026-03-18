@@ -27,10 +27,14 @@ public interface StudentService {
             FilterStudentReq filterStudentReq);
 
     StudentDTO create(AddStudentReq addStudentReq);
+    StudentDTO createExtended(CreateStudentExtendedReq createStudentExtendedReq);
 
     StudentDTO update(
             UUID id,
             UpdateStudentReq updateStudentReq);
+    StudentDTO patch(
+            UUID id,
+            PatchStudentReq patchStudentReq);
 
     // ---------- DELETE METHODS ----------
     void deleteById(UUID id);
