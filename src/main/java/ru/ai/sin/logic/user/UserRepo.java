@@ -2,6 +2,8 @@ package ru.ai.sin.logic.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -13,4 +15,9 @@ public interface UserRepo extends JpaRepository<UserEnt, UUID>, JpaSpecification
     boolean existsByUsername(String username);
 
     Optional<UserEnt> findByUsername(String username);
+
+    @Query("SELECT u FROM UserEnt u LEFT JOIN FETCH u.recruiter WHERE u.username = :username")
+    Optional<UserEnt> findByUsernameFetchingRecruiter(@Param("username") String username);
+
+    Optional<UserEnt> findByRecruiter_Id(UUID recruiterId);
 }

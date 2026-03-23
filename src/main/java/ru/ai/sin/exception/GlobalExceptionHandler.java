@@ -1,6 +1,7 @@
 package ru.ai.sin.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -74,6 +75,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getStatus())
                 .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        "CONFLICT",
+                        "Data conflict (e.g. duplicate unique field)"
+                ));
     }
 
     @ExceptionHandler(ApiException.class)

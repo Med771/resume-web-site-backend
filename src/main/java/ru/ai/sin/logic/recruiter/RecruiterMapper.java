@@ -31,7 +31,24 @@ public interface RecruiterMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "userInformation.firstName", source = "firstName")
+    @Mapping(target = "userInformation.lastName", source = "lastName")
+    @Mapping(target = "userInformation.email", source = "email")
     @Mapping(target = "contactInformation.telegramUserId", ignore = true)
+    @Mapping(target = "contactInformation.phoneNumber", source = "phoneNumber")
+    @Mapping(target = "contactInformation.telegramUsername", source = "telegramUsername")
     void updateEntityFromDto(UpdateRecruiterReq dto, @MappingTarget RecruiterEnt entity);
+
+    // ---------------- PatchRecruiterReq -> RecruiterEnt ----------------
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "timestamps", ignore = true)
+    @Mapping(target = "userInformation.firstName", source = "firstName")
+    @Mapping(target = "userInformation.lastName", source = "lastName")
+    @Mapping(target = "userInformation.email", source = "email")
+    @Mapping(target = "contactInformation.telegramUserId", ignore = true)
+    @Mapping(target = "contactInformation.phoneNumber", source = "phoneNumber")
+    @Mapping(target = "contactInformation.telegramUsername", source = "telegramUsername")
+    void patchEntityFromDto(PatchRecruiterReq dto, @MappingTarget RecruiterEnt entity);
 
 }

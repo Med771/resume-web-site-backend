@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.models.enums.convertor.RoleEnumConverter;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -37,6 +38,11 @@ public class UserEnt {
 
     @Column(name = "password_hash", length = 128)
     private String passwordHash;
+
+    /** Профиль рекрутера для повторных заявок без повторного ввода данных */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruiter_id")
+    private RecruiterEnt recruiter;
 
     public UserEnt(RoleEnum role, String username, String passwordHash) {
         this.role = role;

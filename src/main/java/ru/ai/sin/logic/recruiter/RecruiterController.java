@@ -35,6 +35,18 @@ public class RecruiterController {
 
     private final RecruiterService recruiterService;
 
+    @Operation(
+            summary = "Мой профиль рекрутера",
+            description = "Возвращает рекрутера, привязанного к текущему пользователю. Если привязки ещё нет — 404 (нужно отправить первую заявку с полными данными).")
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @GetMapping(path = "/me")
+    public ResponseEntity<RecruiterDTO> getMyLinkedRecruiter() {
+        return recruiterService
+                .getLinkedForCurrentUser()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "Получить рекрутера по ID", description = "Возвращает карточку рекрутера")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
@@ -44,6 +56,16 @@ public class RecruiterController {
         RecruiterDTO recruiterDTO = recruiterService.getById(id);
 
         return ResponseEntity.ok(recruiterDTO);
+    }
+
+    @Operation(
+            summary = "Создать рекрутера",
+            description = "Создаёт рекрутера без заявки. Если рекрутер с таким email уже есть — возвращается существующая запись (как при создании заявки)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping()
+    public ResponseEntity<RecruiterDTO> create(@Valid @RequestBody AddRecruiterReq addRecruiterReq) {
+        RecruiterDTO recruiterDTO = recruiterService.create(addRecruiterReq);
+        return ResponseEntity.status(HttpStatus.CREATED).body(recruiterDTO);
     }
 
     @Operation(summary = "Фильтр рекрутеров", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
@@ -68,6 +90,21 @@ public class RecruiterController {
             @Valid @RequestBody UpdateRecruiterReq recruiterReq
     ) {
         RecruiterDTO recruiterDTO = recruiterService.update(id, recruiterReq);
+
+        return ResponseEntity.ok(recruiterDTO);
+    }
+
+    @Operation(
+            summary = "Частично обновить рекрутера",
+            description = "PATCH: в теле только изменяемые поля; отсутствующие или null не меняют значения в БД")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<RecruiterDTO> patchById(
+            @PathVariable @NotNull UUID id,
+
+            @Valid @RequestBody PatchRecruiterReq patchRecruiterReq
+    ) {
+        RecruiterDTO recruiterDTO = recruiterService.patch(id, patchRecruiterReq);
 
         return ResponseEntity.ok(recruiterDTO);
     }

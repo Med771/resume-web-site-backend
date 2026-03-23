@@ -47,7 +47,10 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getByFilter(pageable, filterRequestReq));
     }
 
-    @Operation(summary = "Создать заявку", description = "Создает новую заявку от рекрутера на студента")
+    @Operation(
+            summary = "Создать заявку",
+            description = "Заявка от рекрутера на студента. После первой заявки с полными данными профиль рекрутера привязывается к пользователю; "
+                    + "далее достаточно studentId (проверка: GET /recruiter/me).")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping()
     public ResponseEntity<RequestDTO> create(@Valid @RequestBody AddRequestReq addRequestReq) {

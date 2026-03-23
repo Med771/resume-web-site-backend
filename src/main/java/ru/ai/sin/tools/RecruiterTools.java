@@ -12,6 +12,8 @@ import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.recruiter.RecruiterMapper;
 import ru.ai.sin.logic.recruiter.RecruiterRepo;
 
+import org.springframework.util.StringUtils;
+
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 
@@ -35,9 +37,12 @@ public class RecruiterTools {
 
     @Transactional
     public RecruiterEnt findOrCreateRecruiter(AddRecruiterReq addRecruiterReq) {
-        RecruiterEnt recruiterEnt = recruiterRepo
-                .findByUserInformationEmail(addRecruiterReq.email())
-                .orElse(null);
+        RecruiterEnt recruiterEnt = null;
+        if (StringUtils.hasText(addRecruiterReq.email())) {
+            recruiterEnt = recruiterRepo
+                    .findByUserInformationEmail(addRecruiterReq.email().trim())
+                    .orElse(null);
+        }
 
         if (recruiterEnt == null) {
             recruiterEnt = recruiterMapper.toEntity(addRecruiterReq);

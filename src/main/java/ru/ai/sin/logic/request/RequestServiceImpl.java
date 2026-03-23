@@ -13,9 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.models.PageResponse;
 
+import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
 import ru.ai.sin.logic.request.dto.*;
 import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.logic.user.UserEnt;
+import ru.ai.sin.logic.user.UserRepo;
 
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.helper.SecurityHelper;
@@ -23,7 +26,9 @@ import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.tools.RecruiterTools;
 import ru.ai.sin.tools.RequestTools;
 import ru.ai.sin.tools.StudentTools;
+import ru.ai.sin.tools.UserTools;
 
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,6 +40,10 @@ public class RequestServiceImpl implements RequestService {
     private final RequestTools requestTools;
     private final StudentTools studentTools;
     private final RecruiterTools recruiterTools;
+
+    private final UserRepo userRepo;
+
+    private final UserTools userTools;
 
     private final SecurityHelper securityHelper;
 
@@ -66,16 +75,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO create(AddRequestReq addRequestReq) {
-        AddRecruiterReq addRecruiterReq = new AddRecruiterReq(
-                addRequestReq.companyName(),
-                addRequestReq.firstName(),
-                addRequestReq.lastName(),
-                addRequestReq.email(),
-                addRequestReq.phoneNumber(),
-                addRequestReq.telegramUsername()
-        );
-
-        var recruiterEnt = recruiterTools.findOrCreateRecruiter(addRecruiterReq);
+        RecruiterEnt recruiterEnt = resolveRecruiterForNewRequest(addRequestReq);
 
         StudentEnt studentEnt = studentTools.getStudentOrThrow(addRequestReq.studentId());
 
@@ -93,11 +93,40 @@ public class RequestServiceImpl implements RequestService {
         RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
         log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
-        if (recruiterEnt.getContactInformation().getTelegramUserId() != null) {
+        var contact = recruiterEnt.getContactInformation();
+        if (contact != null && contact.getTelegramUserId() != null) {
             requestTools.updateAllStatusForRecruiter(recruiterEnt.getId());
         }
 
         return requestDTO;
+    }
+
+    /**
+     * Рекрутер из привязки к аккаунту или создание/поиск по телу заявки с последующей привязкой к пользователю.
+     */
+    private RecruiterEnt resolveRecruiterForNewRequest(AddRequestReq addRequestReq) {
+        Optional<UserEnt> currentUserOpt = userTools.findCurrentUserFetchingRecruiter();
+        return currentUserOpt
+                .map(UserEnt::getRecruiter)
+                .orElseGet(() -> createRecruiterAndLinkForRequest(addRequestReq, currentUserOpt));
+    }
+
+    private RecruiterEnt createRecruiterAndLinkForRequest(
+            AddRequestReq addRequestReq,
+            Optional<UserEnt> currentUserOpt
+    ) {
+        validateRecruiterPayloadWhenUnlinked(addRequestReq);
+        AddRecruiterReq addRecruiterReq = new AddRecruiterReq(
+                addRequestReq.companyName(),
+                addRequestReq.firstName(),
+                addRequestReq.lastName(),
+                addRequestReq.email(),
+                addRequestReq.phoneNumber(),
+                addRequestReq.telegramUsername()
+        );
+        RecruiterEnt recruiterEnt = recruiterTools.findOrCreateRecruiter(addRecruiterReq);
+        currentUserOpt.ifPresent(u -> linkRecruiterToUserIfNeeded(u, recruiterEnt));
+        return recruiterEnt;
     }
 
     @Override
@@ -115,5 +144,26 @@ public class RequestServiceImpl implements RequestService {
         }
 
         log.info("User: {}, deleted a request: {} with data: {}", securityHelper.getCurrentUsername(), id, requestEnt);
+    }
+
+    private void validateRecruiterPayloadWhenUnlinked(AddRequestReq addRequestReq) {
+        if (addRequestReq.companyName() == null || addRequestReq.companyName().isBlank()) {
+            throw new BadRequestException(
+                    "Укажите companyName, пока к аккаунту не привязан профиль рекрутера (GET /recruiter/me)");
+        }
+    }
+
+    private void linkRecruiterToUserIfNeeded(UserEnt user, RecruiterEnt recruiterEnt) {
+        if (user.getRecruiter() != null) {
+            return;
+        }
+        var existingOwner = userRepo.findByRecruiter_Id(recruiterEnt.getId());
+        if (existingOwner.isPresent() && !existingOwner.get().getId().equals(user.getId())) {
+            throw new BadRequestException(
+                    "Этот профиль рекрутера уже привязан к другому аккаунту");
+        }
+        user.setRecruiter(recruiterEnt);
+        userRepo.save(user);
+        log.info("Linked recruiter {} to user {}", recruiterEnt.getId(), user.getId());
     }
 }

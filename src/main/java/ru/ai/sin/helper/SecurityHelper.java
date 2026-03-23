@@ -8,8 +8,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.stereotype.Component;
-import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.models.enums.RoleEnum;
+
+import java.util.Optional;
 
 @Component
 public class SecurityHelper {
@@ -23,6 +24,21 @@ public class SecurityHelper {
         throw new UsernameNotFoundException("User not found");
     }
 
+    /** Логин из JWT / сессии, если пользователь аутентифицирован */
+    public Optional<String> getCurrentUsernameOptional() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            return Optional.empty();
+        }
+        if (auth.getPrincipal() instanceof UserDetails userDetails) {
+            return Optional.of(userDetails.getUsername());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Проверка роли администратора по authorities (principal — {@link UserDetails}, не сущность БД).
+     */
     public void checkAdminRoleForFilter() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -30,10 +46,12 @@ public class SecurityHelper {
             throw new AccessDeniedException("Authentication required");
         }
 
-        UserEnt userEnt = (UserEnt) auth.getPrincipal();
+        String adminRole = "ROLE_" + RoleEnum.ADMIN.getRole();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> adminRole.equals(a.getAuthority()));
 
-        if (userEnt.getRole() != RoleEnum.ADMIN) {
-            throw new AccessDeniedException("Only admins can access experiences");
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only admins can access filter");
         }
     }
 }

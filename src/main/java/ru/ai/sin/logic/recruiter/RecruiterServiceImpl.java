@@ -21,7 +21,9 @@ import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.recruiter.dto.*;
 
 import ru.ai.sin.tools.RecruiterTools;
+import ru.ai.sin.tools.UserTools;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -35,14 +37,39 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     private final RecruiterTools recruiterTools;
 
+    private final UserTools userTools;
+
     private final SecurityHelper securityHelper;
 
     @Override
+    @Transactional(readOnly = true)
     public RecruiterDTO getById(UUID id) {
         return recruiterMapper.toDTO(recruiterTools.getRecruiterOrThrow(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<RecruiterDTO> getLinkedForCurrentUser() {
+        return userTools
+                .findCurrentUserFetchingRecruiter()
+                .map(u -> u.getRecruiter())
+                .map(recruiterMapper::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public RecruiterDTO create(AddRecruiterReq addRecruiterReq) {
+        RecruiterEnt recruiterEnt = recruiterTools.findOrCreateRecruiter(addRecruiterReq);
+        RecruiterDTO recruiterDTO = recruiterMapper.toDTO(recruiterEnt);
+        log.info(
+                "User {} created or resolved recruiter id={}",
+                securityHelper.getCurrentUsername(),
+                recruiterEnt.getId());
+        return recruiterDTO;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponse<RecruiterDTO> getAllByFilter(
             Pageable pageable,
             FilterRecruiterReq filterRecruiterReq
@@ -71,7 +98,21 @@ public class RecruiterServiceImpl implements RecruiterService {
 
         RecruiterDTO recruiterDTO = recruiterMapper.toDTO(recruiterEnt);
 
-        log.info("User: {}, updated a recruiter: {} with data: {}", securityHelper.getCurrentUsername(), id, recruiterDTO);
+        log.info("User {} updated recruiter id={}", securityHelper.getCurrentUsername(), id);
+
+        return recruiterDTO;
+    }
+
+    @Override
+    @Transactional
+    public RecruiterDTO patch(UUID id, PatchRecruiterReq patchRecruiterReq) {
+        RecruiterEnt recruiterEnt = recruiterTools.getRecruiterOrThrow(id);
+
+        recruiterMapper.patchEntityFromDto(patchRecruiterReq, recruiterEnt);
+
+        RecruiterDTO recruiterDTO = recruiterMapper.toDTO(recruiterEnt);
+
+        log.info("User {} patched recruiter id={}", securityHelper.getCurrentUsername(), id);
 
         return recruiterDTO;
     }
@@ -90,6 +131,6 @@ public class RecruiterServiceImpl implements RecruiterService {
             throw new BadRequestException("Error while deleting recruiter");
         }
 
-        log.info("User: {}, deleted a recruiter: {} with data: {}", securityHelper.getCurrentUsername(), id, recruiterEnt);
+        log.info("User {} deleted recruiter id={}", securityHelper.getCurrentUsername(), id);
     }
 }
