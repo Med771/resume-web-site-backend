@@ -1,7 +1,6 @@
 package ru.ai.sin.tools;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ExperienceTools {
@@ -33,7 +31,7 @@ public class ExperienceTools {
     public ExperienceEnt getExperienceOrThrow(Long id) {
         ExperienceEnt experienceEnt = experienceRepo.findWithCompanyAndStudentById(id);
 
-        if  (experienceEnt == null) {
+        if (experienceEnt == null) {
             throw new NotFoundException("Failed to find experience by id " + id);
         }
 

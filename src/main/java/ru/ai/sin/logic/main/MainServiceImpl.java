@@ -8,6 +8,7 @@ import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.exception.models.NotFoundException;
 
 import java.io.FileNotFoundException;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +27,31 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public String getContentType(String imagePath) {
-        if (imagePath.endsWith(".png")) {
+        String lower = imagePath.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".png")) {
             return "image/png";
         }
-        if (imagePath.endsWith(".gif")) {
+        if (lower.endsWith(".gif")) {
             return "image/gif";
         }
-        if (imagePath.endsWith(".webp")) {
+        if (lower.endsWith(".webp")) {
             return "image/webp";
+        }
+        if (lower.endsWith(".bmp")) {
+            return "image/bmp";
+        }
+        if (lower.endsWith(".avif")) {
+            return "image/avif";
+        }
+        if (lower.endsWith(".heic") || lower.endsWith(".heif")) {
+            return "image/heic";
+        }
+        if (lower.endsWith(".tif") || lower.endsWith(".tiff")) {
+            return "image/tiff";
+        }
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".jpe")
+                || lower.endsWith(".jfif") || lower.endsWith(".pjpeg") || lower.endsWith(".pjp")) {
+            return "image/jpeg";
         }
 
         return "image/jpeg";

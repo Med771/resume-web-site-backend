@@ -46,14 +46,14 @@ public class UserEnt {
 
     public UserEnt(RoleEnum role, String username, String passwordHash) {
         this.role = role;
-        this.setUsername(username);
-        this.setPasswordHash(passwordHash);
+        this.username = username;
+        this.passwordHash = passwordHash;
     }
 
     public UserEnt(RoleEnum role, String name, String username, String passwordHash) {
         this.role = role;
         this.name = name;
-        this.setUsername(username);
-        this.setPasswordHash(passwordHash);
+        this.username = username;
+        this.passwordHash = passwordHash;
     }
 }

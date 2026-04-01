@@ -1,6 +1,14 @@
 package ru.ai.sin.exception.models;
 
+import lombok.Getter;
+
+import java.io.Serial;
+
+@Getter
 public abstract class ApiException extends RuntimeException {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final String code;
     private final int status;
 
@@ -10,6 +18,4 @@ public abstract class ApiException extends RuntimeException {
         this.status = status;
     }
 
-    public String getCode() { return code; }
-    public int getStatus() { return status; }
 }

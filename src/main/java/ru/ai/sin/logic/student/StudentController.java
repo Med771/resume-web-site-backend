@@ -72,7 +72,10 @@ public class StudentController {
         return ResponseEntity.ok(studentDTOs);
     }
 
-    @Operation(summary = "Загрузить фото студента", description = "Устанавливает или обновляет аватар студента")
+    @Operation(
+            summary = "Загрузить фото студента",
+            description = "Устанавливает или обновляет аватар. Форматы: JPEG/JFIF, PNG, GIF, WebP, BMP, HEIC/HEIF, AVIF, TIFF. "
+                    + "Допускается application/octet-stream при корректном содержимом или расширении файла.")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
