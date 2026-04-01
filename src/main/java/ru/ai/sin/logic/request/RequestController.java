@@ -49,12 +49,23 @@ public class RequestController {
 
     @Operation(
             summary = "Создать заявку",
-            description = "Заявка от рекрутера на студента. После первой заявки с полными данными профиль рекрутера привязывается к пользователю; "
-                    + "далее достаточно studentId (проверка: GET /recruiter/me).")
+            description = "Заявка от рекрутера на студента. Роль STUDENT создавать заявки не может. "
+                    + "После первой заявки с полными данными профиль рекрутера привязывается к пользователю; "
+                    + "далее достаточно studentId (проверка: GET /recruiter/me). В чате появляется системное сообщение об отправке.")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping()
     public ResponseEntity<RequestDTO> create(@Valid @RequestBody AddRequestReq addRequestReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(requestService.create(addRequestReq));
+    }
+
+    @Operation(summary = "Решение студента по заявке", description = "Принять или отклонить заявку; доступно только владельцу студента (роль STUDENT)")
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping(path = "/{id}/student-decision")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void studentDecision(
+            @PathVariable @Min(1) long id,
+            @Valid @RequestBody StudentRequestDecisionReq req) {
+        requestService.studentRespond(id, req);
     }
 
     @Operation(summary = "Удалить заявку", description = "Удаляет заявку по ID")

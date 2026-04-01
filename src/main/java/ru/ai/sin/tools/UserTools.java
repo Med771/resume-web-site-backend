@@ -26,4 +26,11 @@ public class UserTools {
                 .getCurrentUsernameOptional()
                 .flatMap(userRepo::findByUsernameFetchingRecruiter);
     }
+
+    /** Пользователь с подгруженными рекрутером и студентом (для чатов и заявок). */
+    public Optional<UserEnt> findCurrentUserFetchingLinks() {
+        return securityHelper
+                .getCurrentUsernameOptional()
+                .flatMap(userRepo::findByUsernameFetchingLinks);
+    }
 }

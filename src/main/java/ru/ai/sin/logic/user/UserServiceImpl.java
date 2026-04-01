@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.logic.student.StudentRepo;
 import ru.ai.sin.logic.user.dto.AddUserReq;
 import ru.ai.sin.logic.user.dto.FilterUserReq;
 import ru.ai.sin.logic.user.dto.UserDTO;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
+    private final StudentRepo studentRepo;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -53,16 +56,43 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("User already exists: " + addUserReq.username());
         }
 
-        UserEnt userEnt = new UserEnt(
-                RoleEnum.USER,
-                addUserReq.name(),
-                addUserReq.username(),
-                passwordEncoder.encode(addUserReq.password())
-        );
+        RoleEnum role = addUserReq.role() != null ? addUserReq.role() : RoleEnum.USER;
+        if (role == RoleEnum.ADMIN || role == RoleEnum.GUEST) {
+            throw new BadRequestException("Создание пользователя допустимо только с ролью USER или STUDENT");
+        }
+
+        UserEnt userEnt;
+        if (role == RoleEnum.STUDENT) {
+            if (addUserReq.studentId() == null) {
+                throw new BadRequestException("Для роли STUDENT укажите studentId");
+            }
+            if (userRepo.findByStudent_Id(addUserReq.studentId()).isPresent()) {
+                throw new BadRequestException("Этот студент уже привязан к пользователю");
+            }
+            StudentEnt student = studentRepo.findById(addUserReq.studentId())
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + addUserReq.studentId()));
+            userEnt = new UserEnt(
+                    RoleEnum.STUDENT,
+                    addUserReq.name(),
+                    addUserReq.username(),
+                    passwordEncoder.encode(addUserReq.password())
+            );
+            userEnt.setStudent(student);
+        } else {
+            if (addUserReq.studentId() != null) {
+                throw new BadRequestException("Поле studentId допустимо только для роли STUDENT");
+            }
+            userEnt = new UserEnt(
+                    RoleEnum.USER,
+                    addUserReq.name(),
+                    addUserReq.username(),
+                    passwordEncoder.encode(addUserReq.password())
+            );
+        }
 
         try {
             userEnt = userRepo.save(userEnt);
-            log.info("Created user: {} with role USER", userEnt.getId());
+            log.info("Created user: {} with role {}", userEnt.getId(), userEnt.getRole());
             return userMapper.toDTO(userEnt);
         } catch (DataIntegrityViolationException ex) {
             log.warn("User already exists: {}", addUserReq.username());
@@ -76,8 +106,8 @@ public class UserServiceImpl implements UserService {
         UserEnt userEnt = userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
 
-        if (userEnt.getRole() != RoleEnum.USER) {
-            throw new BadRequestException("Can only delete users with role USER");
+        if (userEnt.getRole() != RoleEnum.USER && userEnt.getRole() != RoleEnum.STUDENT) {
+            throw new BadRequestException("Удалять можно только пользователей с ролью USER или STUDENT");
         }
 
         userRepo.delete(userEnt);

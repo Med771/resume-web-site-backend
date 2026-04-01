@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
+import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.models.enums.convertor.RoleEnumConverter;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -43,6 +44,11 @@ public class UserEnt {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id")
     private RecruiterEnt recruiter;
+
+    /** Аккаунт студента (ЛК): один пользователь — один студент */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private StudentEnt student;
 
     public UserEnt(RoleEnum role, String username, String passwordHash) {
         this.role = role;

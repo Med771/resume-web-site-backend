@@ -13,5 +13,7 @@ public interface RequestService {
 
     RequestDTO create(AddRequestReq addRequestReq);
 
+    void studentRespond(long requestId, StudentRequestDecisionReq req);
+
     void deleteById(long id);
 }

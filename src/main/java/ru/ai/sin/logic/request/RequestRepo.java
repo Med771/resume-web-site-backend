@@ -11,21 +11,29 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import ru.ai.sin.models.enums.ResultEnum;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecificationExecutor<RequestEnt> {
 
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality", "appChat"})
     RequestEnt findById(long id);
 
     @NonNull
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality", "appChat"})
     Page<RequestEnt> findAll(Specification<RequestEnt> spec,
                              @NonNull Pageable pageable);
 
     @NonNull
-    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"recruiter", "student", "student.speciality", "appChat"})
     List<RequestEnt> findAll(Specification<RequestEnt> spec);
+
+    boolean existsByRecruiter_IdAndStudent_IdAndResultIn(
+            UUID recruiterId,
+            UUID studentId,
+            Collection<ResultEnum> results);
 }

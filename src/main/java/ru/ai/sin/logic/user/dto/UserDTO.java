@@ -15,6 +15,10 @@ public record UserDTO(
         String username,
 
         @NotNull
-        RoleEnum role
+        RoleEnum role,
+
+        UUID recruiterId,
+
+        UUID studentId
 ) {
 }

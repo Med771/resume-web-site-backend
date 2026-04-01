@@ -27,6 +27,9 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public String getContentType(String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            return "application/octet-stream";
+        }
         String lower = imagePath.toLowerCase(Locale.ROOT);
         if (lower.endsWith(".png")) {
             return "image/png";

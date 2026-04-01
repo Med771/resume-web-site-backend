@@ -4,16 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.logic.request.dto.RequestDTO;
-import ru.ai.sin.logic.request.dto.FilterRequestReq;
 import ru.ai.sin.logic.request.RequestEnt;
-import ru.ai.sin.models.enums.ResultEnum;
-import ru.ai.sin.logic.request.RequestSpecifications;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.request.RequestMapper;
 import ru.ai.sin.logic.request.RequestRepo;
-
-import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -34,15 +28,5 @@ public class RequestTools {
 
     public RequestDTO mapToDTO(RequestEnt requestEnt) {
         return requestMapper.toDTO(requestEnt);
-    }
-
-    @Transactional
-    public void updateAllStatusForRecruiter(UUID recruiterId) {
-        List<RequestEnt> requests = requestRepo.findAll(
-                RequestSpecifications.byFilters(
-                        new FilterRequestReq(List.of(ResultEnum.CREATION), recruiterId, null))
-        );
-        requests.forEach(requestEnt -> requestEnt.setResult(ResultEnum.SYNC));
-        requestRepo.saveAll(requests);
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import ru.ai.sin.exception.models.NotFoundException;
+
 import org.springframework.validation.annotation.Validated;
 
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,14 @@ import java.util.UUID;
 public class StudentController {
 
     private final StudentService studentService;
+
+    @Operation(summary = "Текущий студент (ЛК)", description = "Профиль, привязанный к пользователю с ролью STUDENT")
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping(path = "/me")
+    public ResponseEntity<StudentDTO> getMe() {
+        return ResponseEntity.ok(studentService.getLinkedForCurrentUser()
+                .orElseThrow(() -> new NotFoundException("К аккаунту не привязана карточка студента")));
+    }
 
     @Operation(summary = "Получить студента по ID", description = "Возвращает полную карточку студента по UUID")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")

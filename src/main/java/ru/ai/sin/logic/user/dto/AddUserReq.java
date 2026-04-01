@@ -1,8 +1,12 @@
 package ru.ai.sin.logic.user.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import ru.ai.sin.models.enums.RoleEnum;
+
+import java.util.UUID;
 
 public record AddUserReq(
         @Size(max = 255)
@@ -15,6 +19,12 @@ public record AddUserReq(
 
         @NotBlank
         @Size(min = 1, max = 128)
-        String password
+        String password,
+
+        @Schema(description = "По умолчанию USER. Для STUDENT укажите studentId.")
+        RoleEnum role,
+
+        @Schema(description = "Обязателен при role=STUDENT; карточка студента не должна быть привязана к другому пользователю.")
+        UUID studentId
 ) {
 }

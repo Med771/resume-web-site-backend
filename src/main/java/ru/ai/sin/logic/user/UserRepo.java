@@ -19,5 +19,10 @@ public interface UserRepo extends JpaRepository<UserEnt, UUID>, JpaSpecification
     @Query("SELECT u FROM UserEnt u LEFT JOIN FETCH u.recruiter WHERE u.username = :username")
     Optional<UserEnt> findByUsernameFetchingRecruiter(@Param("username") String username);
 
+    @Query("SELECT DISTINCT u FROM UserEnt u LEFT JOIN FETCH u.recruiter LEFT JOIN FETCH u.student WHERE u.username = :username")
+    Optional<UserEnt> findByUsernameFetchingLinks(@Param("username") String username);
+
     Optional<UserEnt> findByRecruiter_Id(UUID recruiterId);
+
+    Optional<UserEnt> findByStudent_Id(UUID studentId);
 }

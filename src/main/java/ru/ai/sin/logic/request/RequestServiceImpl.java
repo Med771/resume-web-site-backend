@@ -8,11 +8,16 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.security.access.AccessDeniedException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.ai.sin.models.PageResponse;
 
+import ru.ai.sin.logic.chat.ChatEnt;
+import ru.ai.sin.logic.chat.ChatService;
+import ru.ai.sin.logic.chat.ChatSystemEvent;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.recruiter.dto.AddRecruiterReq;
 import ru.ai.sin.logic.request.dto.*;
@@ -22,6 +27,9 @@ import ru.ai.sin.logic.user.UserRepo;
 
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.helper.SecurityHelper;
+
+import ru.ai.sin.models.enums.ResultEnum;
+import ru.ai.sin.models.enums.RoleEnum;
 
 import ru.ai.sin.tools.RecruiterTools;
 import ru.ai.sin.tools.RequestTools;
@@ -46,6 +54,8 @@ public class RequestServiceImpl implements RequestService {
     private final UserTools userTools;
 
     private final SecurityHelper securityHelper;
+
+    private final ChatService chatService;
 
     @Override
     @Transactional(readOnly = true)
@@ -75,13 +85,24 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO create(AddRequestReq addRequestReq) {
-        RecruiterEnt recruiterEnt = resolveRecruiterForNewRequest(addRequestReq);
+        Optional<UserEnt> currentUserOpt = userTools.findCurrentUserFetchingLinks();
+        currentUserOpt.ifPresent(u -> {
+            if (u.getRole() == RoleEnum.STUDENT) {
+                throw new AccessDeniedException("Студенты не могут отправлять заявки");
+            }
+        });
+
+        RecruiterEnt recruiterEnt = resolveRecruiterForNewRequest(addRequestReq, currentUserOpt);
 
         StudentEnt studentEnt = studentTools.getStudentOrThrow(addRequestReq.studentId());
+
+        ChatEnt chat = chatService.getOrCreateChat(recruiterEnt, studentEnt);
 
         RequestEnt requestEnt = new RequestEnt();
         requestEnt.setRecruiter(recruiterEnt);
         requestEnt.setStudent(studentEnt);
+        requestEnt.setAppChat(chat);
+        requestEnt.setResult(ResultEnum.WAITING);
 
         try {
             requestEnt = requestRepo.save(requestEnt);
@@ -90,24 +111,69 @@ public class RequestServiceImpl implements RequestService {
             throw new BadRequestException("Error while creating request");
         }
 
-        RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
-        log.info("Created new request: {} for recruiter: {} and student: {}", requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
+        chatService.postSystemMessage(
+                chat,
+                ChatSystemEvent.REQUEST_SENT,
+                "Заявка №" + requestEnt.getId() + " отправлена. Ожидается решение студента."
+        );
 
-        var contact = recruiterEnt.getContactInformation();
-        if (contact != null && contact.getTelegramUserId() != null) {
-            requestTools.updateAllStatusForRecruiter(recruiterEnt.getId());
-        }
+        RequestDTO requestDTO = requestTools.mapToDTO(requestEnt);
+        log.info("Created new request: {} for recruiter: {} and student: {}",
+                requestEnt.getId(), recruiterEnt.getId(), studentEnt.getId());
 
         return requestDTO;
+    }
+
+    @Override
+    @Transactional
+    public void studentRespond(long requestId, StudentRequestDecisionReq req) {
+        UserEnt user = userTools.findCurrentUserFetchingLinks()
+                .orElseThrow(() -> new AccessDeniedException("Требуется авторизация"));
+        if (user.getRole() != RoleEnum.STUDENT || user.getStudent() == null) {
+            throw new AccessDeniedException("Только студент может ответить по заявке");
+        }
+        RequestEnt r = requestTools.getRequestOrThrow(requestId);
+        if (!user.getStudent().getId().equals(r.getStudent().getId())) {
+            throw new AccessDeniedException("Это не ваша заявка");
+        }
+        if (!isPendingStudentDecision(r.getResult())) {
+            throw new BadRequestException("По заявке уже принято решение");
+        }
+        if (req.accept() == null) {
+            throw new BadRequestException("Укажите accept: true или false");
+        }
+        if (req.accept()) {
+            r.setResult(ResultEnum.STUDENT_CONFIRMED);
+        } else {
+            r.setResult(ResultEnum.REFUSAL);
+        }
+        r.setStudentResponseText(req.comment());
+        requestRepo.save(r);
+        ChatEnt chat = r.getAppChat();
+        if (req.accept()) {
+            chatService.postSystemMessage(chat, ChatSystemEvent.STUDENT_ACCEPTED,
+                    "Студент принял заявку №" + requestId + ".");
+        } else {
+            chatService.postSystemMessage(chat, ChatSystemEvent.STUDENT_REJECTED,
+                    "Студент отклонил заявку №" + requestId + ".");
+        }
+    }
+
+    private boolean isPendingStudentDecision(ResultEnum result) {
+        return result == ResultEnum.WAITING || result == ResultEnum.CREATION;
     }
 
     /**
      * Рекрутер из привязки к аккаунту или создание/поиск по телу заявки с последующей привязкой к пользователю.
      */
-    private RecruiterEnt resolveRecruiterForNewRequest(AddRequestReq addRequestReq) {
-        Optional<UserEnt> currentUserOpt = userTools.findCurrentUserFetchingRecruiter();
+    private RecruiterEnt resolveRecruiterForNewRequest(
+            AddRequestReq addRequestReq,
+            Optional<UserEnt> currentUserOpt
+    ) {
         return currentUserOpt
                 .map(UserEnt::getRecruiter)
+                .map(Optional::ofNullable)
+                .flatMap(o -> o)
                 .orElseGet(() -> createRecruiterAndLinkForRequest(addRequestReq, currentUserOpt));
     }
 

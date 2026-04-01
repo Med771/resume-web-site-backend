@@ -30,9 +30,13 @@ import ru.ai.sin.logic.skill.SkillRepo;
 import ru.ai.sin.tools.SkillTools;
 import ru.ai.sin.tools.SpecialityTools;
 import ru.ai.sin.tools.StudentTools;
+import ru.ai.sin.tools.UserTools;
+import ru.ai.sin.models.enums.RoleEnum;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,12 +61,21 @@ public class StudentServiceImpl implements StudentService {
 
     private final FileHelper fileHelper;
     private final SecurityHelper securityHelper;
+    private final UserTools userTools;
 
     @Override
     public StudentDTO getById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         return studentTools.mapToDTO(studentEnt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<StudentDTO> getLinkedForCurrentUser() {
+        return userTools.findCurrentUserFetchingLinks()
+                .filter(u -> u.getRole() == RoleEnum.STUDENT && u.getStudent() != null)
+                .map(u -> studentTools.mapToDTO(u.getStudent()));
     }
 
     @Override

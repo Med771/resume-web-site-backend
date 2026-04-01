@@ -7,12 +7,15 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.logic.student.dto.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface StudentService {
 
     // ---------- GET METHODS ----------
     StudentDTO getById(UUID id);
+
+    Optional<StudentDTO> getLinkedForCurrentUser();
 
     // ---------- POST METHODS ----------
     void setPhoto(

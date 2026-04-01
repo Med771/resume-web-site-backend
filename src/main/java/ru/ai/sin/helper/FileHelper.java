@@ -103,7 +103,16 @@ public class FileHelper {
     }
 
     public byte[] getFileContent(String fileName) throws FileNotFoundException {
-        Path filePath = fileConfig.getFilePath().resolve(fileName);
+        if (fileName == null || fileName.isBlank()) {
+            throw new FileNotFoundException("empty");
+        }
+        Path base = fileConfig.getFilePath().toAbsolutePath().normalize();
+        Path resolved = base.resolve(fileName).normalize();
+        if (!resolved.startsWith(base)) {
+            log.warn("Rejected path outside storage: {}", fileName);
+            throw new FileNotFoundException(fileName);
+        }
+        Path filePath = resolved;
 
         if (!Files.exists(filePath)) {
             log.warn("File {} does not exist", fileName);
