@@ -2,6 +2,175 @@
 
 Это не фиксированный продуктовый план, а **логичное развитие** текущего кода и закрытие типичных пробелов первого релиза.
 
+Ниже зафиксированы **полные пути HTTP и STOMP** от корня API (в `application.yaml` **нет** `server.servlet.context-path` — пути буквально начинаются с `/`). В проде перед ними подставляется только базовый URL хоста, например `https://api.example.com/chat`.
+
+---
+
+## Полные пути по сторонам (актуально по `@PreAuthorize`)
+
+### Общее для всех ролей после входа
+
+| Назначение | Полный путь | Примечание |
+|------------|-------------|------------|
+| Логин | `POST /auth/login` | До входа cookie нет; см. Swagger `LoginRequest`. |
+| Обновление access | `POST /auth/refresh` | |
+| Выход | `POST /auth/logout` | |
+| Health UI / прокси | `GET /main/status` | Ответ **204**; в Security — `permitAll`. |
+| Файл картинки из хранилища | `GET /main/photo/{image_path}` | `permitAll`. |
+| Документация OpenAPI | `GET /v3/api-docs` | `permitAll`. |
+| Swagger UI | `GET /swagger-ui.html`, `GET /swagger-ui/**` | `permitAll`. |
+
+**WebSocket (SockJS + STOMP):** точка подключения **`/ws`** (`permitAll` на уровне HTTP handshake). Префикс брокера: **`/topic`**, префикс приложения: **`/app`**.
+
+| Назначение | Полный путь подписки (STOMP) |
+|------------|------------------------------|
+| События и переписка по чату (после согласования доступа в логике чата) | `/topic/chats/{chatId}` |
+| Пользовательские сообщения «для персонала» до принятия заявки | `/topic/chats/{chatId}/staff` |
+
+`{chatId}` — UUID прикладного чата (`appChatId` в DTO заявки).
+
+---
+
+### Работодатель (рекрутер; роли `GUEST`, `USER`)
+
+Имеет доступ ко всем строкам из блока **«Общее»**, плюс:
+
+#### Профиль рекрутера
+
+| Метод | Полный путь |
+|-------|----------------|
+| `GET` | `/recruiter/me` |
+| `GET` | `/recruiter/{id}` |
+
+#### Каталог и карточки студентов
+
+| Метод | Полный путь |
+|-------|----------------|
+| `POST` | `/student/cardsFilter` |
+| `POST` | `/student/filter` |
+| `GET` | `/student/{id}` |
+
+#### Заявки
+
+| Метод | Полный путь |
+|-------|----------------|
+| `POST` | `/request` |
+
+Нет в API: список «моих» заявок рекрутера одним вызовом — см. бэклог ниже (`POST /request/filter` сейчас только **ADMIN**).
+
+#### Чат (REST)
+
+| Метод | Полный путь |
+|-------|----------------|
+| `GET` | `/chat` |
+| `GET` | `/chat/{chatId}/summary` |
+| `GET` | `/chat/{chatId}/messages` |
+| `POST` | `/chat/{chatId}/messages` |
+| `POST` | `/chat/{chatId}/messages/attachment` |
+| `PATCH` | `/chat/{chatId}/messages/{messageId}` |
+| `POST` | `/chat/{chatId}/read` |
+
+#### Справочники и связанные сущности (чтение)
+
+Для каждой сущности: **`POST …/filter`** и **`GET …/{id}`** с теми же путями:
+
+- `/company` — `POST /company/filter`, `GET /company/{id}`
+- `/experience` — `POST /experience/filter`, `GET /experience/{id}`
+- `/portfolio` — `POST /portfolio/filter`, `GET /portfolio/{id}`
+- `/education` — `POST /education/filter`, `GET /education/{id}`
+- `/skill` — `POST /skill/filter`, `GET /skill/{id}`
+- `/speciality` — `POST /speciality/filter`, `GET /speciality/{id}`
+- `/institution` — `POST /institution/filter`, `GET /institution/{id}`
+
+#### WebSocket
+
+Подписка **`/topic/chats/{chatId}`** (и при необходимости **`/topic/chats/{chatId}/staff`** для сценариев «до принятия»).
+
+---
+
+### Студент (роль `STUDENT`)
+
+Имеет доступ к **«Общее»** и к чату как **любой аутентифицированный** пользователь (те же пути `/chat/...`, **кроме** удаления сообщения). Плюс:
+
+| Метод | Полный путь |
+|-------|----------------|
+| `GET` | `/student/me` |
+| `POST` | `/request/{id}/student-decision` |
+
+**Ограничение текущей модели безопасности:** для роли `STUDENT` **не** прописаны `hasAnyRole` на `GET /student/{id}`, `POST /student/cardsFilter`, `POST /student/filter` — каталог студентов через эти endpoint’ы студенту сейчас **недоступен**. Расширение сценариев (например просмотр витрины) — отдельный пункт бэклога.
+
+Создание заявки **`POST /request`** для `STUDENT` **запрещено** (`@PreAuthorize`).
+
+**WebSocket:** **`/topic/chats/{chatId}`** (и при политике доступа — общий или staff-топик по правилам сервера).
+
+---
+
+### Администратор (роль `ADMIN`)
+
+Все пути работодателя и студента, где роль допущена, **плюс** административные.
+
+#### Пользователи
+
+| Метод | Полный путь |
+|-------|----------------|
+| `POST` | `/user/filter` |
+| `POST` | `/user` |
+| `DELETE` | `/user/{id}` |
+
+#### Заявки (полный CRUD-надмножество)
+
+| Метод | Полный путь |
+|-------|----------------|
+| `GET` | `/request/{id}` |
+| `POST` | `/request/filter` |
+| `DELETE` | `/request/{id}` |
+
+(плюс `POST /request` как у рекрутера.)
+
+#### Студенты (создание, правка, фото, удаление)
+
+| Метод | Полный путь |
+|-------|----------------|
+| `POST` | `/student` |
+| `POST` | `/student/extended` |
+| `POST` | `/student/photo/{id}` |
+| `PUT` | `/student/{id}` |
+| `PATCH` | `/student/{id}` |
+| `DELETE` | `/student/{id}` |
+
+#### Рекрутеры (кроме уже доступных `GET`)
+
+| Метод | Полный путь |
+|-------|----------------|
+| `POST` | `/recruiter` |
+| `POST` | `/recruiter/filter` |
+| `PUT` | `/recruiter/{id}` |
+| `PATCH` | `/recruiter/{id}` |
+| `DELETE` | `/recruiter/{id}` |
+
+#### Справочники — создание, изменение, удаление
+
+Для каждого корня **`/company`**, **`/experience`**, **`/portfolio`**, **`/education`**, **`/skill`**, **`/speciality`**, **`/institution`**:
+
+| Метод | Полный путь (шаблон) |
+|-------|----------------------|
+| `POST` | `/{resource}` |
+| `PUT` | `/{resource}/{id}` |
+| `PATCH` | `/{resource}/{id}` |
+| `DELETE` | `/{resource}/{id}` |
+
+#### Чат — модерация
+
+| Метод | Полный путь |
+|-------|----------------|
+| `DELETE` | `/chat/{chatId}/messages/{messageId}` |
+
+#### WebSocket
+
+Те же топики; для сценариев наблюдения до принятия заявки — **`/topic/chats/{chatId}/staff`**.
+
+---
+
 ## Безопасность и продакшен
 
 - Закрыть **WebSocket**: сейчас **`/ws/**`** в `permitAll`; для продакшена — проверка JWT при STOMP `CONNECT` (или отдельный токен) и отказ от анонимной подписки на чужие топики.
@@ -11,7 +180,9 @@
 ## Заявки и студент
 
 - Эндпоинт для студента: список **своих** заявок (например `GET /request/my` или `POST /request/filter` с ролью **`STUDENT`** и авто-подстановкой `studentId`), чтобы UI не зависел от знания числового `id` заранее.
+- Для рекрутера — симметрично список заявок «мои / по фильтру» без обхода только через админский `POST /request/filter`.
 - Опционально: уведомления (e-mail / push) о новой заявке.
+- При необходимости: явно разрешить роли **`STUDENT`** чтение каталога (`POST /student/cardsFilter`, `GET /student/{id}` и т.д.), если продукт требует витрину для студентов.
 
 ## Чаты
 
