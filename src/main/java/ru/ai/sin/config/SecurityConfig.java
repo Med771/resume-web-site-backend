@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.springframework.core.annotation.Order;
-
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -41,7 +39,6 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    @Order(1)
     SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
