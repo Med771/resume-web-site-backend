@@ -47,7 +47,9 @@ public class StudentController {
                 .orElseThrow(() -> new NotFoundException("К аккаунту не привязана карточка студента")));
     }
 
-    @Operation(summary = "Получить студента по ID", description = "Возвращает полную карточку студента по UUID")
+    @Operation(
+            summary = "Получить студента по ID",
+            description = "Возвращает полную карточку студента по UUID. Студенты с курсом NEW доступны только администратору (для остальных — 404).")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
@@ -56,7 +58,10 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
-    @Operation(summary = "Фильтр карточек студентов", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
+    @Operation(
+            summary = "Фильтр карточек студентов",
+            description = "Принимает DTO фильтра в request body и Pageable без параметра sort. "
+                    + "Студенты с курсом NEW в выдаче только у администратора.")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/cardsFilter")
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
@@ -69,7 +74,10 @@ public class StudentController {
         return ResponseEntity.ok(studentCardDTOs);
     }
 
-    @Operation(summary = "Фильтр студентов", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
+    @Operation(
+            summary = "Фильтр студентов",
+            description = "Принимает DTO фильтра в request body и Pageable без параметра sort. "
+                    + "Студенты с курсом NEW в выдаче только у администратора.")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
@@ -141,7 +149,10 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
-    @Operation(summary = "Удалить студента", description = "Удаляет студента по UUID")
+    @Operation(
+            summary = "Удалить студента",
+            description = "Полное удаление: заявки, чаты (и сообщения), опыт работы, записи institution, портфолио, "
+                    + "отвязка навыков; затем запись студента. Связь users.student_id снимается на стороне БД (ON DELETE SET NULL).")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

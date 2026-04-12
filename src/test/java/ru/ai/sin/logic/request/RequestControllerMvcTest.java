@@ -58,6 +58,16 @@ class RequestControllerMvcTest {
     }
 
     @Test
+    @WithMockUser(roles = "GUEST")
+    void create_allowedForGuestRole() throws Exception {
+        mockMvc.perform(post("/request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_STUDENT_ID)
+                        .with(csrf()))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
     @WithMockUser(roles = "STUDENT")
     void studentDecision_noContentForStudent() throws Exception {
         mockMvc.perform(post("/request/1/student-decision")

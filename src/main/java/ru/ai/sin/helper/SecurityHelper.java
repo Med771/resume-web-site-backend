@@ -54,4 +54,15 @@ public class SecurityHelper {
             throw new AccessDeniedException("Only admins can access filter");
         }
     }
+
+    /** Текущий principal имеет роль ADMIN (иначе false, в т.ч. при отсутствии аутентификации). */
+    public boolean isCurrentUserAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            return false;
+        }
+        String adminRole = "ROLE_" + RoleEnum.ADMIN.getRole();
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> adminRole.equals(a.getAuthority()));
+    }
 }

@@ -23,7 +23,7 @@ public class PortfolioEnt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, length = 128, nullable = false)
+    @Column(length = 128, nullable = false)
     private String name;
 
     @Column(nullable = false)

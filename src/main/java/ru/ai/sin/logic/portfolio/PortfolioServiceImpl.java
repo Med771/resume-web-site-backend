@@ -3,8 +3,6 @@ package ru.ai.sin.logic.portfolio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.dao.DataIntegrityViolationException;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,8 +15,6 @@ import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
 import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;
 
 import ru.ai.sin.logic.student.StudentEnt;
-
-import ru.ai.sin.exception.models.BadRequestException;
 
 import ru.ai.sin.helper.SecurityHelper;
 
@@ -65,14 +61,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         PortfolioEnt portfolioEnt = portfolioMapper.toEntity(addPortfolioReq, studentEnt);
 
-        try {
-            portfolioEnt = portfolioRepo.save(portfolioEnt);
-        }
-        catch (DataIntegrityViolationException ex) {
-            log.warn("Portfolio already exists: {}", addPortfolioReq.name());
-
-            throw new BadRequestException("Portfolio already exists: " + addPortfolioReq.name());
-        }
+        portfolioEnt = portfolioRepo.save(portfolioEnt);
 
         PortfolioDTO portfolioDTO = portfolioMapper.toDTO(portfolioEnt);
 
@@ -106,14 +95,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public void deleteById(long id) {
         PortfolioEnt portfolioEnt = portfolioTools.getPortfolioOrThrow(id);
 
-        try {
-            portfolioRepo.delete(portfolioEnt);
-        }
-        catch (DataIntegrityViolationException ex) {
-            log.warn("Error while deleting portfolio: {}", ex.getMessage());
-
-            throw new BadRequestException("Error while deleting portfolio");
-        }
+        portfolioRepo.delete(portfolioEnt);
 
         log.info("User: {}, deleted a portfolio: {} with data: {}", securityHelper.getCurrentUsername(), id, portfolioEnt);
     }

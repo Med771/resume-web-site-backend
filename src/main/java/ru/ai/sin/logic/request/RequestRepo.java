@@ -36,4 +36,6 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
             UUID recruiterId,
             UUID studentId,
             Collection<ResultEnum> results);
+
+    void deleteByStudent_Id(UUID studentId);
 }

@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.chat.ChatEnt;
 import ru.ai.sin.logic.chat.ChatService;
 import ru.ai.sin.logic.chat.ChatSystemEvent;
@@ -19,6 +20,7 @@ import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.ResultEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.tools.RecruiterTools;
@@ -93,6 +95,71 @@ class RequestServiceImplTest {
 
         verify(chatService, never()).getOrCreateChat(any(), any());
         verify(requestRepo, never()).save(any());
+    }
+
+    @Test
+    void create_throwsNotFoundWhenStudentIsNewAndUserNotAdmin() {
+        when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.empty());
+
+        RecruiterEnt recruiter = new RecruiterEnt();
+        recruiter.setId(recruiterId);
+        when(recruiterTools.findOrCreateRecruiter(any())).thenReturn(recruiter);
+
+        StudentEnt student = new StudentEnt();
+        student.setId(studentId);
+        student.setCourse(CourseEnum.NEW);
+        when(studentTools.getStudentOrThrow(studentId)).thenReturn(student);
+        when(securityHelper.isCurrentUserAdmin()).thenReturn(false);
+
+        AddRequestReq req = new AddRequestReq(
+                "ACME", "A", "B", "a@b.c", "+123", "tg", studentId
+        );
+
+        assertThatThrownBy(() -> service.create(req))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Failed to find student");
+
+        verify(chatService, never()).getOrCreateChat(any(), any());
+        verify(requestRepo, never()).save(any());
+    }
+
+    @Test
+    void create_allowsWhenStudentIsNewAndUserIsAdmin() {
+        RecruiterEnt recruiter = new RecruiterEnt();
+        recruiter.setId(recruiterId);
+        UserEnt admin = new UserEnt(RoleEnum.ADMIN, "a", "admin", "x");
+        admin.setRecruiter(recruiter);
+        when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.of(admin));
+        when(securityHelper.isCurrentUserAdmin()).thenReturn(true);
+
+        StudentEnt student = new StudentEnt();
+        student.setId(studentId);
+        student.setCourse(CourseEnum.NEW);
+        when(studentTools.getStudentOrThrow(studentId)).thenReturn(student);
+
+        ChatEnt chat = new ChatEnt();
+        chat.setId(chatId);
+        when(chatService.getOrCreateChat(recruiter, student)).thenReturn(chat);
+
+        when(requestRepo.save(any(RequestEnt.class))).thenAnswer(inv -> {
+            RequestEnt saved = inv.getArgument(0);
+            saved.setId(200L);
+            return saved;
+        });
+
+        RequestDTO dto = new RequestDTO(
+                200L, chatId, ResultEnum.WAITING, null, null, null, recruiterId, studentId
+        );
+        when(requestTools.mapToDTO(any(RequestEnt.class))).thenReturn(dto);
+
+        AddRequestReq req = new AddRequestReq(
+                null, null, null, null, null, null, studentId
+        );
+
+        RequestDTO result = service.create(req);
+
+        assertThat(result.id()).isEqualTo(200L);
+        verify(chatService).getOrCreateChat(recruiter, student);
     }
 
     @Test

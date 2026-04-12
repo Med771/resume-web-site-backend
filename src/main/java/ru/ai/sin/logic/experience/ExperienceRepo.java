@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
 public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long>, JpaSpecificationExecutor<ExperienceEnt> {
@@ -28,4 +29,5 @@ public interface ExperienceRepo extends JpaRepository<ExperienceEnt, Long>, JpaS
     @EntityGraph(attributePaths = {"student", "company"})
     Page<ExperienceEnt> findAll(Specification<ExperienceEnt> spec, @NonNull Pageable pageable);
 
+    void deleteByStudent_Id(UUID studentId);
 }

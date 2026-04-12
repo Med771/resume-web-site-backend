@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
 public interface InstitutionRepo extends JpaRepository<InstitutionEnt, Long>, JpaSpecificationExecutor<InstitutionEnt> {
 
@@ -23,4 +25,6 @@ public interface InstitutionRepo extends JpaRepository<InstitutionEnt, Long>, Jp
             Specification<InstitutionEnt> spec,
             @NonNull Pageable pageable
     );
+
+    void deleteByStudent_Id(UUID studentId);
 }

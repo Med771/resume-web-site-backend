@@ -11,18 +11,21 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.models.embeddables.ContactInformation;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.company.CompanyEnt;
 import ru.ai.sin.logic.company.CompanyRepo;
 import ru.ai.sin.logic.education.EducationEnt;
 import ru.ai.sin.logic.education.EducationRepo;
+import ru.ai.sin.logic.chat.ChatRepo;
 import ru.ai.sin.logic.experience.ExperienceEnt;
 import ru.ai.sin.logic.experience.ExperienceRepo;
 import ru.ai.sin.logic.institution.InstitutionEnt;
 import ru.ai.sin.logic.institution.InstitutionRepo;
 import ru.ai.sin.logic.portfolio.PortfolioEnt;
 import ru.ai.sin.logic.portfolio.PortfolioRepo;
+import ru.ai.sin.logic.request.RequestRepo;
 import ru.ai.sin.logic.student.dto.*;
 import ru.ai.sin.logic.speciality.SpecialityEnt;
 import ru.ai.sin.logic.skill.SkillEnt;
@@ -31,11 +34,11 @@ import ru.ai.sin.tools.SkillTools;
 import ru.ai.sin.tools.SpecialityTools;
 import ru.ai.sin.tools.StudentTools;
 import ru.ai.sin.tools.UserTools;
+import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +55,8 @@ public class StudentServiceImpl implements StudentService {
     private final PortfolioRepo portfolioRepo;
     private final ExperienceRepo experienceRepo;
     private final InstitutionRepo institutionRepo;
+    private final RequestRepo requestRepo;
+    private final ChatRepo chatRepo;
 
     private final StudentMapper studentMapper;
 
@@ -66,6 +71,10 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentDTO getById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
+
+        if (studentEnt.getCourse() == CourseEnum.NEW && !securityHelper.isCurrentUserAdmin()) {
+            throw new NotFoundException("Failed to find student by id " + id);
+        }
 
         return studentTools.mapToDTO(studentEnt);
     }
@@ -101,7 +110,7 @@ public class StudentServiceImpl implements StudentService {
             FilterStudentReq filterStudentReq
     ) {
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(filterStudentReq),
+                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin()),
                 pageable);
 
         return new PageResponse<>(
@@ -118,7 +127,7 @@ public class StudentServiceImpl implements StudentService {
             FilterStudentReq filterStudentReq
     ) {
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(filterStudentReq),
+                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin()),
                 pageable);
 
         return new PageResponse<>(
@@ -192,7 +201,7 @@ public class StudentServiceImpl implements StudentService {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(updateStudentReq.specialityId());
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(updateStudentReq.skillsIds());
+        Set<SkillEnt> skillEntSet = resolveSkillsByIdsOrThrow(updateStudentReq.skillsIds());
 
         studentMapper.updateEntityFromDto(updateStudentReq, studentEnt);
 
@@ -272,8 +281,14 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public void deleteById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
+        StudentDTO snapshot = studentTools.mapToDTO(studentEnt);
 
         try {
+            requestRepo.deleteByStudent_Id(id);
+            chatRepo.deleteByStudent_Id(id);
+            experienceRepo.deleteByStudent_Id(id);
+            institutionRepo.deleteByStudent_Id(id);
+            portfolioRepo.deleteByStudent_Id(id);
             studentRepo.delete(studentEnt);
         }
         catch (DataIntegrityViolationException ex) {
@@ -282,7 +297,7 @@ public class StudentServiceImpl implements StudentService {
             throw new BadRequestException("Error while deleting student");
         }
 
-        log.info("User: {}, deleted a student: {} with data: {}", securityHelper.getCurrentUsername(), id, studentTools.mapToDTO(studentEnt));
+        log.info("User: {}, deleted a student: {} with data: {}", securityHelper.getCurrentUsername(), id, snapshot);
     }
 
     private AddStudentReq toAddStudentReq(CreateStudentExtendedReq req) {
@@ -333,7 +348,7 @@ public class StudentServiceImpl implements StudentService {
                 continue;
             }
 
-            if (hasText(skillReq.name())) {
+            if (isBlank(skillReq.name())) {
                 throw new BadRequestException("Skill id or skill name is required");
             }
 
@@ -371,12 +386,7 @@ public class StudentServiceImpl implements StudentService {
             portfolioEnt.setAdditionalInfo(item.additionalInfo());
             portfolioEnt.setStudent(studentEnt);
 
-            try {
-                portfolioRepo.save(portfolioEnt);
-            } catch (DataIntegrityViolationException ex) {
-                log.warn("Portfolio already exists: {}", item.name());
-                throw new BadRequestException("Portfolio already exists: " + item.name());
-            }
+            portfolioRepo.save(portfolioEnt);
         }
     }
 
@@ -417,7 +427,7 @@ public class StudentServiceImpl implements StudentService {
             return companyRepo.findById(item.companyId())
                     .orElseThrow(() -> new BadRequestException("Company not found: " + item.companyId()));
         }
-        if (hasText(item.companyName())) {
+        if (isBlank(item.companyName())) {
             throw new BadRequestException("Experience companyId or companyName is required");
         }
 
@@ -459,10 +469,10 @@ public class StudentServiceImpl implements StudentService {
                     .orElseThrow(() -> new BadRequestException("Education not found: " + item.educationId()));
         }
 
-        if (hasText(item.institution())) {
+        if (isBlank(item.institution())) {
             throw new BadRequestException("Institution educationId or institution name is required");
         }
-        if (hasText(item.webUrl())) {
+        if (isBlank(item.webUrl())) {
             throw new BadRequestException("Institution webUrl is required for new education");
         }
 
@@ -483,7 +493,7 @@ public class StudentServiceImpl implements StudentService {
         return value == null ? null : value.trim();
     }
 
-    private boolean hasText(String value) {
-        return value == null || Objects.equals(value.trim(), "");
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

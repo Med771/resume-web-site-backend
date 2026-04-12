@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(
                         "CONFLICT",
-                        "Data conflict (e.g. duplicate unique field)"
+                        "Data constraint violation (e.g. duplicate key or foreign key)"
                 ));
     }
 

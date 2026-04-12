@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.ai.sin.logic.student.dto.FilterStudentReq;
 
 import ru.ai.sin.logic.skill.SkillEnt;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,13 @@ public final class StudentSpecifications {
 
     private StudentSpecifications() {}
 
-    public static Specification<StudentEnt> byFilters(FilterStudentReq filterStudentReq) {
+    /**
+     * @param includeNewCourseStudents если false, студенты с курсом {@link CourseEnum#NEW} исключаются из выборки
+     */
+    public static Specification<StudentEnt> byFilters(
+            FilterStudentReq filterStudentReq,
+            boolean includeNewCourseStudents
+    ) {
 
         return (root, query, cb) -> {
 
@@ -29,6 +36,12 @@ public final class StudentSpecifications {
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
+
+            if (!includeNewCourseStudents) {
+                predicates.add(cb.or(
+                        cb.isNull(root.get("course")),
+                        cb.notEqual(root.get("course"), CourseEnum.NEW)));
+            }
 
             if (filterStudentReq.findString() != null && !filterStudentReq.findString().isBlank()) {
                 String filter = filterStudentReq.findString().toLowerCase();

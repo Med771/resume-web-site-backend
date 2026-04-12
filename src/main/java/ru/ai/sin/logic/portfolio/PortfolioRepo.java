@@ -13,6 +13,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface PortfolioRepo extends JpaRepository<PortfolioEnt, Long>, JpaSpecificationExecutor<PortfolioEnt> {
@@ -24,4 +25,6 @@ public interface PortfolioRepo extends JpaRepository<PortfolioEnt, Long>, JpaSpe
     @NonNull
     @EntityGraph(attributePaths = {"student"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<PortfolioEnt> findAll(Specification<PortfolioEnt> spec, @NonNull Pageable pageable);
+
+    void deleteByStudent_Id(UUID studentId);
 }

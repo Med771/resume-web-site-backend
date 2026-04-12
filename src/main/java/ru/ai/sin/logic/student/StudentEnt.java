@@ -75,8 +75,12 @@ public class StudentEnt {
     @JoinColumn(name = "speciality_id")
     private SpecialityEnt speciality;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "student_skills",
+            joinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id", referencedColumnName = "id")
+    )
     private Set<SkillEnt> skills = new HashSet<>();
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)

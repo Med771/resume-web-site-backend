@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             userEnt = userRepo.save(userEnt);
-            log.info("Created user: {} with role {}", userEnt.getId(), userEnt.getRole());
+            log.info("Created user: username={} role={} id={}", userEnt.getUsername(), userEnt.getRole(), userEnt.getId());
             return userMapper.toDTO(userEnt);
         } catch (DataIntegrityViolationException ex) {
             log.warn("User already exists: {}", addUserReq.username());
