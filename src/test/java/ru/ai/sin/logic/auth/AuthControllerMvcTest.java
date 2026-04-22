@@ -15,6 +15,8 @@ import ru.ai.sin.filter.JwtCookieAuthenticationFilter;
 import ru.ai.sin.helper.CookieHelper;
 import ru.ai.sin.logic.auth.dto.LoginRequest;
 import ru.ai.sin.logic.auth.dto.TokenPair;
+import ru.ai.sin.logic.recruiter.registration.RecruiterSelfRegistrationService;
+import ru.ai.sin.logic.registration.StudentRegistrationService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -35,6 +37,12 @@ class AuthControllerMvcTest {
 
     @MockBean
     private AuthService authService;
+
+    @MockBean
+    private StudentRegistrationService studentRegistrationService;
+
+    @MockBean
+    private RecruiterSelfRegistrationService recruiterSelfRegistrationService;
 
     @MockBean
     private CookieHelper cookieHelper;

@@ -43,6 +43,16 @@ app:
     path: file
     max-size-bytes: 5242880
 
+  registration:
+    rate-limit-per-ip-per-hour: 10
+    rate-limit-recruiter-per-ip-per-hour: 5
+    max-skills-per-profile: 30
+    max-experiences-in-registration: 12
+    max-institutions-in-registration: 8
+    min-password-length: 12
+    require-letter-and-digit: true
+    max-catalog-page-size: 50
+
   user:
     logins:
       - username: guest

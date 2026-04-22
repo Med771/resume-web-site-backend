@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/public/registration/**").permitAll()
                         .requestMatchers("/main/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/error").permitAll()

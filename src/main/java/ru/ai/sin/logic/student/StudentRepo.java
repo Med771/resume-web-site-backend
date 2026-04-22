@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,11 @@ public interface StudentRepo extends
     Set<SkillEnt> findSkillsByStudentId(UUID studentId);
 
     Optional<StudentEnt> findByContactInformationTelegramUserId(String telegramUserId);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END
+            FROM StudentEnt s
+            WHERE LOWER(TRIM(s.userInformation.email)) = LOWER(TRIM(:email))
+            """)
+    boolean existsByNormalizedEmail(@Param("email") String email);
 }

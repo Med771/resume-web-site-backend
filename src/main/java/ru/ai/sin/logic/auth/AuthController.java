@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,6 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.logic.auth.dto.*;
+import ru.ai.sin.logic.recruiter.registration.RecruiterSelfRegistrationService;
+import ru.ai.sin.logic.recruiter.registration.dto.RecruiterSelfRegistrationReq;
+import ru.ai.sin.logic.registration.StudentRegistrationService;
+import ru.ai.sin.logic.registration.dto.StudentSelfRegistrationReq;
 
 import ru.ai.sin.helper.CookieHelper;
 
@@ -23,7 +28,38 @@ import ru.ai.sin.helper.CookieHelper;
 public class AuthController {
 
     private final AuthService authService;
+    private final StudentRegistrationService studentRegistrationService;
+    private final RecruiterSelfRegistrationService recruiterSelfRegistrationService;
     private final CookieHelper cookieHelper;
+
+    @Operation(
+            summary = "Заявка на регистрацию работодателя",
+            description = "Создаёт заявку со статусом PENDING. Вход возможен только после одобрения администратором "
+                    + "(эндпоинты /admin/recruiter-registration-requests). Cookie не выдаются.")
+    @PostMapping("/register-recruiter")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registerRecruiter(
+            @Valid @RequestBody RecruiterSelfRegistrationReq req,
+            HttpServletRequest httpRequest
+    ) {
+        recruiterSelfRegistrationService.submit(req, httpRequest);
+    }
+
+    @Operation(
+            summary = "Саморегистрация студента",
+            description = "Создаёт аккаунт STUDENT, карточку с курсом NEW (модерация до показа рекрутерам), "
+                    + "устанавливает те же HttpOnly-cookie, что и при входе. Лимит попыток по IP — см. app.registration.")
+    @PostMapping("/register-student")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registerStudent(
+            @Valid @RequestBody StudentSelfRegistrationReq req,
+            HttpServletRequest httpRequest,
+            HttpServletResponse response
+    ) {
+        TokenPair tokens = studentRegistrationService.registerAndIssueTokens(req, httpRequest);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
+    }
 
     @Operation(summary = "Вход в систему", description = "Проверяет логин/пароль и устанавливает access и refresh токены в cookie")
     @PostMapping("/login")

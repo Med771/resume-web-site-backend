@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,13 @@ public interface RecruiterRepo extends JpaRepository<RecruiterEnt, UUID>, JpaSpe
     Optional<RecruiterEnt> findByContactInformationTelegramUserId(String telegramUserId);
 
     Optional<RecruiterEnt> findByUserInformationEmail(String email);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+            FROM RecruiterEnt r
+            WHERE LOWER(TRIM(r.userInformation.email)) = LOWER(TRIM(:email))
+            """)
+    boolean existsByNormalizedEmail(@Param("email") String email);
 
     @NonNull
     Page<RecruiterEnt> findAll(Specification<RecruiterEnt> spec, @NonNull Pageable pageable);
