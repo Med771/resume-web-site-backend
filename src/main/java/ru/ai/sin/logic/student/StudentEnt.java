@@ -91,4 +91,10 @@ public class StudentEnt {
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<ExperienceEnt> companies = new ArrayList<>();
+
+    @Column(name = "public_profile_consent", nullable = false)
+    private boolean publicProfileConsent;
+
+    @Column(name = "profile_text_score", nullable = false)
+    private int profileTextScore;
 }

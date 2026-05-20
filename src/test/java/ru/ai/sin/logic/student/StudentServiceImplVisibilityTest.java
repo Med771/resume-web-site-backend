@@ -97,7 +97,9 @@ class StudentServiceImplVisibilityTest {
         ent.setCourse(CourseEnum.NEW);
         StudentDTO dto = new StudentDTO(
                 ID, "c", "h", LocalDate.of(1999, 5, 5), null, null,
-                CourseEnum.NEW, BusynessEnum.FREE, "A", "B", "S", List.of(new SkillDTO(1L, "x"))
+                CourseEnum.NEW, BusynessEnum.FREE, "A", "B", "S", List.of(new SkillDTO(1L, "x")),
+                false,
+                0
         );
         when(studentTools.getStudentOrThrow(ID)).thenReturn(ent);
         when(securityHelper.isCurrentUserAdmin()).thenReturn(true);

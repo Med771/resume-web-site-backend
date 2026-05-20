@@ -13,7 +13,13 @@ import ru.ai.sin.models.enums.CourseEnum;
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(name = "PatchStudentReq", description = "DTO частичного обновления студента. Передаются только изменяемые поля")
+@Schema(
+        name = "PatchStudentReq",
+        description = """
+                Частичное обновление карточки студента (`PATCH /student/{id}`), только **ADMIN**.
+                Для каждого поля: значение `null` в JSON означает «поле не изменять».
+
+                Исключение по смыслу то же для `skillsIds`: `null` — не трогать список навыков.""")
 public record PatchStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -62,6 +68,14 @@ public record PatchStudentReq(
         Long specialityId,
 
         @Schema(description = "Список ID навыков")
-        List<@Positive Long> skillsIds
+        List<@Positive Long> skillsIds,
+
+        @Schema(
+                description = """
+                        Разрешение показывать **укороченную** карточку на публичной витрине (`/public/students/...`) без JWT.
+                        Не влияет на выдачу для рекрутеров по `POST /student/...` — там действуют отдельные правила (в т.ч. курс NEW).
+
+                        `null` — не менять текущее значение в БД.""")
+        Boolean publicProfileConsent
 ) {
 }

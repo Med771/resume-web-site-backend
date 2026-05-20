@@ -9,7 +9,13 @@ import ru.ai.sin.models.enums.CourseEnum;
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(name = "UpdateStudentReq", description = "DTO для полного обновления студента")
+@Schema(
+        name = "UpdateStudentReq",
+        description = """
+                Полная замена полей карточки (`PUT /student/{id}`), только **ADMIN**.
+                Все обязательные поля должны быть переданы; отличие от PATCH — нет семантики «пропущенное поле».
+
+                Для `publicProfileConsent` допускается `null`: в этом случае значение в БД **не** перезаписывается.""")
 public record UpdateStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -63,5 +69,11 @@ public record UpdateStudentReq(
 
         @Schema(description = "Список ID навыков")
         @NotNull
-        List<@Positive Long> skillsIds) {
+        List<@Positive Long> skillsIds,
+
+        @Schema(
+                description = """
+                        Разрешение показывать укороченную карточку на `/public/students/...` без авторизации.
+                        `null` — оставить в БД прежнее значение; `true` / `false` — явно установить.""")
+        Boolean publicProfileConsent) {
 }

@@ -28,7 +28,8 @@
     </scm>
     <properties>
         <java.version>21</java.version>
-        <swagger.version>2.8.14</swagger.version>
+        <!-- springdoc 3.x targets Spring Boot 4+ and pulls spring-boot-webmvc:4.x — incompatible with Boot 3.5 -->
+        <swagger.version>2.8.15</swagger.version>
         <flyway.version>10.20.1</flyway.version>
         <psql-driver.version>42.7.8</psql-driver.version>
         <lombok.version>1.18.42</lombok.version>

@@ -25,6 +25,7 @@ import ru.ai.sin.logic.skill.SkillRepo;
 import ru.ai.sin.logic.student.StudentCvAttachmentService;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.student.StudentMapper;
+import ru.ai.sin.logic.student.StudentProfileScoring;
 import ru.ai.sin.logic.student.StudentRepo;
 import ru.ai.sin.logic.student.dto.AddStudentReq;
 import ru.ai.sin.logic.user.UserEnt;
@@ -139,6 +140,9 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
 
         studentCvAttachmentService.attachExperiences(student, req.experiences());
         studentCvAttachmentService.attachInstitutions(student, req.institutions());
+
+        StudentProfileScoring.applyTo(student);
+        studentRepo.save(student);
 
         UserEnt user = new UserEnt(
                 RoleEnum.STUDENT,

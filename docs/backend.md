@@ -111,3 +111,33 @@ Swagger UI и OpenAPI — см. `springdoc` и `app.swagger` в `application.yam
 - `STUDENT_ACCEPTED`
 - `STUDENT_REJECTED`
 - `ADMIN_JOINED`
+
+## Публичная витрина и сортировка студентов (без входа)
+
+- Колонки `students.public_profile_consent`, `students.profile_text_score` (Flyway `V0033`). Score пересчитывается при создании/обновлении карточки и саморегистрации.
+- **Сортировка:** `POST /student/cardsFilter` и `POST /student/filter` **игнорируют** произвольный `sort` из query; порядок задаётся полями в `FilterStudentReq`: `sortBy` (`StudentSortField`), `sortDirection`, `useDefaultRanking` (по умолчанию авто-ранжирование: аватар → `profileTextScore` → дата создания).
+- **Публичные студенты:** `GET /public/students/{id}`, `POST /public/students/cards` — только записи с `public_profile_consent = true` и **не** курс `NEW`; в `SecurityConfig` — `permitAll`.
+
+## Лента проектов
+
+- Таблица `site_projects` (Flyway `V0034`).
+- Админ: `GET/POST/PUT/DELETE /admin/site-projects`, `POST /admin/site-projects/reorder` (тело `orderedIds`).
+- Публично: `GET /public/projects` — только `visible_to_anonymous` и в окне `published_from` / `published_to`, сортировка по `sort_order`.
+
+## Аналитика посещений (first-party)
+
+- Таблица `analytics_events` (Flyway `V0035`).
+- Приём: `POST /public/analytics/events` (`permitAll`), лимит `app.analytics.rate-limit-per-ip-per-minute`, тип события пока **`PAGE_VIEW`**.
+- Отчёт админа: `POST /admin/analytics/summary` с телом `from` / `to` — агрегация `COUNT` по `path`.
+
+## Зависимости OpenAPI
+
+- В `pom.xml` свойство **`swagger.version` = `2.8.15`** (`springdoc-openapi-starter-webmvc-ui`). Линейка **springdoc 3.x** ориентирована на **Spring Boot 4+** и подтягивает артефакты `spring-boot-webmvc:4.x`, что ломает запуск на Boot 3.5 (смешанный classpath, `NoClassDefFoundError` для классов error handling). После перехода на Boot 4 можно снова поднять springdoc до 3.x по [матрице совместимости](https://springdoc.org/).
+
+## Чеклист релиза / деплоя
+
+- Прогнать миграции Flyway на стейдже/проде: **`V0033`**, **`V0034`**, **`V0035`** (новые колонки и таблицы).
+- После наката проверить индексы (создаются миграциями): по `students` для публичной выдачи; по `analytics_events(occurred_at)` для отчётов; по `site_projects` для фильтра `visible_to_anonymous` и сортировки.
+- Убедиться, что **`app.analytics.rate-limit-per-ip-per-minute`** задан под ожидаемый трафик.
+- Версия OpenAPI в UI: **`app.swagger.version`** (сейчас **0.2.0**).
+- После обновления springdoc: открыть **`/swagger-ui.html`** и **`/v3/api-docs`**.

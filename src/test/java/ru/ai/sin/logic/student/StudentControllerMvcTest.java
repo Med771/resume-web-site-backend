@@ -61,7 +61,9 @@ class StudentControllerMvcTest {
                 "Ivan",
                 "Petrov",
                 "Spec",
-                List.of(new SkillDTO(1L, "Java"))
+                List.of(new SkillDTO(1L, "Java")),
+                false,
+                0
         );
     }
 

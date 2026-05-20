@@ -14,13 +14,28 @@
 
 Имена cookie задаются в конфиге (часто **`ACCESS_TOKEN`**, **`REFRESH_TOKEN`**). Cookie **HttpOnly** — из JavaScript не читаются.
 
+## Публичная витрина без входа
+
+Без cookie (`permitAll`):
+
+| Метод | Путь | Назначение |
+|-------|------|------------|
+| GET | `/public/students/{id}` | Карточка только при `public_profile_consent` и не курс `NEW` |
+| POST | `/public/students/cards` | Список карточек с теми же ограничениями; тело как у `POST /student/cardsFilter` |
+| GET | `/public/projects` | Лента проектов для анонимов |
+| POST | `/public/analytics/events` | Событие аналитики (лимит `app.analytics.rate-limit-per-ip-per-minute`) |
+
+Для **`POST /student/cardsFilter`**, **`POST /student/filter`** и **`POST /public/students/cards`** порядок выдачи задаётся полями **`sortBy`**, **`sortDirection`**, **`useDefaultRanking`** в JSON (`FilterStudentReq`), а не произвольным `sort=` в query — иначе возможна нестабильность и «sort injection».
+
+Поля **`public_profile_consent`** и обновляемый **`profile_text_score`** приходят в DTO студента при создании/обновлении (админ или студент в ЛК — см. Swagger).
+
 ## Роли и экраны
 
 | Роль | Типичные сценарии |
 |------|-------------------|
 | **GUEST** / **USER** | Каталог студентов, `POST /request`, `GET /recruiter/me`, чаты `/chat/...`. |
 | **STUDENT** | `GET /student/me`, чаты, `POST /request/{id}/student-decision`. **Создавать заявку нельзя.** |
-| **ADMIN** | Фильтр/удаление заявок, мягкое удаление сообщений, полная история чатов в REST. |
+| **ADMIN** | Фильтр/удаление заявок, мягкое удаление сообщений, полная история чатов в REST, **`/admin/site-projects`**, **`POST /admin/analytics/summary`**. |
 
 Spring ожидает authorities вида **`ROLE_*`**; это согласовано с данными пользователя в БД.
 
@@ -47,7 +62,7 @@ Spring ожидает authorities вида **`ROLE_*`**; это согласов
 | POST | `/chat/{chatId}/read` | `{ "messageId": "<uuid>" }` |
 | DELETE | `/chat/{chatId}/messages/{messageId}` | Только админ, мягкое удаление |
 
-Параметры пагинации Spring: **`page`**, **`size`** (и при необходимости `sort` — уточняйте по Swagger для конкретного метода).
+Параметры пагинации Spring: **`page`**, **`size`**. Для каталога студентов сортировка — в теле **`FilterStudentReq`**, не через query `sort`.
 
 ## WebSocket (STOMP + SockJS)
 

@@ -16,7 +16,11 @@ import ru.ai.sin.models.enums.CourseEnum;
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(name = "CreateStudentExtendedReq", description = "Расширенный DTO создания студента со связанными сущностями")
+@Schema(
+        name = "CreateStudentExtendedReq",
+        description = """
+                Расширенное создание (`POST /student/extended`), только **ADMIN**: студент + опционально навыки, портфолио, опыт, учебные заведения.
+                `publicProfileConsent` в запросе не передаётся — по умолчанию **false**.""")
 public record CreateStudentExtendedReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")

@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,6 +96,7 @@ public class StudentServiceImpl implements StudentService {
         }
 
         studentEnt.setImagePath(filePath);
+        StudentProfileScoring.applyTo(studentEnt);
     }
 
     @Override
@@ -102,9 +105,15 @@ public class StudentServiceImpl implements StudentService {
             Pageable pageable,
             FilterStudentReq filterStudentReq
     ) {
+        Sort sort = StudentSortResolver.resolve(filterStudentReq);
+        Pageable effectivePageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin()),
-                pageable);
+                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin(), false),
+                effectivePageable);
 
         return new PageResponse<>(
                 page.getContent().stream().map(studentTools::mapToCardDTO).toList(),
@@ -119,9 +128,15 @@ public class StudentServiceImpl implements StudentService {
             Pageable pageable,
             FilterStudentReq filterStudentReq
     ) {
+        Sort sort = StudentSortResolver.resolve(filterStudentReq);
+        Pageable effectivePageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
         Page<StudentEnt> page = studentRepo.findAll(
-                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin()),
-                pageable);
+                StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin(), false),
+                effectivePageable);
 
         return new PageResponse<>(
                 page.getContent().stream().map(studentTools::mapToDTO).toList(),
@@ -154,6 +169,9 @@ public class StudentServiceImpl implements StudentService {
                     .formatted(addStudentReq.email(), addStudentReq.telegramUsername()));
         }
 
+        StudentProfileScoring.applyTo(studentEnt);
+        studentRepo.save(studentEnt);
+
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
 
         log.info("User: {}, created a new student: {}", securityHelper.getCurrentUsername(), studentDTO);
@@ -179,6 +197,9 @@ public class StudentServiceImpl implements StudentService {
         createPortfolioForStudent(studentEnt, createStudentExtendedReq.portfolio());
         studentCvAttachmentService.attachExperiences(studentEnt, createStudentExtendedReq.experiences());
         studentCvAttachmentService.attachInstitutions(studentEnt, createStudentExtendedReq.institutions());
+
+        StudentProfileScoring.applyTo(studentEnt);
+        studentRepo.save(studentEnt);
 
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
         log.info("User: {}, created extended student: {}", securityHelper.getCurrentUsername(), studentDTO);
@@ -206,6 +227,11 @@ public class StudentServiceImpl implements StudentService {
         studentEnt.getUserInformation().setLastName(updateStudentReq.lastName());
         studentEnt.setSpeciality(specialityEnt);
         studentEnt.setSkills(skillEntSet);
+
+        if (updateStudentReq.publicProfileConsent() != null) {
+            studentEnt.setPublicProfileConsent(updateStudentReq.publicProfileConsent());
+        }
+        StudentProfileScoring.applyTo(studentEnt);
 
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
 
@@ -264,6 +290,11 @@ public class StudentServiceImpl implements StudentService {
         if (patchStudentReq.skillsIds() != null) {
             studentEnt.setSkills(resolveSkillsByIdsOrThrow(patchStudentReq.skillsIds()));
         }
+        if (patchStudentReq.publicProfileConsent() != null) {
+            studentEnt.setPublicProfileConsent(patchStudentReq.publicProfileConsent());
+        }
+
+        StudentProfileScoring.applyTo(studentEnt);
 
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
         log.info("User: {}, patched student: {} with data: {}", securityHelper.getCurrentUsername(), id, studentDTO);

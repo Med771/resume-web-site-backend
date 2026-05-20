@@ -1,5 +1,9 @@
 # Тестирование: стратегия и снятие с «холда»
 
+## Что сделано в репозитории (кратко)
+
+- Базовый класс интеграционных тестов с PostgreSQL: [`AbstractPostgresIntegrationTest`](../src/test/java/ru/ai/sin/integration/AbstractPostgresIntegrationTest.java) (`@DynamicPropertySource` + Testcontainers), наследуют `ResumeWebSiteBackendApplicationTests`, `FullRoleJourneysIntegrationTest`, `NewFeaturesIntegrationTest`.
+
 ## Что мешало запуску тестов
 
 1. **Подключение к БД** — единственный тест `contextLoads` поднимал весь контекст Spring и тянул `application.yaml` с фиксированным `jdbc:postgresql://localhost:...`. Если PostgreSQL не поднят локально, контекст не стартует.

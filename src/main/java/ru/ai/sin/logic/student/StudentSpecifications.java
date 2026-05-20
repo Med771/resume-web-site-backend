@@ -21,10 +21,12 @@ public final class StudentSpecifications {
 
     /**
      * @param includeNewCourseStudents если false, студенты с курсом {@link CourseEnum#NEW} исключаются из выборки
+     * @param requirePublicConsent если true, только студенты с public_profile_consent = true
      */
     public static Specification<StudentEnt> byFilters(
             FilterStudentReq filterStudentReq,
-            boolean includeNewCourseStudents
+            boolean includeNewCourseStudents,
+            boolean requirePublicConsent
     ) {
 
         return (root, query, cb) -> {
@@ -36,6 +38,10 @@ public final class StudentSpecifications {
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
+
+            if (requirePublicConsent) {
+                predicates.add(cb.isTrue(root.get("publicProfileConsent")));
+            }
 
             if (!includeNewCourseStudents) {
                 predicates.add(cb.or(

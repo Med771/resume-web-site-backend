@@ -34,12 +34,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/student")
-@Tag(name = "Student", description = "Операции управления студентами")
+@Tag(
+        name = "Student",
+        description = """
+                Управление карточками студентов для **вошедших** пользователей (роли см. на методах).
+                Публичная витрина без входа — `PublicStudents` (`/public/students/...`).
+
+                **Сортировка списков** (`POST /student/cardsFilter`, `POST /student/filter`): порядок задаётся полями `FilterStudentReq.sortBy`, `sortDirection`, `useDefaultRanking`;
+                параметр query `sort` **игнорируется**.
+
+                **Согласие на показ анонимам** (`publicProfileConsent`): выставляется только админом через `PUT`/`PATCH /student/{id}` (в теле DTO).""")
 public class StudentController {
 
     private final StudentService studentService;
 
-    @Operation(summary = "Текущий студент (ЛК)", description = "Профиль, привязанный к пользователю с ролью STUDENT")
+    @Operation(
+            summary = "Текущий студент (ЛК)",
+            description = """
+                    Только **STUDENT**. Возвращает полный `StudentDTO` карточки, привязанной к текущему пользователю.
+
+                    **404** — к учётной записи не привязана карточка студента.""")
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping(path = "/me")
     public ResponseEntity<StudentDTO> getMe() {
@@ -48,8 +62,13 @@ public class StudentController {
     }
 
     @Operation(
-            summary = "Получить студента по ID",
-            description = "Возвращает полную карточку студента по UUID. Студенты с курсом NEW доступны только администратору (для остальных — 404).")
+            summary = "Получить студента по UUID",
+            description = """
+                    **GUEST**, **USER** или **ADMIN**. Полная карточка `StudentDTO`.
+
+                    Студенты с курсом **NEW** для не-админов возвращают **404** (как при отсутствии id).
+
+                    Это **не** публичная витрина: требуется аутентификация по cookie/JWT.""")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
@@ -59,9 +78,15 @@ public class StudentController {
     }
 
     @Operation(
-            summary = "Фильтр карточек студентов",
-            description = "Принимает DTO фильтра в request body и Pageable без параметра sort. "
-                    + "Студенты с курсом NEW в выдаче только у администратора.")
+            summary = "Фильтр карточек студентов (укороченный DTO)",
+            description = """
+                    Постраничная выдача `StudentCardDTO` по фильтрам из тела.
+
+                    **Видимость курса NEW:** в списке только для **ADMIN**; для GUEST/USER такие карточки отфильтровываются.
+
+                    **Пагинация:** `page`, `size` в query. **Сортировка:** только из JSON (`sortBy`, `sortDirection`, `useDefaultRanking`), не из `sort=`.
+
+                    При `useDefaultRanking=true` (или null — см. серверные умолчания) применяется авто-ранжирование (аватар, `profileTextScore`, дата создания и т.д. в зависимости от `sortBy`).""")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/cardsFilter")
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
@@ -75,9 +100,11 @@ public class StudentController {
     }
 
     @Operation(
-            summary = "Фильтр студентов",
-            description = "Принимает DTO фильтра в request body и Pageable без параметра sort. "
-                    + "Студенты с курсом NEW в выдаче только у администратора.")
+            summary = "Фильтр студентов (полный DTO)",
+            description = """
+                    Как `POST /student/cardsFilter`, но элементы страницы — полные `StudentDTO` (включая `publicProfileConsent`, `profileTextScore`).
+
+                    Правила **NEW**, пагинации и сортировки — те же.""")
     @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
@@ -91,9 +118,13 @@ public class StudentController {
     }
 
     @Operation(
-            summary = "Загрузить фото студента",
-            description = "Устанавливает или обновляет аватар. Форматы: JPEG/JFIF, PNG, GIF, WebP, BMP, HEIC/HEIF, AVIF, TIFF. "
-                    + "Допускается application/octet-stream при корректном содержимом или расширении файла.")
+            summary = "Загрузить или заменить фото студента",
+            description = """
+                    Только **ADMIN**. Часть `multipart/form-data`, имя части файла: **`avatarFile`**.
+
+                    После успешной загрузки пересчитывается `profileTextScore` и может измениться порядок в релевантной сортировке.
+
+                    **204** при успехе. **404** — нет студента. **400** — неверный формат/файл.""")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -105,7 +136,14 @@ public class StudentController {
         studentService.setPhoto(id, multipartFile);
     }
 
-    @Operation(summary = "Создать студента", description = "Создает студента по базовому DTO")
+    @Operation(
+            summary = "Создать студента (базовый набор полей)",
+            description = """
+                    Только **ADMIN**. Создаёт карточку и связи по DTO.
+
+                    Флаг `publicProfileConsent` из запроса **не** применяется: после создания значение **false**; включить публичную витрину можно `PUT`/`PATCH`.
+
+                    **201** + `StudentDTO`.""")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<StudentDTO> create(@Valid @RequestBody AddStudentReq addStudentReq) {
@@ -114,7 +152,14 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
-    @Operation(summary = "Создать студента расширенно", description = "Создает студента и опционально связанные portfolio, experiences, institutions и skills")
+    @Operation(
+            summary = "Создать студента с вложенными сущностями",
+            description = """
+                    Только **ADMIN**. Атомарно создаёт студента, опционально портфолио, опыт, учебные заведения и навыки по вложенным спискам.
+
+                    `publicProfileConsent` по умолчанию **false** (как при базовом создании).
+
+                    **201** + `StudentDTO`.""")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(path = "/extended")
     public ResponseEntity<StudentDTO> createExtended(@Valid @RequestBody CreateStudentExtendedReq createStudentExtendedReq) {
@@ -123,7 +168,17 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentDTO);
     }
 
-    @Operation(summary = "Обновить студента полностью", description = "Полное обновление карточки студента (PUT)")
+    @Operation(
+            summary = "Полное обновление карточки студента (PUT)",
+            description = """
+                    Только **ADMIN**. Перезаписывает поля согласно `UpdateStudentReq`.
+
+                    Поле `publicProfileConsent`: если передано **null** — текущее значение в БД **не меняется**; если `true`/`false` — устанавливается явно
+                    (влияет на попадание карточки в `/public/students/...` при прочих условиях).
+
+                    После сохранения пересчитывается `profileTextScore`.
+
+                    **200** — актуальный `StudentDTO`. **404** — студент не найден.""")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> updateById(
@@ -136,7 +191,16 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
-    @Operation(summary = "Обновить студента частично", description = "Частичное обновление карточки студента (PATCH)")
+    @Operation(
+            summary = "Частичное обновление карточки (PATCH)",
+            description = """
+                    Только **ADMIN**. В теле передаются **только** поля, которые нужно изменить; `null` у поля означает «не трогать».
+
+                    Для `publicProfileConsent` действует то же правило: **null** — не менять, иначе выставить boolean.
+
+                    Пересчёт `profileTextScore` выполняется при любом успешном PATCH.
+
+                    **200** — `StudentDTO`. **404** — нет студента с таким `id`.""")
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> patchById(

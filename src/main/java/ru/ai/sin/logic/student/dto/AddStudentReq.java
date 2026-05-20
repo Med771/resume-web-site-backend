@@ -9,7 +9,11 @@ import ru.ai.sin.models.enums.CourseEnum;
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(name = "AddStudentReq", description = "DTO для создания студента")
+@Schema(
+        name = "AddStudentReq",
+        description = """
+                Базовое создание карточки (`POST /student`), только **ADMIN**.
+                Флаг публичной витрины в запросе **отсутствует**: после создания `publicProfileConsent=false` до явного `PUT`/`PATCH`.""")
 public record AddStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")

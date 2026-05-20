@@ -10,7 +10,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@Schema(name = "StudentDTO", description = "Полная карточка студента")
+@Schema(
+        name = "StudentDTO",
+        description = """
+                Полная карточка студента для каталога и админки после входа (`GET /student/{id}`, фильтры, ответы PUT/PATCH).
+                Для анонимной витрины используется `StudentCardDTO` и отдельные эндпоинты `/public/students/...`.""")
 public record StudentDTO(
         @Schema(description = "ID студента")
         @NotNull
@@ -20,8 +24,8 @@ public record StudentDTO(
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
         String city,
 
-        @Schema(description = "Ссылка на HH-профиль")
-        @Size(min = 1, max = 255, message = "City must be less than 255 characters")
+        @Schema(description = "Ссылка на профиль HeadHunter")
+        @Size(min = 1, max = 255, message = "HH link must be less than 255 characters")
         String hhLink,
 
         @Schema(description = "Дата рождения")
@@ -54,5 +58,14 @@ public record StudentDTO(
 
         @Schema(description = "Навыки студента")
         @NotNull
-        List<SkillDTO> skills) {
+        List<SkillDTO> skills,
+
+        @Schema(
+                description = """
+                        Согласие владельца карточки (выставляется **админом**) на показ **укороченной** анкеты без JWT.
+                        Сам по себе флаг не публикует курс `NEW` — публичные методы дополнительно отфильтровывают такие записи.""")
+        boolean publicProfileConsent,
+
+        @Schema(description = "Денормализованная метрика объёма текстовых полей; обновляется при сохранении карточки; участвует в сортировке")
+        int profileTextScore) {
 }

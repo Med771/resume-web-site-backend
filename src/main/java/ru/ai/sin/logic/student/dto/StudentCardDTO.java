@@ -9,7 +9,11 @@ import ru.ai.sin.models.enums.CourseEnum;
 import java.util.List;
 import java.util.UUID;
 
-@Schema(name = "StudentCardDTO", description = "Краткая карточка студента для списков")
+@Schema(
+        name = "StudentCardDTO",
+        description = """
+                Краткая карточка для списков и публичной витрины.
+                Не содержит контактов (email, телефон и т.д.) — намеренно, чтобы снизить утечку PII на анонимных страницах.""")
 public record StudentCardDTO(
         @Schema(description = "ID студента")
         @NotNull
