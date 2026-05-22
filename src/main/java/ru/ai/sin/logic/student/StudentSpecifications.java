@@ -106,6 +106,9 @@ public final class StudentSpecifications {
                 predicates.add(skillsJoin.get("id").in(filterStudentReq.skillsIds()));
             }
 
+            if (predicates.isEmpty()) {
+                return cb.conjunction();
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

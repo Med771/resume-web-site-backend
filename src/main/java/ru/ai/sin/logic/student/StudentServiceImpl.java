@@ -63,7 +63,12 @@ public class StudentServiceImpl implements StudentService {
     private final SecurityHelper securityHelper;
     private final UserTools userTools;
 
+    /**
+     * Один read-only boundary на загрузку + маппинг: {@link StudentTools#getStudentOrThrow} завершает свой вложенный tx,
+     * без внешней транзакции {@link StudentTools#mapToDTO} обратился бы к LAZY вне сессии.
+     */
     @Override
+    @Transactional(readOnly = true)
     public StudentDTO getById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
@@ -100,7 +105,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PageResponse<StudentCardDTO> getAllCardsByFilter(
             Pageable pageable,
             FilterStudentReq filterStudentReq
@@ -123,7 +128,12 @@ public class StudentServiceImpl implements StudentService {
                 page.getTotalPages());
     }
 
+    /**
+     * Полный DTO после выборки: маппер читает LAZY-поля (например {@code bio}), поэтому метод в read-only транзакции
+     * (иначе {@code LazyInitializationException} после {@code findAll}).
+     */
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<StudentDTO> getAllByFilter(
             Pageable pageable,
             FilterStudentReq filterStudentReq

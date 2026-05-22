@@ -72,6 +72,20 @@ class FullRoleJourneysIntegrationTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(get("/student/" + studentId).cookie(guestCookies))
                 .andExpect(status().isOk());
 
+        mockMvc.perform(post("/student/filter?page=0&size=200")
+                        .cookie(adminCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(r -> assertThat(r.getResponse().getContentAsString()).contains(studentId.toString()));
+
+        mockMvc.perform(post("/student/filter?page=0&size=20")
+                        .cookie(guestCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(r -> assertThat(r.getResponse().getContentAsString()).contains(studentId.toString()));
+
         MvcResult requestResult = mockMvc.perform(post("/request")
                         .cookie(guestCookies)
                         .contentType(MediaType.APPLICATION_JSON)

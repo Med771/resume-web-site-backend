@@ -53,12 +53,13 @@ public class ExperienceServiceImpl implements ExperienceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ExperienceDTO getById(long id) {
         return experienceTools.mapToDTO(experienceTools.getExperienceOrThrow(id));
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, FilterExperienceReq filterExperienceReq) {
         Page<ExperienceEnt> page = experienceRepo.findAll(
                 ExperienceSpecifications.byFilters(filterExperienceReq),

@@ -52,6 +52,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InstitutionDTO getById(long id) {
         InstitutionEnt institutionEnt = institutionTools.getInstitutionOrThrow(id);
 
