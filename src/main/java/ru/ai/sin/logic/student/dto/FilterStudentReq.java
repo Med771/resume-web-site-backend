@@ -18,7 +18,8 @@ import java.util.Set;
                 **Сортировка:** только поля ниже; query-параметр `sort` у `Pageable` на сервере **не используется** (белый список полей).
 
                 **useDefaultRanking:** если `null` или `true`, и `sortBy` не задан или равен `RELEVANCE`, порядок такой:
-                `imagePath` ASC NULLS LAST (сначала с аватаром), затем `profileTextScore` DESC, затем дата создания DESC.
+                `imagePath` ASC (на PostgreSQL NULL в конце по умолчанию), затем `profileTextScore` DESC, затем дата создания DESC.
+                Явный NULLS LAST в Spring Sort недоступен вместе с Specification — см. StudentSortResolver.
 
                 Если `useDefaultRanking=false`, используется `sortBy` (по умолчанию `CREATED_AT`, если null) и `sortDirection` (по умолчанию DESC).""")
 public record FilterStudentReq(

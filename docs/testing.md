@@ -22,6 +22,7 @@
 | Класс | Что проверяет |
 |-------|----------------|
 | `ResumeWebSiteBackendApplicationTests` | Подъём полного Spring-контекста + Flyway на PostgreSQL в Docker (без Docker — **Disabled**). |
+| `FullRoleJourneysIntegrationTest` | Сквозной HTTP с ролями; после создания студента — **`POST /student/filter`** с `{}` для **ADMIN** (`page=0&size=200`) и **GUEST** (`size=20`): полный `StudentDTO` + LAZY `bio`, пустой фильтр у админа (`cb.conjunction()`). |
 | `RequestServiceImplTest` | Студент не создаёт заявку; создание; `companyName` без привязанного рекрутера; заявка с уже привязанным рекрутером без полей компании; принятие/отклонение (`STUDENT_REJECTED`); `CREATION` → решение студента; чужая заявка; уже решённая. |
 | `ChatServiceImplTest` | Gated-история для рекрутера и для ADMIN; пустой текст при разрешённой переписке; удаление сообщения не админом; правка чужого сообщения; нет доступа к чужому чату. |
 | `ChatWsPublisherTest` | Маршрутизация WS: SYSTEM; USER `/staff` vs общий топик; DTO с `messageKind == null` → общий топик. |

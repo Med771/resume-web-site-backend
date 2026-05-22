@@ -18,6 +18,8 @@ class StudentSortResolverTest {
         List<Sort.Order> orders = sort.toList();
         assertThat(orders.get(0).getProperty()).isEqualTo("imagePath");
         assertThat(orders.get(0).getDirection()).isEqualTo(Sort.Direction.ASC);
+        // Spring Data JPA + Specification: нельзя Sort.Order.nulls*() — см. StudentSortResolver
+        assertThat(orders.get(0).getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
         assertThat(orders.get(1).getProperty()).isEqualTo("profileTextScore");
         assertThat(orders.get(1).getDirection()).isEqualTo(Sort.Direction.DESC);
         assertThat(orders.get(2).getProperty()).isEqualTo("timestamps.createdAt");

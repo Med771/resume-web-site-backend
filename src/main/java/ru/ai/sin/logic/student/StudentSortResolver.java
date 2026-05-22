@@ -17,8 +17,11 @@ public final class StudentSortResolver {
         boolean useRanking = filter.useDefaultRanking() == null || filter.useDefaultRanking();
         StudentSortField field = filter.sortBy();
         if (useRanking && (field == null || field == StudentSortField.RELEVANCE)) {
+            // Нельзя использовать .nullsLast() / .nullsFirst(): findAll(Specification, Pageable) строит Criteria API,
+            // Spring Data JPA бросает UnsupportedOperationException ("Null Precedence ... not yet supported").
+            // На PostgreSQL для ASC порядок NULL по умолчанию — в конце (NULLS LAST).
             return Sort.by(
-                    Sort.Order.asc("imagePath").nullsLast(),
+                    Sort.Order.asc("imagePath"),
                     Sort.Order.desc("profileTextScore"),
                     Sort.Order.desc("timestamps.createdAt"));
         }
@@ -33,7 +36,7 @@ public final class StudentSortResolver {
             case BIRTH_DATE -> Sort.by(new Sort.Order(dir, "birthDate"));
             case PROFILE_TEXT_SCORE -> Sort.by(new Sort.Order(dir, "profileTextScore"));
             case RELEVANCE -> Sort.by(
-                    Sort.Order.asc("imagePath").nullsLast(),
+                    Sort.Order.asc("imagePath"),
                     Sort.Order.desc("profileTextScore"),
                     Sort.Order.desc("timestamps.createdAt"));
         };
