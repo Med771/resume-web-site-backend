@@ -21,6 +21,7 @@ public interface StudentMapper {
     @Mapping(target = "companies", ignore = true)
     @Mapping(target = "publicProfileConsent", ignore = true)
     @Mapping(target = "profileTextScore", ignore = true)
+    @Mapping(target = "manualSortOrder", ignore = true)
     @Mapping(target = "userInformation.firstName", source = "firstName")
     @Mapping(target = "userInformation.lastName", source = "lastName")
     StudentEnt toEntity(AddStudentReq studentReq);
@@ -31,12 +32,14 @@ public interface StudentMapper {
     @Mapping(source = "student.speciality.name", target = "speciality")
     @Mapping(source = "student.publicProfileConsent", target = "publicProfileConsent")
     @Mapping(source = "student.profileTextScore", target = "profileTextScore")
+    @Mapping(source = "student.manualSortOrder", target = "manualSortOrder")
     StudentDTO toDTO(StudentEnt student, List<SkillDTO> skills);
 
     // ---------------- StudentEnt -> StudentCardDTO ----------------
     @Mapping(source = "student.userInformation.firstName", target = "firstName")
     @Mapping(source = "student.userInformation.lastName", target = "lastName")
     @Mapping(source = "student.speciality.name", target = "speciality")
+    @Mapping(source = "student.manualSortOrder", target = "manualSortOrder")
     StudentCardDTO toCardDTO(StudentEnt student, List<SkillDTO> skills);
 
     // ---------------- UpdateStudentReq -> StudentEnt ----------------
@@ -51,5 +54,6 @@ public interface StudentMapper {
     @Mapping(target = "companies", ignore = true)
     @Mapping(target = "publicProfileConsent", ignore = true)
     @Mapping(target = "profileTextScore", ignore = true)
+    @Mapping(target = "manualSortOrder", ignore = true)
     void updateEntityFromDto(UpdateStudentReq updateStudentReq, @MappingTarget StudentEnt student);
 }

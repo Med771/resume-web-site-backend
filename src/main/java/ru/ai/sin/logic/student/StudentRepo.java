@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import ru.ai.sin.logic.skill.SkillEnt;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,4 +45,14 @@ public interface StudentRepo extends
             WHERE LOWER(TRIM(s.userInformation.email)) = LOWER(TRIM(:email))
             """)
     boolean existsByNormalizedEmail(@Param("email") String email);
+
+    @Query("select count(s) from StudentEnt s")
+    long countAllStudents();
+
+    @Query("""
+            select count(s) from StudentEnt s
+            where s.timestamps.createdAt is not null
+              and s.timestamps.createdAt >= :from
+              and s.timestamps.createdAt < :to""")
+    long countStudentsCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

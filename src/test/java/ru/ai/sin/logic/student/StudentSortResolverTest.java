@@ -13,16 +13,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StudentSortResolverTest {
 
     @Test
-    void defaultRanking_usesAvatarThenScoreThenCreated() {
+    void defaultRanking_usesManualOrderAvatarThenScoreThenCreated() {
         Sort sort = StudentSortResolver.resolve(emptyFilter());
         List<Sort.Order> orders = sort.toList();
-        assertThat(orders.get(0).getProperty()).isEqualTo("imagePath");
+        assertThat(orders.get(0).getProperty()).isEqualTo("manualSortOrder");
         assertThat(orders.get(0).getDirection()).isEqualTo(Sort.Direction.ASC);
-        // Spring Data JPA + Specification: нельзя Sort.Order.nulls*() — см. StudentSortResolver
         assertThat(orders.get(0).getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
-        assertThat(orders.get(1).getProperty()).isEqualTo("profileTextScore");
-        assertThat(orders.get(1).getDirection()).isEqualTo(Sort.Direction.DESC);
-        assertThat(orders.get(2).getProperty()).isEqualTo("timestamps.createdAt");
+        assertThat(orders.get(1).getProperty()).isEqualTo("imagePath");
+        assertThat(orders.get(1).getDirection()).isEqualTo(Sort.Direction.ASC);
+        assertThat(orders.get(1).getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
+        assertThat(orders.get(2).getProperty()).isEqualTo("profileTextScore");
+        assertThat(orders.get(2).getDirection()).isEqualTo(Sort.Direction.DESC);
+        assertThat(orders.get(3).getProperty()).isEqualTo("timestamps.createdAt");
     }
 
     @Test
@@ -36,6 +38,19 @@ class StudentSortResolverTest {
         Sort sort = StudentSortResolver.resolve(f);
         assertThat(sort.toList().getFirst().getProperty()).isEqualTo("userInformation.lastName");
         assertThat(sort.toList().getFirst().getDirection()).isEqualTo(Sort.Direction.ASC);
+    }
+
+    @Test
+    void explicitManualSortOrderDesc() {
+        FilterStudentReq f = new FilterStudentReq(
+                null, null, null, null, null, null, null,
+                StudentSortField.MANUAL_SORT_ORDER,
+                StudentSortDirection.DESC,
+                false
+        );
+        Sort sort = StudentSortResolver.resolve(f);
+        assertThat(sort.toList().getFirst().getProperty()).isEqualTo("manualSortOrder");
+        assertThat(sort.toList().getFirst().getDirection()).isEqualTo(Sort.Direction.DESC);
     }
 
     private static FilterStudentReq emptyFilter() {

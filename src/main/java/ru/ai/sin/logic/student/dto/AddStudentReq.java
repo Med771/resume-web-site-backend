@@ -13,7 +13,10 @@ import java.util.List;
         name = "AddStudentReq",
         description = """
                 Базовое создание карточки (`POST /student`), только **ADMIN**.
-                Флаг публичной витрины в запросе **отсутствует**: после создания `publicProfileConsent=false` до явного `PUT`/`PATCH`.""")
+
+                **Публичная витрина** (`publicProfileConsent`): если поле **не** передать или `false` — в БД будет **false**; если **`true`** — сразу разрешён показ на `/public/students/...` (при курсе не `NEW` и прочих правилах каталога).
+
+                **Ручной порядок** (`manualSortOrder`): опционально; `null` — не задавать (колонка `NULL` в БД).""")
 public record AddStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -67,5 +70,15 @@ public record AddStudentReq(
 
         @Schema(description = "Список ID навыков")
         @NotNull
-        List<@Positive Long> skillsIds) {
+        List<@Positive Long> skillsIds,
+
+        @Schema(description = """
+                Согласие на показ укороченной карточки на публичной витрине без JWT.
+                `null` или `false` — **false** в БД; `true` — включить.""")
+        Boolean publicProfileConsent,
+
+        @Schema(description = "Ручной номер для порядка в каталоге; `null` — не задавать.")
+        @Min(0)
+        @Max(2_147_483_646)
+        Integer manualSortOrder) {
 }

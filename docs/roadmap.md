@@ -76,15 +76,10 @@
 
 #### Справочники и связанные сущности (чтение)
 
-Для каждой сущности: **`POST …/filter`** и **`GET …/{id}`** с теми же путями:
+- **`GET /{resource}/{id}`** для ресурсов **`company`**, **`skill`**, **`speciality`**, **`education`**, **`experience`**, **`portfolio`**, **`institution`** — роли **`GUEST`**, **`USER`**, **`ADMIN`** (нужен вход).
+- **`POST …/filter`:** для **`company`**, **`skill`**, **`speciality`**, **`education`** — только **`ADMIN`**. Для **`experience`**, **`portfolio`**, **`institution`** — **`GUEST`**, **`USER`**, **`ADMIN`**; у **`institution/filter`** при передаче **`educationId`** в фильтре дополнительно требуется **админ** (см. код).
 
-- `/company` — `POST /company/filter`, `GET /company/{id}`
-- `/experience` — `POST /experience/filter`, `GET /experience/{id}`
-- `/portfolio` — `POST /portfolio/filter`, `GET /portfolio/{id}`
-- `/education` — `POST /education/filter`, `GET /education/{id}`
-- `/skill` — `POST /skill/filter`, `GET /skill/{id}`
-- `/speciality` — `POST /speciality/filter`, `GET /speciality/{id}`
-- `/institution` — `POST /institution/filter`, `GET /institution/{id}`
+Актуальная таблица всех путей: [api-endpoints.md](./api-endpoints.md).
 
 #### WebSocket
 

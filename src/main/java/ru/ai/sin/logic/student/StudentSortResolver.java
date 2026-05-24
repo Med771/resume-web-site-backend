@@ -17,13 +17,7 @@ public final class StudentSortResolver {
         boolean useRanking = filter.useDefaultRanking() == null || filter.useDefaultRanking();
         StudentSortField field = filter.sortBy();
         if (useRanking && (field == null || field == StudentSortField.RELEVANCE)) {
-            // Нельзя использовать .nullsLast() / .nullsFirst(): findAll(Specification, Pageable) строит Criteria API,
-            // Spring Data JPA бросает UnsupportedOperationException ("Null Precedence ... not yet supported").
-            // На PostgreSQL для ASC порядок NULL по умолчанию — в конце (NULLS LAST).
-            return Sort.by(
-                    Sort.Order.asc("imagePath"),
-                    Sort.Order.desc("profileTextScore"),
-                    Sort.Order.desc("timestamps.createdAt"));
+            return defaultRelevanceSort();
         }
         StudentSortField effective = field == null ? StudentSortField.CREATED_AT : field;
         if (effective == StudentSortField.RELEVANCE) {
@@ -35,11 +29,22 @@ public final class StudentSortResolver {
             case LAST_NAME -> Sort.by(new Sort.Order(dir, "userInformation.lastName"));
             case BIRTH_DATE -> Sort.by(new Sort.Order(dir, "birthDate"));
             case PROFILE_TEXT_SCORE -> Sort.by(new Sort.Order(dir, "profileTextScore"));
-            case RELEVANCE -> Sort.by(
-                    Sort.Order.asc("imagePath"),
-                    Sort.Order.desc("profileTextScore"),
-                    Sort.Order.desc("timestamps.createdAt"));
+            case MANUAL_SORT_ORDER -> Sort.by(new Sort.Order(dir, "manualSortOrder"));
+            case RELEVANCE -> defaultRelevanceSort();
         };
+    }
+
+    /**
+     * Релевантность: ручной порядок, затем аватар, score текста, дата создания.
+     * Нельзя использовать .nullsLast() / .nullsFirst() с Specification — см. {@link #resolve(FilterStudentReq)}.
+     * На PostgreSQL для ASC NULL по умолчанию в конце.
+     */
+    private static Sort defaultRelevanceSort() {
+        return Sort.by(
+                Sort.Order.asc("manualSortOrder"),
+                Sort.Order.asc("imagePath"),
+                Sort.Order.desc("profileTextScore"),
+                Sort.Order.desc("timestamps.createdAt"));
     }
 
     private static Sort.Direction toSpringDirection(StudentSortDirection d) {

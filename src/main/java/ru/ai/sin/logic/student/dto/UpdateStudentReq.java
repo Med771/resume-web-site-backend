@@ -15,7 +15,8 @@ import java.util.List;
                 Полная замена полей карточки (`PUT /student/{id}`), только **ADMIN**.
                 Все обязательные поля должны быть переданы; отличие от PATCH — нет семантики «пропущенное поле».
 
-                Для `publicProfileConsent` допускается `null`: в этом случае значение в БД **не** перезаписывается.""")
+                Для `publicProfileConsent` допускается `null`: в этом случае значение в БД **не** перезаписывается.
+                Для ручного номера сортировки: `manualSortOrder`, `clearManualSortOrder` — см. описание полей.""")
 public record UpdateStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -75,5 +76,16 @@ public record UpdateStudentReq(
                 description = """
                         Разрешение показывать укороченную карточку на `/public/students/...` без авторизации.
                         `null` — оставить в БД прежнее значение; `true` / `false` — явно установить.""")
-        Boolean publicProfileConsent) {
+        Boolean publicProfileConsent,
+
+        @Schema(description = """
+                Если `true` — сбросить ручной номер сортировки в БД (`NULL`); поле `manualSortOrder` в этом случае игнорируется.""")
+        Boolean clearManualSortOrder,
+
+        @Schema(description = """
+                Ручной номер для сортировки в каталоге (меньше — выше при ASC вместе с релевантностью).
+                `null` — не менять текущее значение в БД (если `clearManualSortOrder` не `true`).""")
+        @Min(0)
+        @Max(2_147_483_646)
+        Integer manualSortOrder) {
 }

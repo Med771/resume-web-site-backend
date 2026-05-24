@@ -63,7 +63,8 @@ class StudentControllerMvcTest {
                 "Spec",
                 List.of(new SkillDTO(1L, "Java")),
                 false,
-                0
+                0,
+                null
         );
     }
 

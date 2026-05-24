@@ -67,5 +67,10 @@ public record StudentDTO(
         boolean publicProfileConsent,
 
         @Schema(description = "Денормализованная метрика объёма текстовых полей; обновляется при сохранении карточки; участвует в сортировке")
-        int profileTextScore) {
+        int profileTextScore,
+
+        @Schema(description = """
+                Ручной приоритет в каталоге: меньшее число — выше при сортировке по релевантности и при `sortBy=MANUAL_SORT_ORDER` ASC.
+                Задаётся админом (`PUT`/`PATCH /student/{id}`). `null` — не задан (в конце списка при ASC на PostgreSQL).""")
+        Integer manualSortOrder) {
 }

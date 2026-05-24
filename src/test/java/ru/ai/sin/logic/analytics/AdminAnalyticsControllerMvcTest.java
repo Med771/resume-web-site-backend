@@ -15,6 +15,8 @@ import ru.ai.sin.filter.JwtCookieAuthenticationFilter;
 import ru.ai.sin.logic.analytics.dto.AnalyticsPathCountRow;
 import ru.ai.sin.logic.analytics.dto.AnalyticsSummaryDTO;
 import ru.ai.sin.logic.analytics.dto.AnalyticsSummaryReq;
+import ru.ai.sin.logic.analytics.dto.EntityPopulationSummaryDTO;
+import ru.ai.sin.logic.analytics.dto.EntityPopulationSummaryReq;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -82,5 +84,40 @@ class AdminAnalyticsControllerMvcTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void entityPopulation_unauthorized() throws Exception {
+        mockMvc.perform(post("/admin/analytics/entity-population")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void entityPopulation_okWithEmptyBody() throws Exception {
+        when(analyticsService.summarizeEntityPopulation(any())).thenReturn(
+                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, 6, null, null));
+        mockMvc.perform(post("/admin/analytics/entity-population")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void entityPopulation_okWithWindow() throws Exception {
+        when(analyticsService.summarizeEntityPopulation(any())).thenReturn(
+                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, 6, 2L, 1L));
+        EntityPopulationSummaryReq body = new EntityPopulationSummaryReq(
+                LocalDateTime.now().minusDays(7),
+                LocalDateTime.now());
+        mockMvc.perform(post("/admin/analytics/entity-population")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk());
     }
 }

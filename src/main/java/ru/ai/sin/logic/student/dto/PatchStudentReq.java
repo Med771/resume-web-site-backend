@@ -3,6 +3,8 @@ package ru.ai.sin.logic.student.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
@@ -19,7 +21,8 @@ import java.util.List;
                 Частичное обновление карточки студента (`PATCH /student/{id}`), только **ADMIN**.
                 Для каждого поля: значение `null` в JSON означает «поле не изменять».
 
-                Исключение по смыслу то же для `skillsIds`: `null` — не трогать список навыков.""")
+                Исключение по смыслу то же для `skillsIds`: `null` — не трогать список навыков.
+                Для ручного номера: `clearManualSortOrder=true` сбрасывает значение в БД; иначе непустой `manualSortOrder` записывает число.""")
 public record PatchStudentReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -76,6 +79,15 @@ public record PatchStudentReq(
                         Не влияет на выдачу для рекрутеров по `POST /student/...` — там действуют отдельные правила (в т.ч. курс NEW).
 
                         `null` — не менять текущее значение в БД.""")
-        Boolean publicProfileConsent
+        Boolean publicProfileConsent,
+
+        @Schema(description = """
+                Если `true` — сбросить ручной номер сортировки (`NULL` в БД); иначе при непустом `manualSortOrder` — записать число.""")
+        Boolean clearManualSortOrder,
+
+        @Schema(description = "Ручной номер для порядка в каталоге; `null` — не менять (если не задан `clearManualSortOrder`).")
+        @Min(0)
+        @Max(2_147_483_646)
+        Integer manualSortOrder
 ) {
 }

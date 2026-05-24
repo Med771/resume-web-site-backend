@@ -1,5 +1,7 @@
 # Руководство для frontend-разработчика
 
+Полный перечень HTTP-эндпоинтов с ролями и публичными путями: [api-endpoints.md](./api-endpoints.md).
+
 ## Базовый URL и CORS
 
 - API должен быть в **`app.security.cors.allowed-origins`** (см. `application.yaml`), иначе браузер заблокирует запросы с **credentials**.
@@ -27,7 +29,7 @@
 
 Для **`POST /student/cardsFilter`**, **`POST /student/filter`** и **`POST /public/students/cards`** порядок выдачи задаётся полями **`sortBy`**, **`sortDirection`**, **`useDefaultRanking`** в JSON (`FilterStudentReq`), а не произвольным `sort=` в query — иначе возможна нестабильность и «sort injection».
 
-Поля **`public_profile_consent`** и обновляемый **`profile_text_score`** приходят в DTO студента при создании/обновлении (админ или студент в ЛК — см. Swagger).
+Поля **`public_profile_consent`**, **`manual_sort_order`** и **`profile_text_score`** приходят в DTO студента при ответах API; при **создании админом** первые два можно задать в теле `POST /student` / `POST /student/extended` (см. Swagger).
 
 ## Роли и экраны
 

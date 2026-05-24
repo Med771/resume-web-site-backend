@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,4 +31,14 @@ public interface RecruiterRepo extends JpaRepository<RecruiterEnt, UUID>, JpaSpe
 
     @NonNull
     Page<RecruiterEnt> findAll(Specification<RecruiterEnt> spec, @NonNull Pageable pageable);
+
+    @Query("select count(r) from RecruiterEnt r")
+    long countAllRecruiters();
+
+    @Query("""
+            select count(r) from RecruiterEnt r
+            where r.timestamps.createdAt is not null
+              and r.timestamps.createdAt >= :from
+              and r.timestamps.createdAt < :to""")
+    long countRecruitersCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

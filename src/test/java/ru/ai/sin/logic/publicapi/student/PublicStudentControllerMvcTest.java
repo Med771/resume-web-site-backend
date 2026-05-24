@@ -69,7 +69,8 @@ class PublicStudentControllerMvcTest {
                 null,
                 CourseEnum.FIRST,
                 "CS",
-                List.of(new SkillDTO(1L, "Go"))
+                List.of(new SkillDTO(1L, "Go")),
+                null
         );
     }
 }

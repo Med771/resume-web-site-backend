@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.ai.sin.logic.analytics.dto.AnalyticsSummaryDTO;
 import ru.ai.sin.logic.analytics.dto.AnalyticsSummaryReq;
+import ru.ai.sin.logic.analytics.dto.EntityPopulationSummaryDTO;
+import ru.ai.sin.logic.analytics.dto.EntityPopulationSummaryReq;
 
 @RestController
 @RequestMapping("/admin/analytics")
@@ -19,7 +21,7 @@ import ru.ai.sin.logic.analytics.dto.AnalyticsSummaryReq;
 @Tag(
         name = "AdminAnalytics",
         description = """
-                Агрегированные отчёты по сохранённым событиям (`/public/analytics/events`).
+                Агрегированные отчёты: события с фронта (`/public/analytics/events`) и **сводки по сущностям** (пользователи по ролям, студенты, рекрутеры).
                 Доступно **только ADMIN** (JWT в cookie).""")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminAnalyticsController {
@@ -39,5 +41,23 @@ public class AdminAnalyticsController {
     @PostMapping("/summary")
     public ResponseEntity<AnalyticsSummaryDTO> summary(@Valid @RequestBody AnalyticsSummaryReq req) {
         return ResponseEntity.ok(analyticsService.summarize(req));
+    }
+
+    @Operation(
+            summary = "Сводка по количеству пользователей, студентов и рекрутеров",
+            description = """
+                    **200** — `EntityPopulationSummaryDTO`: всего пользователей и разбивка по ролям (`GUEST`, `USER`, `STUDENT`, `ADMIN`),
+                    всего записей в `students` и `recruiters`.
+
+                    Тело опционально: если переданы **`from`** и **`to`**, дополнительно возвращаются числа **новых** студентов и рекрутеров за **[from, to)** по полю `created_at` (у пользователей в таблице `users` даты создания нет — только срез по ролям).
+
+                    **400** — задано только одно из полей окна, или `to` не строго после `from`.
+
+                    **401/403** — нет входа или не админ.""")
+    @PostMapping("/entity-population")
+    public ResponseEntity<EntityPopulationSummaryDTO> entityPopulation(
+            @Valid @RequestBody(required = false) EntityPopulationSummaryReq req) {
+        EntityPopulationSummaryReq body = req == null ? new EntityPopulationSummaryReq(null, null) : req;
+        return ResponseEntity.ok(analyticsService.summarizeEntityPopulation(body));
     }
 }

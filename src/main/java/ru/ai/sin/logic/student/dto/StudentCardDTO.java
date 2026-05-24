@@ -41,5 +41,8 @@ public record StudentCardDTO(
 
         @Schema(description = "Навыки студента")
         @NotNull
-        List<SkillDTO> skills) {
+        List<SkillDTO> skills,
+
+        @Schema(description = "Ручной приоритет в каталоге (см. `StudentDTO.manualSortOrder`); для анонимной витрины может использоваться в сортировке")
+        Integer manualSortOrder) {
 }

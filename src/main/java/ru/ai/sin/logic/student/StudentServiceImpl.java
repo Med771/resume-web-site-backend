@@ -168,6 +168,7 @@ public class StudentServiceImpl implements StudentService {
 
         studentEnt.setSpeciality(specialityEnt);
         studentEnt.setSkills(skillEntSet);
+        applyCreateCatalogFlags(addStudentReq, studentEnt);
 
         try {
             studentEnt = studentRepo.save(studentEnt);
@@ -192,9 +193,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentDTO createExtended(CreateStudentExtendedReq createStudentExtendedReq) {
-        StudentEnt studentEnt = studentMapper.toEntity(toAddStudentReq(createStudentExtendedReq));
+        AddStudentReq base = toAddStudentReq(createStudentExtendedReq);
+        StudentEnt studentEnt = studentMapper.toEntity(base);
         studentEnt.setSpeciality(specialityTools.getSpecialityOrThrow(createStudentExtendedReq.specialityId()));
         studentEnt.setSkills(resolveSkillsForExtended(createStudentExtendedReq));
+        applyCreateCatalogFlags(base, studentEnt);
 
         try {
             studentEnt = studentRepo.save(studentEnt);
@@ -240,6 +243,11 @@ public class StudentServiceImpl implements StudentService {
 
         if (updateStudentReq.publicProfileConsent() != null) {
             studentEnt.setPublicProfileConsent(updateStudentReq.publicProfileConsent());
+        }
+        if (Boolean.TRUE.equals(updateStudentReq.clearManualSortOrder())) {
+            studentEnt.setManualSortOrder(null);
+        } else if (updateStudentReq.manualSortOrder() != null) {
+            studentEnt.setManualSortOrder(updateStudentReq.manualSortOrder());
         }
         StudentProfileScoring.applyTo(studentEnt);
 
@@ -303,6 +311,11 @@ public class StudentServiceImpl implements StudentService {
         if (patchStudentReq.publicProfileConsent() != null) {
             studentEnt.setPublicProfileConsent(patchStudentReq.publicProfileConsent());
         }
+        if (Boolean.TRUE.equals(patchStudentReq.clearManualSortOrder())) {
+            studentEnt.setManualSortOrder(null);
+        } else if (patchStudentReq.manualSortOrder() != null) {
+            studentEnt.setManualSortOrder(patchStudentReq.manualSortOrder());
+        }
 
         StudentProfileScoring.applyTo(studentEnt);
 
@@ -348,8 +361,18 @@ public class StudentServiceImpl implements StudentService {
                 req.phoneNumber(),
                 req.telegramUsername(),
                 req.specialityId(),
-                List.of()
+                List.of(),
+                req.publicProfileConsent(),
+                req.manualSortOrder()
         );
+    }
+
+    /**
+     * Опции каталога при создании: согласие на витрину и ручной порядок (маппер по-прежнему их не мапит из AddStudentReq).
+     */
+    private static void applyCreateCatalogFlags(AddStudentReq addStudentReq, StudentEnt studentEnt) {
+        studentEnt.setPublicProfileConsent(Boolean.TRUE.equals(addStudentReq.publicProfileConsent()));
+        studentEnt.setManualSortOrder(addStudentReq.manualSortOrder());
     }
 
     private Set<SkillEnt> resolveSkillsByIdsOrThrow(List<Long> skillsIds) {

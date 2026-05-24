@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -20,7 +22,8 @@ import java.util.List;
         name = "CreateStudentExtendedReq",
         description = """
                 Расширенное создание (`POST /student/extended`), только **ADMIN**: студент + опционально навыки, портфолио, опыт, учебные заведения.
-                `publicProfileConsent` в запросе не передаётся — по умолчанию **false**.""")
+
+                **`publicProfileConsent`** и **`manualSortOrder`** — как в `AddStudentReq` при `POST /student` (опционально).""")
 public record CreateStudentExtendedReq(
         @Schema(description = "Город проживания")
         @Size(min = 1, max = 255, message = "City must be less than 255 characters")
@@ -81,6 +84,14 @@ public record CreateStudentExtendedReq(
         @Schema(description = "Опыт работы студента для создания")
         List<@Valid CreateStudentExperienceReq> experiences,
         @Schema(description = "Образовательные записи студента для создания")
-        List<@Valid CreateStudentInstitutionReq> institutions
+        List<@Valid CreateStudentInstitutionReq> institutions,
+
+        @Schema(description = "Согласие на публичную витрину; `null`/`false` — false в БД.")
+        Boolean publicProfileConsent,
+
+        @Schema(description = "Ручной номер сортировки; `null` — не задавать.")
+        @Min(0)
+        @Max(2_147_483_646)
+        Integer manualSortOrder
 ) {
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +26,7 @@ public interface UserRepo extends JpaRepository<UserEnt, UUID>, JpaSpecification
     Optional<UserEnt> findByRecruiter_Id(UUID recruiterId);
 
     Optional<UserEnt> findByStudent_Id(UUID studentId);
+
+    @Query("select u.role, count(u) from UserEnt u group by u.role")
+    List<Object[]> countAllGroupedByRole();
 }

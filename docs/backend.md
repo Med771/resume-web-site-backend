@@ -1,5 +1,9 @@
 # Устройство и возможности backend
 
+Сводный **паспорт проекта** (стек, архитектура, аспекты, сценарии): [project-passport.md](./project-passport.md).
+
+**Полный перечень эндпоинтов** (метод, путь, роли): [api-endpoints.md](./api-endpoints.md).
+
 ## Стек и инфраструктура
 
 | Компонент | Назначение |
@@ -31,39 +35,33 @@
 
 Роли: **`GUEST`**, **`USER`**, **`STUDENT`**, **`ADMIN`**. В Spring Security для `hasRole('X')` в JWT/Principal ожидается authority вида **`ROLE_X`** (формируется в `UserHelper` из `RoleEnum`).
 
-В `SecurityConfig`: кроме явных исключений всё требует **аутентификации**. Исключения: `/auth/**`, `/main/**`, **`/ws/**`** (handshake WebSocket), Swagger, `/error`, `OPTIONS /**`.
+В `SecurityConfig`: кроме явных исключений всё требует **аутентификации**. Исключения: `/auth/**`, **`/public/registration/**`**, **`/public/students/**`**, **`/public/projects/**`**, **`/public/analytics/**`**, `/main/**`, **`/ws/**`** (handshake WebSocket), Swagger, `/error`, `OPTIONS /**`.
 
 **`JwtCookieAuthenticationFilter`**: читает access (и при необходимости refresh), валидирует JWT, поднимает `SecurityContext` с `UserDetails` по username из БД.
 
 ## Основные возможности по областям
 
+Перечень всех REST-путей с ролями: [api-endpoints.md](./api-endpoints.md). Ниже — поведение домена, а не таблица URL.
+
 ### Аутентификация (`/auth`)
 
-- `POST /auth/login` — тело с логином/паролем, в ответе **Set-Cookie** для access и refresh.
-- `POST /auth/refresh` — новый access по refresh cookie.
-- `POST /auth/logout` — очистка cookie.
+Регистрация студента и работодателя, login, refresh, logout; cookie и лимиты — в справочнике и `application.yaml`.
 
 ### Публичное / служебное (`/main`)
 
-- `GET /main/status` — проверка живости.
-- `GET /main/photo/{image_path}` — отдача файла картинки (аватары и т.д.).
+Статус сервиса и раздача изображений из хранилища приложения.
 
 ### Заявки (`/request`)
 
-- Админ: `GET /request/{id}`, `POST /request/filter`, `DELETE /request/{id}`.
-- Рекрутер (роли **`GUEST`/`USER`/`ADMIN`**, не **`STUDENT`**): `POST /request` — создание заявки; чат get-or-create, системное сообщение **`REQUEST_SENT`**, ожидание решения (**`WAITING`** / в проверке решения студента также учитывается **`CREATION`**).
-- Студент: `POST /request/{id}/student-decision` — `StudentRequestDecisionReq`: `accept` (boolean), опционально `comment`; **`STUDENT_CONFIRMED`** или **`REFUSAL`**, в чат — **`STUDENT_ACCEPTED`** / **`STUDENT_REJECTED`**.
+- Рекрутер (не **`STUDENT`**): создание заявки; чат get-or-create, системное сообщение **`REQUEST_SENT`**, ожидание решения (**`WAITING`** / в проверке решения студента также учитывается **`CREATION`**).
+- Студент: решение по заявке — `StudentRequestDecisionReq`: `accept`, опционально `comment`; **`STUDENT_CONFIRMED`** или **`REFUSAL`**, в чат — **`STUDENT_ACCEPTED`** / **`STUDENT_REJECTED`**.
+- Админ: просмотр по id, фильтр страницы, удаление.
 
 ### Чаты (`/chat`)
 
-Все операции под `isAuthenticated()` или явной ролью админа где указано.
-
 - Список «моих» чатов с превью и непрочитанным (админ — все; иначе по привязке рекрутер/студент).
-- `GET /chat/{chatId}/summary`, `GET /chat/{chatId}/messages` (постранично).
-- Отправка текста и **multipart** с вложением.
-- Редактирование сообщения (свои; админ — по правилам сервиса).
+- Сводка, постраничные сообщения, отправка текста и **multipart** с вложением, правка сообщения, отметка прочитанного.
 - Админ: мягкое удаление сообщения.
-- Отметка прочитанного по `messageId`.
 
 ### Бизнес-логика видимости чата
 
@@ -87,13 +85,17 @@
 
 ### Студент (`/student`)
 
-Публичные/гостевые выборки, админские изменения; ЛК: **`GET /student/me`** при роли **`STUDENT`**.
+Каталог для рекрутера (**GUEST**/**USER**/**ADMIN**), админские CRUD и фото; ЛК — **`GET /student/me`** только для **`STUDENT`**. Публичная витрина без входа — **`/public/students/...`**.
 
 ### Рекрутер (`/recruiter`)
 
-В т.ч. **`GET /recruiter/me`** — привязанный профиль (404, если ещё нет; первая заявка с полными данными может создать и привязать профиль).
+Профиль «я» и чтение по id; CRUD справочника рекрутеров — админ.
 
-Остальные контроллеры (**company, institution, education, experience, portfolio, skill, speciality**) — CRUD/фильтры; матрица доступа в аннотациях контроллеров и в Swagger.
+### Справочники и связанные сущности
+
+**company, skill, speciality, education:** чтение по id для рекрутера; **POST …/filter** и мутации — **ADMIN**.  
+**experience, portfolio:** фильтр и чтение — **GUEST**/**USER**/**ADMIN**; мутации — **ADMIN**.  
+**institution:** фильтр и чтение — **GUEST**/**USER**/**ADMIN**, но при фильтре с **`educationId`** требуется роль **ADMIN** (см. `SecurityHelper`).
 
 ## Хранение файлов
 
@@ -101,7 +103,8 @@
 
 ## Документация API
 
-Swagger UI и OpenAPI — см. `springdoc` и `app.swagger` в `application.yaml`.
+- Сводная таблица эндпоинтов: [api-endpoints.md](./api-endpoints.md).
+- Swagger UI и OpenAPI — `springdoc` и `app.swagger` в `application.yaml` (`/swagger-ui.html`, `/v3/api-docs`).
 
 ## Системные события чата (строки `systemEvent`)
 
@@ -115,7 +118,7 @@ Swagger UI и OpenAPI — см. `springdoc` и `app.swagger` в `application.yam
 ## Публичная витрина и сортировка студентов (без входа)
 
 - Колонки `students.public_profile_consent`, `students.profile_text_score` (Flyway `V0033`). Score пересчитывается при создании/обновлении карточки и саморегистрации.
-- **Сортировка:** `POST /student/cardsFilter` и `POST /student/filter` **игнорируют** произвольный `sort` из query; порядок задаётся полями в `FilterStudentReq`: `sortBy` (`StudentSortField`), `sortDirection`, `useDefaultRanking` (по умолчанию авто-ранжирование: аватар → `profileTextScore` → дата создания).
+- **Сортировка:** `POST /student/cardsFilter` и `POST /student/filter` **игнорируют** произвольный `sort` из query; порядок задаётся полями в `FilterStudentReq`: `sortBy` (`StudentSortField`, в т.ч. `MANUAL_SORT_ORDER`), `sortDirection`, `useDefaultRanking` (по умолчанию: ручной номер `manualSortOrder` → аватар → `profileTextScore` → дата создания).
 - **Публичные студенты:** `GET /public/students/{id}`, `POST /public/students/cards` — только записи с `public_profile_consent = true` и **не** курс `NEW`; в `SecurityConfig` — `permitAll`.
 
 ## Лента проектов
@@ -129,6 +132,7 @@ Swagger UI и OpenAPI — см. `springdoc` и `app.swagger` в `application.yam
 - Таблица `analytics_events` (Flyway `V0035`).
 - Приём: `POST /public/analytics/events` (`permitAll`), лимит `app.analytics.rate-limit-per-ip-per-minute`, тип события пока **`PAGE_VIEW`**.
 - Отчёт админа: `POST /admin/analytics/summary` с телом `from` / `to` — агрегация `COUNT` по `path`.
+- Сводка по сущностям: `POST /admin/analytics/entity-population` — число пользователей по ролям, всего студентов и рекрутеров; опционально окно **`from`/`to`** для подсчёта **новых** студентов и рекрутеров по `created_at` (у таблицы `users` нет даты создания).
 
 ## Зависимости OpenAPI
 
@@ -136,7 +140,7 @@ Swagger UI и OpenAPI — см. `springdoc` и `app.swagger` в `application.yam
 
 ## Чеклист релиза / деплоя
 
-- Прогнать миграции Flyway на стейдже/проде: **`V0033`**, **`V0034`**, **`V0035`** (новые колонки и таблицы).
+- Прогнать миграции Flyway на стейдже/проде: **`V0033`**, **`V0034`**, **`V0035`**, **`V0036`** (новые колонки и таблицы).
 - После наката проверить индексы (создаются миграциями): по `students` для публичной выдачи; по `analytics_events(occurred_at)` для отчётов; по `site_projects` для фильтра `visible_to_anonymous` и сортировки.
 - Убедиться, что **`app.analytics.rate-limit-per-ip-per-minute`** задан под ожидаемый трафик.
 - Версия OpenAPI в UI: **`app.swagger.version`** (сейчас **0.2.0**).

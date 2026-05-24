@@ -43,7 +43,7 @@ import java.util.UUID;
                 **Сортировка списков** (`POST /student/cardsFilter`, `POST /student/filter`): порядок задаётся полями `FilterStudentReq.sortBy`, `sortDirection`, `useDefaultRanking`;
                 параметр query `sort` **игнорируется**.
 
-                **Согласие на показ анонимам** (`publicProfileConsent`): выставляется только админом через `PUT`/`PATCH /student/{id}` (в теле DTO).""")
+                **Согласие на показ анонимам** (`publicProfileConsent`) и **ручной номер** (`manualSortOrder`): при **`POST /student`** и **`POST /student/extended`** можно задать сразу в теле; дальше — `PUT`/`PATCH` (сброс номера — `clearManualSortOrder: true`).""")
 public class StudentController {
 
     private final StudentService studentService;
@@ -141,7 +141,7 @@ public class StudentController {
             description = """
                     Только **ADMIN**. Создаёт карточку и связи по DTO.
 
-                    Флаг `publicProfileConsent` из запроса **не** применяется: после создания значение **false**; включить публичную витрину можно `PUT`/`PATCH`.
+                    Опционально в теле: **`publicProfileConsent`** (по умолчанию как `false`, если не передано или `false`) и **`manualSortOrder`** (ручной порядок в каталоге; `null` — не задавать).
 
                     **201** + `StudentDTO`.""")
     @PreAuthorize("hasRole('ADMIN')")
@@ -157,7 +157,7 @@ public class StudentController {
             description = """
                     Только **ADMIN**. Атомарно создаёт студента, опционально портфолио, опыт, учебные заведения и навыки по вложенным спискам.
 
-                    `publicProfileConsent` по умолчанию **false** (как при базовом создании).
+                    Поля **`publicProfileConsent`** и **`manualSortOrder`** — как при `POST /student` (опционально).
 
                     **201** + `StudentDTO`.""")
     @PreAuthorize("hasRole('ADMIN')")

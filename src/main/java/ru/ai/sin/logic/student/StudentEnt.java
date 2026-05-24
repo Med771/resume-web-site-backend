@@ -97,4 +97,10 @@ public class StudentEnt {
 
     @Column(name = "profile_text_score", nullable = false)
     private int profileTextScore;
+
+    /**
+     * Ручной приоритет в каталоге: при сортировке меньшие значения выше (ASC). {@code null} — не задано.
+     */
+    @Column(name = "manual_sort_order")
+    private Integer manualSortOrder;
 }

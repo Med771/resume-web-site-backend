@@ -4,7 +4,9 @@
 
 | Документ | Содержание |
 |----------|------------|
-| [backend.md](./backend.md) | Устройство backend, стек, модель данных, роли, основные эндпоинты, чаты и WebSocket |
+| [api-endpoints.md](./api-endpoints.md) | **Полный справочник HTTP:** все пути, методы, роли (`@PreAuthorize`), публичные vs auth, исключения по ресурсам |
+| [project-passport.md](./project-passport.md) | Полный паспорт: назначение, стек, слои кода, БД/Flyway, безопасность, карта REST, домены, WebSocket, ошибки, NFR, сценарии по ролям |
+| [backend.md](./backend.md) | Устройство backend, стек, модель данных, роли, чаты, файлы, публичная витрина (без дублирования полного списка URL) |
 | [roadmap.md](./roadmap.md) | Рекомендуемый технический бэклог и известные пробелы |
 | [frontend.md](./frontend.md) | Практическое руководство для frontend: auth, CORS, сценарии, REST и STOMP |
 | [testing.md](./testing.md) | Тесты: Testcontainers, JaCoCo, снятие с холда, пирамида, CI |

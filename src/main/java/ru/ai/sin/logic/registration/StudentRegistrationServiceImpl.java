@@ -123,7 +123,9 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
                 req.phoneNumber(),
                 req.telegramUsername(),
                 req.specialityId(),
-                skillIds
+                skillIds,
+                null,
+                null
         );
 
         StudentEnt student = studentMapper.toEntity(profile);
