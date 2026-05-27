@@ -37,7 +37,7 @@
 |------|-------------------|
 | **GUEST** / **USER** | Каталог студентов, `POST /request`, `GET /recruiter/me`, чаты `/chat/...`. |
 | **STUDENT** | `GET /student/me`, чаты, `POST /request/{id}/student-decision`. **Создавать заявку нельзя.** |
-| **ADMIN** | Фильтр/удаление заявок, мягкое удаление сообщений, полная история чатов в REST, **`/admin/site-projects`**, **`POST /admin/analytics/summary`**. |
+| **ADMIN** | Фильтр/удаление заявок, мягкое удаление сообщений, полная история чатов в REST, **`/admin/projects`**, **`POST /admin/analytics/summary`**. |
 
 Spring ожидает authorities вида **`ROLE_*`**; это согласовано с данными пользователя в БД.
 

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Schema(
         name = "CreateSiteProjectReq",
-        description = "Тело создания проекта для ленты (`POST /admin/site-projects`), только ADMIN.")
+        description = "Тело создания проекта для ленты (`POST /admin/projects`), только ADMIN.")
 public record CreateSiteProjectReq(
         @NotBlank @Size(max = 255)
         @Schema(description = "Заголовок карточки проекта")
@@ -20,7 +20,7 @@ public record CreateSiteProjectReq(
         @Size(max = 512)
         @Schema(description = "Ключ или путь к изображению в хранилище приложения, может быть null")
         String imagePath,
-        @Schema(description = "Показывать ли карточку анонимам на `GET /public/projects` (плюс окно публикации)")
+        @Schema(description = "Показывать на `GET /public/projects`; если false — только на `GET /projects` для авторизованных (плюс окно публикации)")
         boolean visibleToAnonymous,
         @Schema(description = "Нижняя граница публикации; null — без ограничения «не раньше»")
         LocalDateTime publishedFrom,

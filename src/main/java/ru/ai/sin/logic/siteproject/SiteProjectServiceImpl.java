@@ -8,7 +8,10 @@ import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.siteproject.dto.CreateSiteProjectReq;
 import ru.ai.sin.logic.siteproject.dto.ReorderSiteProjectsReq;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectDTO;
+import ru.ai.sin.logic.siteproject.dto.SiteProjectStudentsReq;
 import ru.ai.sin.logic.siteproject.dto.UpdateSiteProjectReq;
+import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.logic.student.StudentRepo;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -21,6 +24,7 @@ import java.util.UUID;
 public class SiteProjectServiceImpl implements SiteProjectService {
 
     private final SiteProjectRepo siteProjectRepo;
+    private final StudentRepo studentRepo;
 
     @Override
     @Transactional(readOnly = true)
@@ -31,12 +35,25 @@ public class SiteProjectServiceImpl implements SiteProjectService {
     @Override
     @Transactional(readOnly = true)
     public List<SiteProjectDTO> listPublicVisible() {
+        return projectsInPublicationWindow().stream()
+                .filter(SiteProjectEnt::isVisibleToAnonymous)
+                .map(this::toDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SiteProjectDTO> listAuthenticatedVisible() {
+        return projectsInPublicationWindow().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    private List<SiteProjectEnt> projectsInPublicationWindow() {
         LocalDateTime now = LocalDateTime.now();
         return siteProjectRepo.findAllByOrderBySortOrderAsc().stream()
-                .filter(SiteProjectEnt::isVisibleToAnonymous)
                 .filter(p -> p.getPublishedFrom() == null || !p.getPublishedFrom().isAfter(now))
                 .filter(p -> p.getPublishedTo() == null || !p.getPublishedTo().isBefore(now))
-                .map(this::toDto)
                 .toList();
     }
 
@@ -84,6 +101,35 @@ public class SiteProjectServiceImpl implements SiteProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UUID> listStudentIds(UUID projectId) {
+        ensureProjectExists(projectId);
+        return siteProjectRepo.findStudentIdsByProjectId(projectId);
+    }
+
+    @Override
+    @Transactional
+    public void bindStudents(UUID projectId, SiteProjectStudentsReq req) {
+        List<UUID> studentIds = validateUniqueStudentIds(req.studentIds());
+        SiteProjectEnt project = siteProjectRepo.findWithStudentsById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
+        Set<StudentEnt> toBind = resolveStudentsOrThrow(studentIds);
+        project.getStudents().addAll(toBind);
+        siteProjectRepo.save(project);
+    }
+
+    @Override
+    @Transactional
+    public void unbindStudents(UUID projectId, SiteProjectStudentsReq req) {
+        List<UUID> studentIds = validateUniqueStudentIds(req.studentIds());
+        SiteProjectEnt project = siteProjectRepo.findWithStudentsById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
+        Set<UUID> toRemove = new HashSet<>(studentIds);
+        project.getStudents().removeIf(s -> toRemove.contains(s.getId()));
+        siteProjectRepo.save(project);
+    }
+
+    @Override
     @Transactional
     public void reorder(ReorderSiteProjectsReq req) {
         List<UUID> ids = req.orderedIds();
@@ -98,6 +144,28 @@ public class SiteProjectServiceImpl implements SiteProjectService {
             e.setSortOrder(i);
             siteProjectRepo.save(e);
         }
+    }
+
+    private void ensureProjectExists(UUID projectId) {
+        if (!siteProjectRepo.existsById(projectId)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+    }
+
+    private static List<UUID> validateUniqueStudentIds(List<UUID> studentIds) {
+        Set<UUID> unique = new HashSet<>(studentIds);
+        if (unique.size() != studentIds.size()) {
+            throw new BadRequestException("Duplicate ids in student list");
+        }
+        return studentIds;
+    }
+
+    private Set<StudentEnt> resolveStudentsOrThrow(List<UUID> studentIds) {
+        List<StudentEnt> found = studentRepo.findAllById(studentIds);
+        if (found.size() != studentIds.size()) {
+            throw new NotFoundException("Some students were not found by ids");
+        }
+        return new HashSet<>(found);
     }
 
     private SiteProjectDTO toDto(SiteProjectEnt e) {

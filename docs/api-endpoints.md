@@ -80,11 +80,19 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 
 ---
 
-## `/public/projects`
+## `/public/projects` — PublicProjects
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| GET | `/public/projects` | Список `SiteProjectDTO` для анонимов (фильтр видимости и дат на сервере) |
+| GET | `/public/projects` | Список `SiteProjectDTO` для анонимов (`visibleToAnonymous` + окно публикации) |
+
+---
+
+## `/projects` — Projects (авторизованные)
+
+| Метод | Путь | Роли | Описание |
+|-------|------|------|----------|
+| GET | `/projects` | **STUDENT**, **GUEST**, **USER** | Витрина: все проекты в окне публикации, включая `visibleToAnonymous=false` |
 
 ---
 
@@ -170,17 +178,20 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 
 ---
 
-## `/admin/site-projects` — лента проектов (админ)
+## `/admin/projects` — Projects (админ)
 
 Класс контроллера: `@PreAuthorize("hasRole('ADMIN')")` на все методы.
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| GET | `/admin/site-projects` | Все проекты в порядке `sortOrder` |
-| POST | `/admin/site-projects` | Создание; **201** `CreateSiteProjectReq` |
-| PUT | `/admin/site-projects/{id}` | Обновление `UpdateSiteProjectReq` |
-| DELETE | `/admin/site-projects/{id}` | **204** |
-| POST | `/admin/site-projects/reorder` | Порядок `orderedIds`; **204** |
+| GET | `/admin/projects` | Все проекты в порядке `sortOrder` |
+| POST | `/admin/projects` | Создание; **201** `CreateSiteProjectReq` |
+| PUT | `/admin/projects/{id}` | Обновление `UpdateSiteProjectReq` |
+| DELETE | `/admin/projects/{id}` | **204** |
+| POST | `/admin/projects/reorder` | Порядок `orderedIds`; **204** |
+| GET | `/admin/projects/{id}/students` | UUID привязанных студентов |
+| POST | `/admin/projects/{id}/students` | Привязка студентов; тело `SiteProjectStudentsReq`; **204** |
+| DELETE | `/admin/projects/{id}/students` | Отвязка студентов; **204** |
 
 ---
 

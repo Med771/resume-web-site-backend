@@ -124,7 +124,8 @@
 ## Лента проектов
 
 - Таблица `site_projects` (Flyway `V0034`).
-- Админ: `GET/POST/PUT/DELETE /admin/site-projects`, `POST /admin/site-projects/reorder` (тело `orderedIds`).
+- Админ: `GET/POST/PUT/DELETE /admin/projects`, `POST /admin/projects/reorder` (тело `orderedIds`), привязка студентов `…/{id}/students`.
+- Витрины: `GET /public/projects` (анонимы), `GET /projects` (STUDENT/GUEST/USER).
 - Публично: `GET /public/projects` — только `visible_to_anonymous` и в окне `published_from` / `published_to`, сортировка по `sort_order`.
 
 ## Аналитика посещений (first-party)

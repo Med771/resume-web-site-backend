@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Schema(
         name = "UpdateSiteProjectReq",
-        description = "Полная замена полей проекта (`PUT /admin/site-projects/{id}`), только ADMIN.")
+        description = "Полная замена полей проекта (`PUT /admin/projects/{id}`), только ADMIN.")
 public record UpdateSiteProjectReq(
         @NotBlank @Size(max = 255)
         @Schema(description = "Заголовок")

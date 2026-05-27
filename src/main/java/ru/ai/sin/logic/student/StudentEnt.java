@@ -16,6 +16,7 @@ import ru.ai.sin.models.enums.convertor.CourseEnumConverter;
 import ru.ai.sin.logic.experience.ExperienceEnt;
 import ru.ai.sin.logic.institution.InstitutionEnt;
 import ru.ai.sin.logic.portfolio.PortfolioEnt;
+import ru.ai.sin.logic.siteproject.SiteProjectEnt;
 import ru.ai.sin.logic.skill.SkillEnt;
 import ru.ai.sin.logic.speciality.SpecialityEnt;
 import ru.ai.sin.models.embeddables.ContactInformation;
@@ -103,4 +104,7 @@ public class StudentEnt {
      */
     @Column(name = "manual_sort_order")
     private Integer manualSortOrder;
+
+    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
+    private Set<SiteProjectEnt> siteProjects = new HashSet<>();
 }

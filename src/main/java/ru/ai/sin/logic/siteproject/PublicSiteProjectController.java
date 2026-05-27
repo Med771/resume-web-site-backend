@@ -18,8 +18,8 @@ import java.util.List;
         name = "PublicProjects",
         description = """
                 Публичное чтение ленты проектов сайта **без авторизации**.
-                Возвращаются только записи с `visibleToAnonymous=true`, попадающие в окно публикации `publishedFrom` / `publishedTo` (если заданы),
-                в порядке админского `sortOrder`.""")
+                Возвращаются только записи с `visibleToAnonymous=true`, попадающие в окно публикации.
+                Для вошедших студентов и рекрутеров — `GET /projects` (все опубликованные, включая только для авторизованных).""")
 public class PublicSiteProjectController {
 
     private final SiteProjectService siteProjectService;
@@ -29,7 +29,7 @@ public class PublicSiteProjectController {
             description = """
                     **200** — массив `SiteProjectDTO` (может быть пустым, если нет подходящих записей).
 
-                    Поля `summary` / `body` / `imagePath` зависят от данных, заведённых админом в `POST/PUT /admin/site-projects`.
+                    Поля `summary` / `body` / `imagePath` зависят от данных, заведённых админом в `POST/PUT /admin/projects`.
 
                     Аутентификация не требуется.""")
     @GetMapping

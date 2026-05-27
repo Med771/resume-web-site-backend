@@ -20,19 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.ai.sin.logic.siteproject.dto.CreateSiteProjectReq;
 import ru.ai.sin.logic.siteproject.dto.ReorderSiteProjectsReq;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectDTO;
+import ru.ai.sin.logic.siteproject.dto.SiteProjectStudentsReq;
 import ru.ai.sin.logic.siteproject.dto.UpdateSiteProjectReq;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin/site-projects")
+@RequestMapping("/admin/projects")
 @RequiredArgsConstructor
 @Tag(
-        name = "AdminSiteProjects",
+        name = "Projects",
         description = """
-                CRUD и сортировка ленты проектов на сайте. Доступно **только роли ADMIN** (JWT в cookie).
-                Публичная выдача — отдельно в `GET /public/projects` с фильтром `visibleToAnonymous` и окнами публикации.""")
+                CRUD, сортировка и привязка студентов (только **ADMIN**, JWT в cookie).
+                Витрины: `GET /public/projects` (анонимы), `GET /projects` (STUDENT/GUEST/USER).""")
 @PreAuthorize("hasRole('ADMIN')")
 public class SiteProjectAdminController {
 
@@ -86,5 +87,40 @@ public class SiteProjectAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reorder(@Valid @RequestBody ReorderSiteProjectsReq req) {
         siteProjectService.reorder(req);
+    }
+
+    @Operation(
+            summary = "Список студентов проекта",
+            description = "UUID студентов, привязанных к проекту. **404**, если проект не найден.")
+    @GetMapping("/{id}/students")
+    public ResponseEntity<List<UUID>> listStudents(
+            @Parameter(description = "UUID проекта", required = true) @PathVariable UUID id) {
+        return ResponseEntity.ok(siteProjectService.listStudentIds(id));
+    }
+
+    @Operation(
+            summary = "Привязать студентов к проекту",
+            description = """
+                    Добавляет связи many-to-many (повторная привязка игнорируется). **404**, если проект или любой студент не найден.
+                    **400** при дубликатах в `studentIds`. **204** при успехе.""")
+    @PostMapping("/{id}/students")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void bindStudents(
+            @Parameter(description = "UUID проекта", required = true) @PathVariable UUID id,
+            @Valid @RequestBody SiteProjectStudentsReq req) {
+        siteProjectService.bindStudents(id, req);
+    }
+
+    @Operation(
+            summary = "Отвязать студентов от проекта",
+            description = """
+                    Удаляет связи; отсутствующие связи игнорируются. **404**, если проект не найден (студенты в списке не обязаны быть привязаны).
+                    **400** при дубликатах в `studentIds`. **204** при успехе.""")
+    @DeleteMapping("/{id}/students")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unbindStudents(
+            @Parameter(description = "UUID проекта", required = true) @PathVariable UUID id,
+            @Valid @RequestBody SiteProjectStudentsReq req) {
+        siteProjectService.unbindStudents(id, req);
     }
 }
