@@ -9,11 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import ru.ai.sin.logic.chat.event.ChatMessagePublishedEvent;
-import ru.ai.sin.logic.request.RequestRepo;
 import ru.ai.sin.models.enums.ChatMessageKind;
-import ru.ai.sin.models.enums.ResultEnum;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,15 +18,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatWsPublisher {
 
-    private static final List<ResultEnum> MESSAGING_ALLOWED = List.of(
-            ResultEnum.STUDENT_CONFIRMED,
-            ResultEnum.SUCCESS,
-            ResultEnum.RECRUITER_CONFIRMED
-    );
-
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRepo chatRepo;
-    private final RequestRepo requestRepo;
+    private final MessagingGateService messagingGateService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
@@ -57,10 +48,9 @@ public class ChatWsPublisher {
 
     private boolean isMessagingAllowed(UUID chatId) {
         return chatRepo.findById(chatId)
-                .map(chat -> requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
+                .map(chat -> messagingGateService.isMessagingAllowed(
                         chat.getRecruiter().getId(),
-                        chat.getStudent().getId(),
-                        MESSAGING_ALLOWED))
+                        chat.getStudent().getId()))
                 .orElse(false);
     }
 }

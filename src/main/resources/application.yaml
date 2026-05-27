@@ -130,3 +130,5 @@ springdoc:
 
   api-docs:
     enabled: true
+
+kind: Application

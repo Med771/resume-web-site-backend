@@ -9,7 +9,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import ru.ai.sin.logic.chat.dto.ChatMessageDTO;
 import ru.ai.sin.logic.chat.event.ChatMessagePublishedEvent;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
-import ru.ai.sin.logic.request.RequestRepo;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.models.enums.ChatMessageKind;
 
@@ -17,8 +16,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -31,7 +28,7 @@ class ChatWsPublisherTest {
     @Mock
     private ChatRepo chatRepo;
     @Mock
-    private RequestRepo requestRepo;
+    private MessagingGateService messagingGateService;
 
     private ChatWsPublisher publisher;
 
@@ -41,7 +38,7 @@ class ChatWsPublisherTest {
 
     @BeforeEach
     void setUp() {
-        publisher = new ChatWsPublisher(messagingTemplate, chatRepo, requestRepo);
+        publisher = new ChatWsPublisher(messagingTemplate, chatRepo, messagingGateService);
     }
 
     @Test
@@ -85,11 +82,7 @@ class ChatWsPublisherTest {
         chat.setRecruiter(recruiter);
         chat.setStudent(student);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
-        when(requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
-                eq(recruiterId),
-                eq(studentId),
-                anyCollection()
-        )).thenReturn(false);
+        when(messagingGateService.isMessagingAllowed(recruiterId, studentId)).thenReturn(false);
     }
 
     private void stubChatAndAllowedRequest() {
@@ -101,11 +94,7 @@ class ChatWsPublisherTest {
         chat.setRecruiter(recruiter);
         chat.setStudent(student);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
-        when(requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
-                eq(recruiterId),
-                eq(studentId),
-                anyCollection()
-        )).thenReturn(true);
+        when(messagingGateService.isMessagingAllowed(recruiterId, studentId)).thenReturn(true);
     }
 
     @Test

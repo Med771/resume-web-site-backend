@@ -96,6 +96,44 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 
 ---
 
+## `/vacancies` — Vacancies / VacancyApplications
+
+Витрина **только для авторизованных** (**STUDENT**, **GUEST**, **USER**). Публикация после модерации админом. Отдельного `/public/vacancies` нет.
+
+| Метод | Путь | Роли | Описание |
+|-------|------|------|----------|
+| GET | `/vacancies` | **STUDENT**, **GUEST**, **USER** | `PageResponse<VacancyCardDTO>` — только **PUBLISHED** в окне дат; query-фильтры `FilterVacancyReq` |
+| GET | `/vacancies/{id}` | те же | `VacancyDTO`; **404** для чужой неопубликованной |
+| GET | `/vacancies/mine` | **GUEST**, **USER** | Все вакансии текущего рекрутёра (включая модерацию) |
+| POST | `/vacancies` | **GUEST**, **USER** | Черновик **DRAFT**; нужен профиль рекрутёра |
+| PUT | `/vacancies/{id}` | владелец | Только **DRAFT** / **REJECTED** |
+| POST | `/vacancies/{id}/submit-for-review` | владелец | → **PENDING_REVIEW** |
+| POST | `/vacancies/{id}/close` | владелец | **PUBLISHED** → **CLOSED** |
+| DELETE | `/vacancies/{id}` | владелец / **ADMIN** | **ARCHIVED** или удаление пустого **DRAFT** |
+| POST | `/vacancies/{id}/applications` | **STUDENT** | Отклик; курс **NEW** запрещён; **201** |
+| GET | `/vacancies/applications/mine` | **STUDENT** | Мои отклики |
+| POST | `/vacancies/applications/{applicationId}/withdraw` | **STUDENT** | **204**; только **SUBMITTED** |
+| GET | `/vacancies/{id}/applications` | владелец | Отклики на вакансию |
+| POST | `/vacancies/{id}/applications/{applicationId}/accept` | владелец | **ACCEPTED**, чат, system `VACANCY_APPLICATION_ACCEPTED` |
+| POST | `/vacancies/{id}/applications/{applicationId}/reject` | владелец | **REJECTED**; опционально `rejectionReason` |
+
+Переписка по отклику открывается **после accept** (как у заявок после `STUDENT_CONFIRMED`), через общий `MessagingGate` (заявка **или** принятый отклик).
+
+---
+
+## `/admin/vacancies` — VacancyModerationAdmin
+
+`@PreAuthorize("hasRole('ADMIN')")`.
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| POST | `/admin/vacancies/filter` | Очередь; тело `FilterVacancyModerationReq` (по умолчанию **PENDING_REVIEW**) |
+| GET | `/admin/vacancies/{id}` | Полная карточка |
+| POST | `/admin/vacancies/{id}/approve` | → **PUBLISHED** |
+| POST | `/admin/vacancies/{id}/reject` | → **REJECTED**; тело `VacancyModerationRejectReq`; **204** |
+
+---
+
 ## `/public/analytics`
 
 | Метод | Путь | Описание |

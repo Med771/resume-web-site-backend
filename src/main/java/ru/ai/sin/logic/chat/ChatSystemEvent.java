@@ -9,6 +9,7 @@ public final class ChatSystemEvent {
     public static final String STUDENT_ACCEPTED = "STUDENT_ACCEPTED";
     public static final String STUDENT_REJECTED = "STUDENT_REJECTED";
     public static final String ADMIN_JOINED = "ADMIN_JOINED";
+    public static final String VACANCY_APPLICATION_ACCEPTED = "VACANCY_APPLICATION_ACCEPTED";
 
     private ChatSystemEvent() {}
 }

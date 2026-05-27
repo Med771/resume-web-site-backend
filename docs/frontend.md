@@ -77,6 +77,18 @@ Spring ожидает authorities вида **`ROLE_*`**; это согласов
 
 **Важно:** в текущей конфигурации handshake **`/ws`** может быть доступен без JWT на уровне Spring Security; в продакшене контракт может усилиться — закладывайте передачу токена при connect, если появится требование.
 
+## Вакансии (рекрутер ↔ студент)
+
+Отдельный домен от **`POST /request`**. Витрина: **`GET /vacancies`** (JWT, роли **STUDENT** / **GUEST** / **USER**).
+
+| Кто | Действия |
+|-----|----------|
+| Рекрутер | `POST /vacancies` → `submit-for-review` → ждёт админа → `GET /vacancies/mine`, отклики `GET/POST .../applications/...` |
+| Админ | `POST /admin/vacancies/filter`, `approve` / `reject` |
+| Студент | `GET /vacancies`, `POST /vacancies/{id}/applications`, `GET /vacancies/applications/mine` |
+
+Статусы вакансии: **DRAFT** → **PENDING_REVIEW** → **PUBLISHED** (или **REJECTED** с `moderationRejectionReason`). Чат по отклику — после **`accept`** рекрутёром (`appChatId` в `VacancyApplicationDTO`). Системное событие: **`VACANCY_APPLICATION_ACCEPTED`**.
+
 ## Решение студента по заявке
 
 `POST /request/{id}/student-decision`

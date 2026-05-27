@@ -11,5 +11,7 @@
 | [frontend.md](./frontend.md) | Практическое руководство для frontend: auth, CORS, сценарии, REST и STOMP |
 | [testing.md](./testing.md) | Тесты: Testcontainers, JaCoCo, снятие с холда, пирамида, CI |
 | [roles-product-journeys.md](./roles-product-journeys.md) | Продуктовые сценарии по ролям: регистрация, модерация, заявки, чаты; версии и ссылки на документацию зависимостей |
+| [design-ui-brief.md](./design-ui-brief.md) | Бриф для UI/UX: чаты и страница проектов (данные, экраны, состояния) |
+| [mail-setup.md](./mail-setup.md) | Подключение SMTP: переменные окружения, провайдеры, Mailpit |
 
 Исходная конфигурация по умолчанию: `src/main/resources/application.yaml`. Интерактивная схема API: Swagger UI (`/swagger-ui.html`).

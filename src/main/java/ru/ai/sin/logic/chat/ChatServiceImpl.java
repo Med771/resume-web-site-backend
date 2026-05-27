@@ -22,12 +22,11 @@ import ru.ai.sin.logic.chat.dto.PatchChatMessageReq;
 import ru.ai.sin.logic.chat.dto.PostChatMessageReq;
 import ru.ai.sin.logic.chat.event.ChatMessagePublishedEvent;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
-import ru.ai.sin.logic.request.RequestRepo;
+import ru.ai.sin.logic.chat.MessagingGateService;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.models.enums.ChatMessageKind;
-import ru.ai.sin.models.enums.ResultEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 
 import java.time.LocalDateTime;
@@ -39,18 +38,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
-    private static final List<ResultEnum> MESSAGING_ALLOWED = List.of(
-            ResultEnum.STUDENT_CONFIRMED,
-            ResultEnum.SUCCESS,
-            ResultEnum.RECRUITER_CONFIRMED
-    );
-
     private static final LocalDateTime EPOCH_READ = LocalDateTime.of(1970, 1, 1, 0, 0);
 
     private final ChatRepo chatRepo;
     private final ChatMessageRepo chatMessageRepo;
     private final ChatReadStateRepo chatReadStateRepo;
-    private final RequestRepo requestRepo;
+    private final MessagingGateService messagingGateService;
     private final UserRepo userRepo;
     private final SecurityHelper securityHelper;
     private final ApplicationEventPublisher eventPublisher;
@@ -296,10 +289,9 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private boolean isMessagingAllowed(ChatEnt chat) {
-        return requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
+        return messagingGateService.isMessagingAllowed(
                 chat.getRecruiter().getId(),
-                chat.getStudent().getId(),
-                MESSAGING_ALLOWED
+                chat.getStudent().getId()
         );
     }
 

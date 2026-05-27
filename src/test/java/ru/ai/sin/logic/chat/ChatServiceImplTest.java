@@ -17,7 +17,6 @@ import ru.ai.sin.logic.chat.dto.PatchChatMessageReq;
 import ru.ai.sin.logic.chat.dto.PostChatMessageReq;
 import ru.ai.sin.models.embeddables.TimeStamped;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
-import ru.ai.sin.logic.request.RequestRepo;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
@@ -45,7 +44,7 @@ class ChatServiceImplTest {
     @Mock
     private ChatReadStateRepo chatReadStateRepo;
     @Mock
-    private RequestRepo requestRepo;
+    private MessagingGateService messagingGateService;
     @Mock
     private UserRepo userRepo;
     @Mock
@@ -68,7 +67,7 @@ class ChatServiceImplTest {
                 chatRepo,
                 chatMessageRepo,
                 chatReadStateRepo,
-                requestRepo,
+                messagingGateService,
                 userRepo,
                 securityHelper,
                 eventPublisher,
@@ -97,11 +96,7 @@ class ChatServiceImplTest {
         chat.setStudent(chatStudent);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
 
-        when(requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
-                eq(recruiterId),
-                eq(studentId),
-                anyList()
-        )).thenReturn(false);
+        when(messagingGateService.isMessagingAllowed(recruiterId, studentId)).thenReturn(false);
 
         Pageable pageable = PageRequest.of(0, 20);
         when(chatMessageRepo.findVisibleByChatIdGated(chatId, false, ChatMessageKind.SYSTEM, pageable))
@@ -132,11 +127,7 @@ class ChatServiceImplTest {
         chat.setStudent(chatStudent);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
 
-        when(requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
-                eq(recruiterId),
-                eq(studentId),
-                anyList()
-        )).thenReturn(false);
+        when(messagingGateService.isMessagingAllowed(recruiterId, studentId)).thenReturn(false);
 
         assertThatThrownBy(() -> chatService.sendTextMessage(chatId, new PostChatMessageReq("Привет")))
                 .isInstanceOf(BadRequestException.class)
@@ -214,11 +205,7 @@ class ChatServiceImplTest {
         chat.setStudent(chatStudent);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
 
-        when(requestRepo.existsByRecruiter_IdAndStudent_IdAndResultIn(
-                eq(recruiterId),
-                eq(studentId),
-                anyList()
-        )).thenReturn(true);
+        when(messagingGateService.isMessagingAllowed(recruiterId, studentId)).thenReturn(true);
 
         assertThatThrownBy(() -> chatService.sendTextMessage(chatId, new PostChatMessageReq("   ")))
                 .isInstanceOf(BadRequestException.class)
