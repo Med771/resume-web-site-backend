@@ -45,7 +45,23 @@ Telegram принимает webhook только по **HTTPS** с публич�
 1. **ngrok / cloudflared** — туннель на `localhost:8080`, webhook на временный URL.
 2. **Staging-сервер** — разработка верификации на уже развёрнутом API.
 
-Без webhook и `APP_TELEGRAM_ENABLED=true` эндпоинт `POST /verification/phone/start` вернёт ошибку «Telegram-бот не настроен».
+Без webhook и `APP_TELEGRAM_ENABLED=true` эндпоинт `POST /verification/phone/start` вернёт ошибку «Telegram-бот не настроен», **если не включён dev-режим** (см. ниже).
+
+### Локальные тесты без бота
+
+В `application.yaml` (только dev):
+
+```yaml
+app.telegram:
+  allow-dev-confirm: true
+  dev-confirm-code: "7890"
+```
+
+1. `POST /verification/phone/start` — создаёт сессию даже без настроенного бота.
+2. `POST /verification/phone/{id}/confirm-code` с телом `{ "code": "7890" }` — статус `CONFIRMED`.
+3. На фронте — 4 поля OTP на экране подтверждения.
+
+**На prod обязательно:** `allow-dev-confirm: false`.
 
 ## 5. Поток для пользователя
 

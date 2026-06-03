@@ -58,6 +58,8 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
                 List.of(),
                 req.experiences(),
                 req.institutions(),
+                null,
+                null,
                 false,
                 null
         );

@@ -86,6 +86,14 @@ public record CreateStudentExtendedReq(
         @Schema(description = "Образовательные записи студента для создания")
         List<@Valid CreateStudentInstitutionReq> institutions,
 
+        @Schema(description = "Логин учётной записи (если передан — создаётся User вместе со студентом)")
+        @Size(min = 3, max = 64)
+        @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
+        String username,
+
+        @Schema(description = "Пароль учётной записи (обязателен вместе с username)")
+        String password,
+
         @Schema(description = "Согласие на публичную витрину; `null`/`false` — false в БД.")
         Boolean publicProfileConsent,
 

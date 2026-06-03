@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.ai.sin.logic.verification.dto.PhoneVerificationConfirmCodeReq;
 import ru.ai.sin.logic.verification.dto.PhoneVerificationStartReq;
 import ru.ai.sin.logic.verification.dto.PhoneVerificationStartRes;
 import ru.ai.sin.logic.verification.dto.PhoneVerificationStatusRes;
@@ -35,5 +36,13 @@ public class PhoneVerificationController {
     @GetMapping("/{verificationId}/status")
     public ResponseEntity<PhoneVerificationStatusRes> status(@PathVariable UUID verificationId) {
         return ResponseEntity.ok(phoneVerificationService.getStatus(verificationId));
+    }
+
+    @Operation(summary = "Подтвердить тестовым кодом", description = "Только при app.telegram.allow-dev-confirm=true (локальные тесты)")
+    @PostMapping("/{verificationId}/confirm-code")
+    public ResponseEntity<PhoneVerificationStatusRes> confirmCode(
+            @PathVariable UUID verificationId,
+            @Valid @RequestBody PhoneVerificationConfirmCodeReq req) {
+        return ResponseEntity.ok(phoneVerificationService.confirmWithDevCode(verificationId, req.code()));
     }
 }

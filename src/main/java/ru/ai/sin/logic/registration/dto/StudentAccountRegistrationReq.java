@@ -28,6 +28,18 @@ public record StudentAccountRegistrationReq(
         @Size(max = 255)
         String name,
 
+        @Schema(description = "Имя")
+        @Size(max = 255)
+        String firstName,
+
+        @Schema(description = "Фамилия")
+        @Size(max = 255)
+        String lastName,
+
+        @Schema(description = "Отчество (необязательно)")
+        @Size(max = 255)
+        String middleName,
+
         @Schema(description = "Номер телефона (должен совпадать с подтверждённым в Telegram)")
         @NotBlank
         @Pattern(regexp = "\\+?\\d{7,15}", message = "Phone number must contain 7-15 digits and optional + at start")

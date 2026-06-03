@@ -14,4 +14,7 @@ public class TelegramProperties {
     private String botUsername = "";
     private String webhookSecret = "";
     private int verificationTtlMinutes = 15;
+    /** Только для локальных тестов: подтверждение кодом без Telegram */
+    private boolean allowDevConfirm = false;
+    private String devConfirmCode = "7890";
 }

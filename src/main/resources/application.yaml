@@ -67,16 +67,11 @@ app:
     bot-username: ${TELEGRAM_BOT_USERNAME:}
     webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:}
     verification-ttl-minutes: 15
-    allow-dev-confirm: false
+    allow-dev-confirm: true
+    dev-confirm-code: "7890"
 
   user:
     logins:
-      - username: guest
-        password: guest
-        role: GUEST
-      - username: user
-        password: user
-        role: USER
       - username: admin
         password: admin
         role: ADMIN

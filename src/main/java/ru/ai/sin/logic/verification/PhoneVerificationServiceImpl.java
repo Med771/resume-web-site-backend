@@ -28,7 +28,7 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
     @Override
     @Transactional
     public PhoneVerificationStartRes startVerification(PhoneVerificationStartReq req) {
-        ensureTelegramEnabled();
+        ensureTelegramEnabledOrDev();
 
         String normalized = normalizePhone(req.phoneNumber());
         PhoneVerificationEnt ent = new PhoneVerificationEnt();
@@ -38,7 +38,7 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         ent.setExpiresAt(LocalDateTime.now().plusMinutes(telegramProperties.getVerificationTtlMinutes()));
         ent = phoneVerificationRepo.save(ent);
 
-        String botUsername = telegramProperties.getBotUsername();
+        String botUsername = resolveBotUsername();
         String deepLink = "https://t.me/" + botUsername + "?start=" + ent.getId();
 
         return new PhoneVerificationStartRes(
@@ -70,6 +70,38 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         if (!normalizePhone(phoneNumber).equals(ent.getPhoneNumber())) {
             throw new BadRequestException("Номер телефона не совпадает с подтверждённым");
         }
+    }
+
+    @Override
+    @Transactional
+    public PhoneVerificationStatusRes confirmWithDevCode(UUID verificationId, String code) {
+        if (!telegramProperties.isAllowDevConfirm()) {
+            throw new BadRequestException("Подтверждение кодом недоступно");
+        }
+        String expected = telegramProperties.getDevConfirmCode();
+        if (expected == null || expected.isBlank()) {
+            throw new BadRequestException("Тестовый код не настроен");
+        }
+        if (!expected.equals(code != null ? code.trim() : "")) {
+            throw new BadRequestException("Неверный код подтверждения");
+        }
+
+        PhoneVerificationEnt ent = phoneVerificationRepo.findById(verificationId)
+                .orElseThrow(() -> new NotFoundException("Сессия верификации не найдена"));
+
+        PhoneVerificationStatus status = resolveEffectiveStatus(ent);
+        if (status == PhoneVerificationStatus.EXPIRED) {
+            throw new BadRequestException("Время подтверждения истекло");
+        }
+        if (status == PhoneVerificationStatus.CONFIRMED) {
+            return new PhoneVerificationStatusRes(ent.getId(), PhoneVerificationStatus.CONFIRMED);
+        }
+
+        ent.setStatus(PhoneVerificationStatus.CONFIRMED);
+        ent.setConfirmedAt(LocalDateTime.now());
+        phoneVerificationRepo.save(ent);
+        log.warn("Phone verified via dev code: verificationId={} phone={}", ent.getId(), ent.getPhoneNumber());
+        return new PhoneVerificationStatusRes(ent.getId(), PhoneVerificationStatus.CONFIRMED);
     }
 
     @Override
@@ -186,6 +218,23 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         if (telegramProperties.getBotToken() == null || telegramProperties.getBotToken().isBlank()) {
             throw new BadRequestException("Telegram-бот не настроен");
         }
+    }
+
+    private void ensureTelegramEnabledOrDev() {
+        if (telegramProperties.isAllowDevConfirm()) {
+            return;
+        }
+        ensureTelegramEnabled();
+    }
+
+    private String resolveBotUsername() {
+        if (telegramProperties.getBotUsername() != null && !telegramProperties.getBotUsername().isBlank()) {
+            return telegramProperties.getBotUsername();
+        }
+        if (telegramProperties.isAllowDevConfirm()) {
+            return "dev_bot";
+        }
+        throw new BadRequestException("Telegram-бот не настроен");
     }
 
     static String normalizePhone(String phone) {

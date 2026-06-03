@@ -16,5 +16,7 @@ public interface PhoneVerificationService {
 
     void requireConfirmed(UUID verificationId, String phoneNumber);
 
+    PhoneVerificationStatusRes confirmWithDevCode(UUID verificationId, String code);
+
     void handleWebhookUpdate(Map<String, Object> update);
 }

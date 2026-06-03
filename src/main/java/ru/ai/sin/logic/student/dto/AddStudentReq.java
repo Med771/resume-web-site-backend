@@ -72,6 +72,16 @@ public record AddStudentReq(
         @NotNull
         List<@Positive Long> skillsIds,
 
+        @Schema(description = "Логин учётной записи (обязателен — карточка создаётся вместе с User)")
+        @NotBlank
+        @Size(min = 3, max = 64)
+        @Pattern(regexp = "^[a-zA-Z0-9_]{3,64}$", message = "Username must be 3-64 characters, letters, digits or _")
+        String username,
+
+        @Schema(description = "Пароль учётной записи")
+        @NotBlank
+        String password,
+
         @Schema(description = """
                 Согласие на показ укороченной карточки на публичной витрине без JWT.
                 `null` или `false` — **false** в БД; `true` — включить.""")

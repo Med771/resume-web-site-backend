@@ -15,6 +15,7 @@ import ru.ai.sin.logic.registration.ClientIpResolver;
 import ru.ai.sin.logic.registration.RegistrationIpRateLimiter;
 import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
 import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.logic.verification.PhoneVerificationService;
 import ru.ai.sin.models.enums.RecruiterRegistrationStatus;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
     private final RegistrationPasswordPolicy passwordPolicy;
     private final RegistrationProperties registrationProperties;
     private final UserProperties userProperties;
+    private final PhoneVerificationService phoneVerificationService;
 
     private final UserRepo userRepo;
     private final RecruiterRepo recruiterRepo;
@@ -49,6 +51,13 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
 
         String username = req.username().trim();
         String email = req.email().trim();
+        String phone = trimToNull(req.phoneNumber());
+
+        if (phone != null) {
+            phoneVerificationService.requireConfirmed(req.phoneVerificationId(), phone);
+        } else {
+            throw new BadRequestException("Укажите и подтвердите номер телефона в Telegram");
+        }
 
         if (userRepo.existsByUsername(username)) {
             log.warn("Recruiter registration: username already taken");
@@ -81,13 +90,17 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
         RecruiterRegistrationRequestEnt ent = new RecruiterRegistrationRequestEnt();
         ent.setUsername(username);
         ent.setPasswordHash(passwordEncoder.encode(req.password()));
-        ent.setName(trimToNull(req.name()));
+        ent.setName(buildDisplayName(req));
         ent.setCompanyName(req.companyName().trim());
+        ent.setCity(trimToNull(req.city()));
         ent.setFirstName(trimToNull(req.firstName()));
         ent.setLastName(trimToNull(req.lastName()));
+        ent.setMiddleName(trimToNull(req.middleName()));
         ent.setEmail(email);
-        ent.setPhoneNumber(trimToNull(req.phoneNumber()));
+        ent.setPhoneNumber(phone);
         ent.setTelegramUsername(trimToNull(req.telegramUsername()));
+        ent.setPhoneVerificationId(req.phoneVerificationId());
+        ent.setMarketingConsent(Boolean.TRUE.equals(req.marketingConsent()));
         ent.setStatus(RecruiterRegistrationStatus.PENDING);
 
         try {
@@ -97,6 +110,25 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
             throw conflict();
         }
         log.info("Recruiter registration submitted: id={} username={}", ent.getId(), username);
+    }
+
+    private static String buildDisplayName(RecruiterSelfRegistrationReq req) {
+        if (req.name() != null && !req.name().isBlank()) {
+            return req.name().trim();
+        }
+        StringBuilder sb = new StringBuilder();
+        if (req.lastName() != null && !req.lastName().isBlank()) {
+            sb.append(req.lastName().trim());
+        }
+        if (req.firstName() != null && !req.firstName().isBlank()) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(req.firstName().trim());
+        }
+        if (req.middleName() != null && !req.middleName().isBlank()) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(req.middleName().trim());
+        }
+        return sb.isEmpty() ? null : sb.toString();
     }
 
     private static BadRequestException conflict() {

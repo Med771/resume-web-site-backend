@@ -73,7 +73,7 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
 
         UserEnt user = new UserEnt(
                 RoleEnum.STUDENT,
-                emptyToNull(req.name()),
+                buildDisplayName(req),
                 username,
                 passwordEncoder.encode(req.password())
         );
@@ -105,5 +105,24 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
             return null;
         }
         return s.trim();
+    }
+
+    private static String buildDisplayName(StudentAccountRegistrationReq req) {
+        if (req.name() != null && !req.name().isBlank()) {
+            return req.name().trim();
+        }
+        StringBuilder sb = new StringBuilder();
+        if (req.lastName() != null && !req.lastName().isBlank()) {
+            sb.append(req.lastName().trim());
+        }
+        if (req.firstName() != null && !req.firstName().isBlank()) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(req.firstName().trim());
+        }
+        if (req.middleName() != null && !req.middleName().isBlank()) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(req.middleName().trim());
+        }
+        return sb.isEmpty() ? null : sb.toString();
     }
 }

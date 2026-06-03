@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,9 @@ import ru.ai.sin.logic.portfolio.PortfolioEnt;
 import ru.ai.sin.logic.portfolio.PortfolioRepo;
 import ru.ai.sin.logic.request.RequestRepo;
 import ru.ai.sin.logic.student.dto.*;
+import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
+import ru.ai.sin.logic.user.UserEnt;
+import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.speciality.SpecialityEnt;
 import ru.ai.sin.logic.skill.SkillEnt;
 import ru.ai.sin.logic.skill.SkillRepo;
@@ -62,6 +66,9 @@ public class StudentServiceImpl implements StudentService {
     private final FileHelper fileHelper;
     private final SecurityHelper securityHelper;
     private final UserTools userTools;
+    private final UserRepo userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final RegistrationPasswordPolicy registrationPasswordPolicy;
 
     /**
      * Один read-only boundary на загрузку + маппинг: {@link StudentTools#getStudentOrThrow} завершает свой вложенный tx,
@@ -183,6 +190,8 @@ public class StudentServiceImpl implements StudentService {
         StudentProfileScoring.applyTo(studentEnt);
         studentRepo.save(studentEnt);
 
+        linkStudentAccount(studentEnt, addStudentReq.username(), addStudentReq.password(), buildStudentDisplayName(addStudentReq));
+
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
 
         log.info("User: {}, created a new student: {}", securityHelper.getCurrentUsername(), studentDTO);
@@ -213,6 +222,14 @@ public class StudentServiceImpl implements StudentService {
 
         StudentProfileScoring.applyTo(studentEnt);
         studentRepo.save(studentEnt);
+
+        if (hasAccountCredentials(createStudentExtendedReq.username(), createStudentExtendedReq.password())) {
+            linkStudentAccount(
+                    studentEnt,
+                    createStudentExtendedReq.username(),
+                    createStudentExtendedReq.password(),
+                    buildStudentDisplayName(base));
+        }
 
         StudentDTO studentDTO = studentTools.mapToDTO(studentEnt);
         log.info("User: {}, created extended student: {}", securityHelper.getCurrentUsername(), studentDTO);
@@ -362,9 +379,52 @@ public class StudentServiceImpl implements StudentService {
                 req.telegramUsername(),
                 req.specialityId(),
                 List.of(),
+                req.username(),
+                req.password(),
                 req.publicProfileConsent(),
                 req.manualSortOrder()
         );
+    }
+
+    private void linkStudentAccount(StudentEnt studentEnt, String username, String password, String displayName) {
+        if (username == null || username.isBlank()) {
+            throw new BadRequestException("Укажите логин для учётной записи");
+        }
+        if (password == null || password.isBlank()) {
+            throw new BadRequestException("Укажите пароль для учётной записи");
+        }
+        String login = username.trim();
+        registrationPasswordPolicy.validate(password);
+        if (userRepo.existsByUsername(login)) {
+            throw new BadRequestException("Пользователь с таким логином уже существует: " + login);
+        }
+        if (userRepo.findByStudent_Id(studentEnt.getId()).isPresent()) {
+            throw new BadRequestException("К этой карточке студента уже привязан пользователь");
+        }
+        UserEnt user = new UserEnt(
+                RoleEnum.STUDENT,
+                displayName,
+                login,
+                passwordEncoder.encode(password)
+        );
+        user.setStudent(studentEnt);
+        try {
+            userRepo.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            log.warn("Failed to link student account: {}", ex.getMessage());
+            throw new BadRequestException("Не удалось создать учётную запись для студента");
+        }
+    }
+
+    private static String buildStudentDisplayName(AddStudentReq req) {
+        String first = req.firstName() != null ? req.firstName().trim() : "";
+        String last = req.lastName() != null ? req.lastName().trim() : "";
+        String combined = (first + " " + last).trim();
+        return combined.isEmpty() ? null : combined;
+    }
+
+    private static boolean hasAccountCredentials(String username, String password) {
+        return username != null && !username.isBlank() && password != null && !password.isBlank();
     }
 
     /**

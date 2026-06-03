@@ -3,6 +3,8 @@ package ru.ai.sin.logic.recruiter.registration.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
+import java.util.UUID;
+
 @Schema(name = "RecruiterSelfRegistrationReq", description = "Заявка на регистрацию работодателя; вход после одобрения администратором")
 public record RecruiterSelfRegistrationReq(
         @Schema(description = "Логин будущего аккаунта")
@@ -19,7 +21,7 @@ public record RecruiterSelfRegistrationReq(
         @NotBlank
         String passwordConfirm,
 
-        @Schema(description = "Отображаемое имя (необязательно)")
+        @Schema(description = "Отображаемое имя (необязательно, иначе собирается из ФИО)")
         @Size(max = 255)
         String name,
 
@@ -28,6 +30,10 @@ public record RecruiterSelfRegistrationReq(
         @Size(min = 1, max = 255)
         String companyName,
 
+        @Schema(description = "Город компании или ИП")
+        @Size(max = 255)
+        String city,
+
         @Schema(description = "Имя")
         @Size(min = 1, max = 255)
         String firstName,
@@ -35,6 +41,10 @@ public record RecruiterSelfRegistrationReq(
         @Schema(description = "Фамилия")
         @Size(min = 1, max = 255)
         String lastName,
+
+        @Schema(description = "Отчество (необязательно)")
+        @Size(max = 255)
+        String middleName,
 
         @Schema(description = "Email компании/контакта (для связи и модерации)")
         @NotBlank
@@ -48,6 +58,13 @@ public record RecruiterSelfRegistrationReq(
 
         @Schema(description = "Telegram username")
         @Size(min = 1, max = 32)
-        String telegramUsername
+        String telegramUsername,
+
+        @Schema(description = "ID сессии верификации телефона в Telegram")
+        @NotNull
+        UUID phoneVerificationId,
+
+        @Schema(description = "Согласие на рассылку советов и предложений")
+        Boolean marketingConsent
 ) {
 }

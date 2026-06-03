@@ -42,6 +42,18 @@ public class RecruiterRegistrationRequestEnt {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "middle_name")
+    private String middleName;
+
+    @Column
+    private String city;
+
+    @Column(name = "marketing_consent", nullable = false)
+    private boolean marketingConsent;
+
+    @Column(name = "phone_verification_id")
+    private UUID phoneVerificationId;
+
     @Column
     private String email;
 
