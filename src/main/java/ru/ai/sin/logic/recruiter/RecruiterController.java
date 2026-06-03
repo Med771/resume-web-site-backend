@@ -38,7 +38,7 @@ public class RecruiterController {
     @Operation(
             summary = "Мой профиль рекрутера",
             description = "Возвращает рекрутера, привязанного к текущему пользователю. Если привязки ещё нет — 404 (нужно отправить первую заявку с полными данными).")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/me")
     public ResponseEntity<RecruiterDTO> getMyLinkedRecruiter() {
         return recruiterService
@@ -48,7 +48,7 @@ public class RecruiterController {
     }
 
     @Operation(summary = "Получить рекрутера по ID", description = "Возвращает карточку рекрутера")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<RecruiterDTO> getById(
             @PathVariable @NotNull UUID id

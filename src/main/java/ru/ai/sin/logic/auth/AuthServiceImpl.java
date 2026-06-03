@@ -17,6 +17,7 @@ import ru.ai.sin.logic.auth.dto.*;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.config.property.JwtProperties;
+import ru.ai.sin.helper.SecurityHelper;
 
 import java.util.Arrays;
 
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtHelper jwtHelper;
     private final JwtProperties jwtProperties;
+    private final SecurityHelper securityHelper;
 
     /**
      * Метод для Login
@@ -60,6 +62,15 @@ public class AuthServiceImpl implements AuthService {
         String username = jwtHelper.getUsernameFromRefreshToken(refreshToken);
 
         return jwtHelper.generateAccessToken(username);
+    }
+
+    @Override
+    public AuthMeDTO getCurrentSession() {
+        String username = securityHelper.getCurrentUsernameOptional()
+                .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
+        String role = securityHelper.getCurrentRoleOptional()
+                .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
+        return new AuthMeDTO(username, role);
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {

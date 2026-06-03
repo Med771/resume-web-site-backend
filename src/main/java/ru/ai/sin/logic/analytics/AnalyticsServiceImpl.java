@@ -116,10 +116,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         return new EntityPopulationSummaryDTO(
                 totalUsers,
-                byRole.get(RoleEnum.GUEST),
-                byRole.get(RoleEnum.USER),
-                byRole.get(RoleEnum.STUDENT),
-                byRole.get(RoleEnum.ADMIN),
+                byRole.getOrDefault(RoleEnum.RECRUITER, 0L),
+                byRole.getOrDefault(RoleEnum.STUDENT, 0L),
+                byRole.getOrDefault(RoleEnum.ADMIN, 0L),
                 totalStudents,
                 totalRecruiters,
                 newStudents,

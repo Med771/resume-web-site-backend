@@ -17,6 +17,8 @@ public interface VacancyRepo extends JpaRepository<VacancyEnt, UUID>, JpaSpecifi
 
     List<VacancyEnt> findByRecruiter_IdOrderByTimestamps_CreatedAtDesc(UUID recruiterId);
 
+    long countByRecruiter_Id(UUID recruiterId);
+
     @Query("SELECT COUNT(a) FROM VacancyApplicationEnt a WHERE a.vacancy.id = :vacancyId")
     long countApplicationsByVacancyId(@Param("vacancyId") UUID vacancyId);
 

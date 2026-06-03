@@ -47,13 +47,22 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getByFilter(pageable, filterRequestReq));
     }
 
+    @Operation(summary = "Мои заявки", description = "STUDENT или RECRUITER — только свои заявки")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER')")
+    @PostMapping(path = "/mine/filter")
+    public ResponseEntity<PageResponse<RequestDTO>> getMineByFilter(
+            @PageableDefault Pageable pageable,
+            @Valid @RequestBody(required = false) FilterRequestReq filterRequestReq) {
+        return ResponseEntity.ok(requestService.getMineByFilter(pageable, filterRequestReq));
+    }
+
     @Operation(
             summary = "Создать заявку",
             description = "Заявка от рекрутера на студента. Роль STUDENT создавать заявки не может. "
                     + "Студент с курсом NEW недоступен не-админу (ответ 404, как при отсутствии id). "
                     + "После первой заявки с полными данными профиль рекрутера привязывается к пользователю; "
                     + "далее достаточно studentId (проверка: GET /recruiter/me). В чате появляется системное сообщение об отправке.")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping()
     public ResponseEntity<RequestDTO> create(@Valid @RequestBody AddRequestReq addRequestReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(requestService.create(addRequestReq));

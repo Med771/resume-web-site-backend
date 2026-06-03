@@ -11,10 +11,8 @@ public record EntityPopulationSummaryDTO(
         @Schema(description = "Всего строк в `users`")
         long totalUsers,
 
-        @Schema(description = "Пользователи с ролью GUEST")
-        long usersGuest,
-        @Schema(description = "Пользователи с ролью USER")
-        long usersUser,
+        @Schema(description = "Пользователи с ролью RECRUITER")
+        long usersRecruiter,
         @Schema(description = "Пользователи с ролью STUDENT")
         long usersStudent,
         @Schema(description = "Пользователи с ролью ADMIN")

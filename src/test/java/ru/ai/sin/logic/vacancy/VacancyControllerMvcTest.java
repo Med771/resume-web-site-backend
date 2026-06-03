@@ -57,7 +57,7 @@ class VacancyControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void create_allowedForGuest() throws Exception {
         mockMvc.perform(post("/vacancies")
                         .contentType(MediaType.APPLICATION_JSON)

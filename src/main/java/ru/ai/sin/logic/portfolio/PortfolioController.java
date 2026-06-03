@@ -33,7 +33,7 @@ public class PortfolioController {
     private final PortfolioService portfolioService;
 
     @Operation(summary = "Получить портфолио по ID", description = "Возвращает запись портфолио")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<PortfolioDTO> getById(@PathVariable @Min(1) long id) {
         PortfolioDTO portfolioDTO = portfolioService.getById(id);
@@ -42,7 +42,7 @@ public class PortfolioController {
     }
 
     @Operation(summary = "Фильтр портфолио", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<PortfolioDTO>> findAllByFilter(
             @PageableDefault Pageable pageable,

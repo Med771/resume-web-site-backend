@@ -81,7 +81,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt user = new UserEnt(RoleEnum.USER, "R", "rec1", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "R", "rec1", "h");
         user.setId(userId);
         user.setRecruiter(recruiter);
         when(userRepo.findByUsernameFetchingLinks("rec1")).thenReturn(Optional.of(user));
@@ -113,7 +113,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt user = new UserEnt(RoleEnum.USER, "R", "rec1", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "R", "rec1", "h");
         user.setRecruiter(recruiter);
         when(userRepo.findByUsernameFetchingLinks("rec1")).thenReturn(Optional.of(user));
 
@@ -140,7 +140,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt otherRec = new RecruiterEnt();
         otherRec.setId(UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"));
-        UserEnt user = new UserEnt(RoleEnum.USER, "X", "stranger", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "X", "stranger", "h");
         user.setRecruiter(otherRec);
         when(userRepo.findByUsernameFetchingLinks("stranger")).thenReturn(Optional.of(user));
 
@@ -191,7 +191,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt user = new UserEnt(RoleEnum.USER, "R", "rec1", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "R", "rec1", "h");
         user.setRecruiter(recruiter);
         when(userRepo.findByUsernameFetchingLinks("rec1")).thenReturn(Optional.of(user));
 
@@ -218,7 +218,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt user = new UserEnt(RoleEnum.USER, "R", "rec1", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "R", "rec1", "h");
         user.setRecruiter(recruiter);
         when(userRepo.findByUsernameFetchingLinks("rec1")).thenReturn(Optional.of(user));
 
@@ -236,7 +236,7 @@ class ChatServiceImplTest {
 
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt viewer = new UserEnt(RoleEnum.USER, "R", "rec1", "h");
+        UserEnt viewer = new UserEnt(RoleEnum.RECRUITER, "R", "rec1", "h");
         viewer.setId(userId);
         viewer.setRecruiter(recruiter);
         when(userRepo.findByUsernameFetchingLinks("rec1")).thenReturn(Optional.of(viewer));
@@ -251,7 +251,7 @@ class ChatServiceImplTest {
         chat.setStudent(chatStudent);
         when(chatRepo.findById(chatId)).thenReturn(Optional.of(chat));
 
-        UserEnt otherAuthor = new UserEnt(RoleEnum.USER, "O", "other", "h");
+        UserEnt otherAuthor = new UserEnt(RoleEnum.RECRUITER, "O", "other", "h");
         otherAuthor.setId(otherAuthorId);
 
         ChatMessageEnt message = new ChatMessageEnt();

@@ -3,6 +3,7 @@ package ru.ai.sin.helper;
 import org.springframework.security.access.AccessDeniedException;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,6 +54,19 @@ public class SecurityHelper {
         if (!isAdmin) {
             throw new AccessDeniedException("Only admins can access filter");
         }
+    }
+
+    /** Первая роль пользователя без префикса ROLE_ (STUDENT, RECRUITER, ADMIN). */
+    public Optional<String> getCurrentRoleOptional() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            return Optional.empty();
+        }
+        return auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring("ROLE_".length()))
+                .findFirst();
     }
 
     /** Текущий principal имеет роль ADMIN (иначе false, в т.ч. при отсутствии аутентификации). */

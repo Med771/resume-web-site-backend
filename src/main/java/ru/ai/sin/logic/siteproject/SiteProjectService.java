@@ -11,11 +11,17 @@ import java.util.UUID;
 
 public interface SiteProjectService {
 
-    List<SiteProjectDTO> listAdminOrdered();
+    List<SiteProjectDTO> listAdminOrdered(String findString);
 
-    List<SiteProjectDTO> listPublicVisible();
+    SiteProjectDTO getAdminById(UUID id);
 
-    List<SiteProjectDTO> listAuthenticatedVisible();
+    List<SiteProjectDTO> listPublicVisible(String findString);
+
+    SiteProjectDTO getPublicVisibleById(UUID id);
+
+    List<SiteProjectDTO> listAuthenticatedVisible(boolean includeStudents, String findString);
+
+    SiteProjectDTO getAuthenticatedVisibleById(UUID id, boolean includeStudents);
 
     SiteProjectDTO create(CreateSiteProjectReq req);
 

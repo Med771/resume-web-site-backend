@@ -55,6 +55,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/verification/phone/**").permitAll()
+                        .requestMatchers("/telegram/webhook").permitAll()
                         .requestMatchers("/public/registration/**").permitAll()
                         .requestMatchers("/public/students/**").permitAll()
                         .requestMatchers("/public/projects/**").permitAll()

@@ -50,15 +50,15 @@ class SiteProjectAdminControllerMvcTest {
     @WithMockUser(roles = "ADMIN")
     void list_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        when(siteProjectService.listAdminOrdered()).thenReturn(List.of(
-                new SiteProjectDTO(id, "T", null, null, null, 0, true, null, null)
+        when(siteProjectService.listAdminOrdered(null)).thenReturn(List.of(
+                new SiteProjectDTO(id, "T", null, null, null, List.of(), List.of(), 0, true, null, null, null)
         ));
         mockMvc.perform(get("/admin/projects").with(csrf()))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void list_forbiddenForUser() throws Exception {
         mockMvc.perform(get("/admin/projects").with(csrf()))
                 .andExpect(status().isForbidden());

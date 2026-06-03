@@ -56,9 +56,9 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("User already exists: " + addUserReq.username());
         }
 
-        RoleEnum role = addUserReq.role() != null ? addUserReq.role() : RoleEnum.USER;
-        if (role == RoleEnum.ADMIN || role == RoleEnum.GUEST) {
-            throw new BadRequestException("Создание пользователя допустимо только с ролью USER или STUDENT");
+        RoleEnum role = addUserReq.role() != null ? addUserReq.role() : RoleEnum.RECRUITER;
+        if (role == RoleEnum.ADMIN) {
+            throw new BadRequestException("Создание пользователя допустимо только с ролью RECRUITER или STUDENT");
         }
 
         UserEnt userEnt;
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
                 throw new BadRequestException("Поле studentId допустимо только для роли STUDENT");
             }
             userEnt = new UserEnt(
-                    RoleEnum.USER,
+                    RoleEnum.RECRUITER,
                     addUserReq.name(),
                     addUserReq.username(),
                     passwordEncoder.encode(addUserReq.password())
@@ -106,8 +106,8 @@ public class UserServiceImpl implements UserService {
         UserEnt userEnt = userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
 
-        if (userEnt.getRole() != RoleEnum.USER && userEnt.getRole() != RoleEnum.STUDENT) {
-            throw new BadRequestException("Удалять можно только пользователей с ролью USER или STUDENT");
+        if (userEnt.getRole() != RoleEnum.RECRUITER && userEnt.getRole() != RoleEnum.STUDENT) {
+            throw new BadRequestException("Удалять можно только пользователей с ролью RECRUITER или STUDENT");
         }
 
         userRepo.delete(userEnt);

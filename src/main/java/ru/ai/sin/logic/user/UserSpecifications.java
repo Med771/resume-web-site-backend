@@ -24,7 +24,7 @@ public final class UserSpecifications {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("role"), RoleEnum.USER));
+            predicates.add(cb.equal(root.get("role"), RoleEnum.RECRUITER));
 
             if (filterUserReq != null && filterUserReq.username() != null && !filterUserReq.username().isBlank()) {
                 String pattern = "%" + filterUserReq.username().toLowerCase() + "%";

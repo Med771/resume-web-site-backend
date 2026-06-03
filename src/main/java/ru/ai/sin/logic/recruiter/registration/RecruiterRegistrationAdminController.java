@@ -43,7 +43,7 @@ public class RecruiterRegistrationAdminController {
         return ResponseEntity.ok(recruiterRegistrationAdminService.filter(pageable, filter));
     }
 
-    @Operation(summary = "Одобрить заявку", description = "Создаёт Recruiter + User(USER) с паролем из заявки; заявка переходит в APPROVED")
+    @Operation(summary = "Одобрить заявку", description = "Создаёт Recruiter + User(RECRUITER) с паролем из заявки; заявка переходит в APPROVED")
     @PostMapping("/{id}/approve")
     public ResponseEntity<RecruiterRegistrationApproveResultDTO> approve(@PathVariable UUID id) {
         return ResponseEntity.ok(recruiterRegistrationAdminService.approve(id));

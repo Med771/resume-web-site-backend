@@ -73,7 +73,7 @@ class ChatControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(username = "u1", roles = "USER")
+    @WithMockUser(username = "u1", roles = "RECRUITER")
     void adminDelete_forbiddenForNonAdmin() throws Exception {
         mockMvc.perform(delete("/chat/{chatId}/messages/{messageId}", CHAT_ID, MSG_ID)
                         .with(csrf()))

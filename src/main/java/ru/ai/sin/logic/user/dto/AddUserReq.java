@@ -21,7 +21,7 @@ public record AddUserReq(
         @Size(min = 1, max = 128)
         String password,
 
-        @Schema(description = "По умолчанию USER. Для STUDENT укажите studentId.")
+        @Schema(description = "По умолчанию RECRUITER. Для STUDENT укажите studentId.")
         RoleEnum role,
 
         @Schema(description = "Обязателен при role=STUDENT; карточка студента не должна быть привязана к другому пользователю.")

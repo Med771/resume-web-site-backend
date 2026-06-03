@@ -45,7 +45,7 @@ public class VacancyController {
 
     @Operation(summary = "Лента опубликованных вакансий")
     @GetMapping
-    @PreAuthorize("hasAnyRole('STUDENT', 'GUEST', 'USER')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     public ResponseEntity<PageResponse<VacancyCardDTO>> list(
             @PageableDefault Pageable pageable,
             @Valid @ModelAttribute FilterVacancyReq filter
@@ -55,7 +55,7 @@ public class VacancyController {
 
     @Operation(summary = "Вакансии текущего рекрутёра")
     @GetMapping("/mine")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<List<VacancyDTO>> listMine() {
         return ResponseEntity.ok(vacancyService.listMine());
     }
@@ -71,14 +71,14 @@ public class VacancyController {
 
     @Operation(summary = "Деталь вакансии")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STUDENT', 'GUEST', 'USER')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     public ResponseEntity<VacancyDTO> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(vacancyService.getById(id));
     }
 
     @Operation(summary = "Создать черновик вакансии")
     @PostMapping
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     @ResponseStatus(HttpStatus.CREATED)
     public VacancyDTO create(@Valid @RequestBody CreateVacancyReq req) {
         return vacancyService.create(req);
@@ -86,28 +86,28 @@ public class VacancyController {
 
     @Operation(summary = "Обновить черновик или отклонённую вакансию")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<VacancyDTO> update(@PathVariable UUID id, @Valid @RequestBody UpdateVacancyReq req) {
         return ResponseEntity.ok(vacancyService.update(id, req));
     }
 
     @Operation(summary = "Отправить на модерацию")
     @PostMapping("/{id}/submit-for-review")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<VacancyDTO> submitForReview(@PathVariable UUID id) {
         return ResponseEntity.ok(vacancyService.submitForReview(id));
     }
 
     @Operation(summary = "Закрыть вакансию (прекратить отклики)")
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<VacancyDTO> close(@PathVariable UUID id) {
         return ResponseEntity.ok(vacancyService.close(id));
     }
 
     @Operation(summary = "Архивировать вакансию (или удалить пустой черновик)")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {
         vacancyService.delete(id);
@@ -134,7 +134,7 @@ public class VacancyController {
 
     @Operation(summary = "Отклики на вакансию (рекрутер)")
     @GetMapping("/{id}/applications")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<PageResponse<VacancyApplicationDTO>> listApplications(
             @PathVariable UUID id,
             @PageableDefault Pageable pageable
@@ -144,7 +144,7 @@ public class VacancyController {
 
     @Operation(summary = "Принять отклик")
     @PostMapping("/{id}/applications/{applicationId}/accept")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<VacancyApplicationDTO> accept(
             @PathVariable UUID id,
             @PathVariable UUID applicationId
@@ -154,7 +154,7 @@ public class VacancyController {
 
     @Operation(summary = "Отклонить отклик")
     @PostMapping("/{id}/applications/{applicationId}/reject")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<VacancyApplicationDTO> reject(
             @PathVariable UUID id,
             @PathVariable UUID applicationId,

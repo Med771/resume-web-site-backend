@@ -43,14 +43,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getByFilter(pageable, filterUserReq));
     }
 
-    @Operation(summary = "Создать пользователя", description = "USER по умолчанию; для ЛК студента — role=STUDENT и studentId")
+    @Operation(summary = "Создать пользователя", description = "RECRUITER по умолчанию; для ЛК студента — role=STUDENT и studentId")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<UserDTO> create(@Valid @RequestBody AddUserReq addUserReq) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(addUserReq));
     }
 
-    @Operation(summary = "Удалить пользователя", description = "Удаляет пользователя с ролью USER или STUDENT по UUID")
+    @Operation(summary = "Удалить пользователя", description = "Удаляет пользователя с ролью RECRUITER или STUDENT по UUID")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

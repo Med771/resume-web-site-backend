@@ -15,10 +15,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -102,17 +107,44 @@ public class FileHelper {
         return null;
     }
 
+    public String uploadImage(MultipartFile file, String baseName) {
+        validateMultipart(file);
+        return saveFile(file, baseName);
+    }
+
+    public List<StoredFileInfo> listImageFiles() {
+        Path base = fileConfig.getFilePath().toAbsolutePath().normalize();
+        try (Stream<Path> stream = Files.list(base)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> isAllowedImageFileName(path.getFileName().toString()))
+                    .map(this::toStoredFileInfo)
+                    .sorted(Comparator.comparing(StoredFileInfo::fileName, String.CASE_INSENSITIVE_ORDER))
+                    .toList();
+        } catch (IOException e) {
+            log.error("Failed to list storage directory {}", base, e);
+            throw new BadRequestException("Failed to list storage files");
+        }
+    }
+
+    public void deleteFile(String fileName) throws FileNotFoundException {
+        Path resolved = resolveSafePath(fileName);
+        if (!Files.exists(resolved)) {
+            throw new FileNotFoundException(fileName);
+        }
+        try {
+            Files.delete(resolved);
+        } catch (IOException e) {
+            log.error("Failed to delete file {}", fileName, e);
+            throw new BadRequestException("Failed to delete file");
+        }
+    }
+
     public byte[] getFileContent(String fileName) throws FileNotFoundException {
         if (fileName == null || fileName.isBlank()) {
             throw new FileNotFoundException("empty");
         }
-        Path base = fileConfig.getFilePath().toAbsolutePath().normalize();
-        Path resolved = base.resolve(fileName).normalize();
-        if (!resolved.startsWith(base)) {
-            log.warn("Rejected path outside storage: {}", fileName);
-            throw new FileNotFoundException(fileName);
-        }
-        Path filePath = resolved;
+        Path filePath = resolveSafePath(fileName);
 
         if (!Files.exists(filePath)) {
             log.warn("File {} does not exist", fileName);
@@ -127,13 +159,42 @@ public class FileHelper {
         }
     }
 
+    private Path resolveSafePath(String fileName) throws FileNotFoundException {
+        Path base = fileConfig.getFilePath().toAbsolutePath().normalize();
+        Path resolved = base.resolve(fileName).normalize();
+        if (!resolved.startsWith(base)) {
+            log.warn("Rejected path outside storage: {}", fileName);
+            throw new FileNotFoundException(fileName);
+        }
+        return resolved;
+    }
+
+    private StoredFileInfo toStoredFileInfo(Path path) {
+        try {
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            String fileName = path.getFileName().toString();
+            return new StoredFileInfo(fileName, attrs.size(), attrs.lastModifiedTime().toInstant());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static boolean isAllowedImageFileName(String fileName) {
+        return extensionFromFilename(fileName)
+                .map(ALLOWED_EXTENSIONS::contains)
+                .orElse(false);
+    }
+
+    public record StoredFileInfo(String fileName, long sizeBytes, Instant lastModified) {
+    }
+
     public void validateMultipart(MultipartFile multipartFile) {
         if (multipartFile == null || multipartFile.isEmpty()) {
-            throw new BadRequestException("Avatar file is required");
+            throw new BadRequestException("Image file is required");
         }
 
         if (multipartFile.getSize() > fileConfig.getMaxUploadSizeBytes()) {
-            throw new BadRequestException("Avatar file is too large");
+            throw new BadRequestException("Image file is too large");
         }
 
         byte[] header;
@@ -145,7 +206,7 @@ public class FileHelper {
         }
 
         if (header.length < 3) {
-            throw new BadRequestException("Avatar file is too small or corrupted");
+            throw new BadRequestException("Image file is too small or corrupted");
         }
 
         Optional<String> fromSignature = detectExtensionFromSignature(header, header.length);
@@ -157,7 +218,7 @@ public class FileHelper {
         String mime = rawMime == null ? "" : rawMime.trim().toLowerCase(Locale.ROOT);
         if (!mime.isEmpty() && !ALLOWED_MIME_TYPES.contains(mime)) {
             throw new BadRequestException(
-                    "Avatar must be an image (JPEG, PNG, GIF, WebP, BMP, HEIC, AVIF or TIFF). Got content type: "
+                    "File must be an image (JPEG, PNG, GIF, WebP, BMP, HEIC, AVIF or TIFF). Got content type: "
                             + rawMime);
         }
 
@@ -167,7 +228,7 @@ public class FileHelper {
         }
 
         throw new BadRequestException(
-                "Avatar must be a supported image format. "
+                "File must be a supported image format. "
                         + "If the file is JPG/PNG/etc., ensure the file is not corrupted and try again.");
     }
 

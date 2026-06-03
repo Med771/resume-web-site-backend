@@ -17,7 +17,7 @@ import ru.ai.sin.logic.auth.dto.*;
 import ru.ai.sin.logic.recruiter.registration.RecruiterSelfRegistrationService;
 import ru.ai.sin.logic.recruiter.registration.dto.RecruiterSelfRegistrationReq;
 import ru.ai.sin.logic.registration.StudentRegistrationService;
-import ru.ai.sin.logic.registration.dto.StudentSelfRegistrationReq;
+import ru.ai.sin.logic.registration.dto.StudentAccountRegistrationReq;
 
 import ru.ai.sin.helper.CookieHelper;
 
@@ -46,13 +46,13 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "Саморегистрация студента",
-            description = "Создаёт аккаунт STUDENT, карточку с курсом NEW (модерация до показа рекрутерам), "
-                    + "устанавливает те же HttpOnly-cookie, что и при входе. Лимит попыток по IP — см. app.registration.")
+            summary = "Саморегистрация студента (учётная запись)",
+            description = "Создаёт аккаунт STUDENT после подтверждения телефона в Telegram. "
+                    + "Карточка резюме — POST /student/onboarding/resume. Cookie как при входе.")
     @PostMapping("/register-student")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void registerStudent(
-            @Valid @RequestBody StudentSelfRegistrationReq req,
+            @Valid @RequestBody StudentAccountRegistrationReq req,
             HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
@@ -87,5 +87,11 @@ public class AuthController {
     public void logout(HttpServletResponse response) {
         response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearAccessTokenCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearRefreshTokenCookie().toString());
+    }
+
+    @Operation(summary = "Текущая сессия", description = "Логин и роль авторизованного пользователя")
+    @GetMapping("/me")
+    public AuthMeDTO me() {
+        return authService.getCurrentSession();
     }
 }

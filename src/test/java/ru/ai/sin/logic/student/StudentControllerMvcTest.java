@@ -75,7 +75,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void getMe_forbiddenForRecruiterRole() throws Exception {
         mockMvc.perform(get("/student/me"))
                 .andExpect(status().isForbidden());
@@ -98,7 +98,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void getById_okForRecruiter() throws Exception {
         when(studentService.getById(STUDENT_ID)).thenReturn(sampleStudentDto());
 
@@ -107,7 +107,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void cardsFilter_okForGuest() throws Exception {
         when(studentService.getAllCardsByFilter(any(), any()))
                 .thenReturn(new PageResponse<>(List.of(), 0, 20, 0, 0));
@@ -130,7 +130,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void filter_okForUser() throws Exception {
         when(studentService.getAllByFilter(any(), any()))
                 .thenReturn(new PageResponse<>(List.of(sampleStudentDto()), 0, 20, 1, 1));
@@ -143,7 +143,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void create_forbiddenForNonAdmin() throws Exception {
         String body = """
                 {"city":"C","hhLink":"https://h","birthDate":"2000-01-01","bio":null,"course":"FIRST","busyness":"EMPLOYED",\
@@ -175,7 +175,7 @@ class StudentControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void delete_forbiddenForUser() throws Exception {
         mockMvc.perform(delete("/student/{id}", STUDENT_ID).with(csrf()))
                 .andExpect(status().isForbidden());

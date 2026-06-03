@@ -34,7 +34,7 @@ public class SkillController {
     private final SkillService skillService;
 
     @Operation(summary = "Получить навык по ID", description = "Возвращает карточку навыка")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<SkillDTO> getById(@PathVariable @Min(1) long id) {
         SkillDTO skillDTO = skillService.getById(id);

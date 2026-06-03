@@ -38,7 +38,7 @@ public class InstitutionController {
     private final SecurityHelper securityHelper;
 
     @Operation(summary = "Получить запись обучения по ID", description = "Возвращает запись обучения студента")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<InstitutionDTO> getById(@PathVariable @Min(1) long id) {
         InstitutionDTO institutionDTO = institutionService.getById(id);
@@ -47,7 +47,7 @@ public class InstitutionController {
     }
 
     @Operation(summary = "Фильтр записей обучения", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<InstitutionDTO>> findAllByFilter(
             @PageableDefault Pageable pageable,

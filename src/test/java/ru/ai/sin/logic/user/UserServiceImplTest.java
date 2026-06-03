@@ -62,7 +62,7 @@ class UserServiceImplTest {
     void create_userRoleRejectsStudentId() {
         when(userRepo.existsByUsername("u2")).thenReturn(false);
 
-        AddUserReq req = new AddUserReq("N", "u2", "pw", RoleEnum.USER, studentId);
+        AddUserReq req = new AddUserReq("N", "u2", "pw", RoleEnum.RECRUITER, studentId);
 
         assertThatThrownBy(() -> service.create(req))
                 .isInstanceOf(BadRequestException.class)
@@ -111,20 +111,22 @@ class UserServiceImplTest {
 
         assertThatThrownBy(() -> service.create(req))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("USER или STUDENT");
+                .hasMessageContaining("RECRUITER или STUDENT");
 
         verify(userRepo, never()).save(any());
     }
 
     @Test
-    void create_rejectsGuestRole() {
-        when(userRepo.existsByUsername("g1")).thenReturn(false);
+    void create_recruiterRole_succeeds() {
+        when(userRepo.existsByUsername("rec1")).thenReturn(false);
+        when(passwordEncoder.encode("pw")).thenReturn("hash");
+        UserEnt saved = new UserEnt(RoleEnum.RECRUITER, "N", "rec1", "hash");
+        saved.setId(UUID.randomUUID());
+        when(userRepo.save(any())).thenReturn(saved);
+        when(userMapper.toDTO(saved)).thenReturn(new UserDTO(saved.getId(), "N", "rec1", RoleEnum.RECRUITER, null, null));
 
-        AddUserReq req = new AddUserReq("N", "g1", "pw", RoleEnum.GUEST, null);
-
-        assertThatThrownBy(() -> service.create(req))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("USER или STUDENT");
+        AddUserReq req = new AddUserReq("N", "rec1", "pw", RoleEnum.RECRUITER, null);
+        org.assertj.core.api.Assertions.assertThat(service.create(req).role()).isEqualTo(RoleEnum.RECRUITER);
     }
 
     @Test
@@ -136,7 +138,7 @@ class UserServiceImplTest {
 
         assertThatThrownBy(() -> service.deleteById(id))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("USER или STUDENT");
+                .hasMessageContaining("RECRUITER или STUDENT");
 
         verify(userRepo, never()).delete(eq(admin));
     }

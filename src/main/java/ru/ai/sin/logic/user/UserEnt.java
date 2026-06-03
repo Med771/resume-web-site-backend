@@ -40,6 +40,9 @@ public class UserEnt {
     @Column(name = "password_hash", length = 128)
     private String passwordHash;
 
+    @Column(name = "phone_verified", nullable = false)
+    private boolean phoneVerified = false;
+
     /** Профиль рекрутера для повторных заявок без повторного ввода данных */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id")

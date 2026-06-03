@@ -41,11 +41,11 @@ class SiteProjectControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void list_okForGuest() throws Exception {
         UUID id = UUID.randomUUID();
-        when(siteProjectService.listAuthenticatedVisible()).thenReturn(List.of(
-                new SiteProjectDTO(id, "T", null, null, null, 0, false, null, null)
+        when(siteProjectService.listAuthenticatedVisible(true, null)).thenReturn(List.of(
+                new SiteProjectDTO(id, "T", null, null, null, List.of(), List.of(), 0, false, null, null, null)
         ));
         mockMvc.perform(get("/projects").with(csrf()))
                 .andExpect(status().isOk());
@@ -54,15 +54,16 @@ class SiteProjectControllerMvcTest {
     @Test
     @WithMockUser(roles = "STUDENT")
     void list_okForStudent() throws Exception {
-        when(siteProjectService.listAuthenticatedVisible()).thenReturn(List.of());
+        when(siteProjectService.listAuthenticatedVisible(false, null)).thenReturn(List.of());
         mockMvc.perform(get("/projects").with(csrf()))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void list_forbiddenForAdmin() throws Exception {
+    void list_okForAdmin() throws Exception {
+        when(siteProjectService.listAuthenticatedVisible(true, null)).thenReturn(List.of());
         mockMvc.perform(get("/projects").with(csrf()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 }

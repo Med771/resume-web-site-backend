@@ -85,6 +85,30 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RequestDTO> getMineByFilter(Pageable pageable, FilterRequestReq filterRequestReq) {
+        UserEnt user = userTools.findCurrentUserFetchingLinks()
+                .orElseThrow(() -> new AccessDeniedException("Требуется авторизация"));
+
+        FilterRequestReq scoped = filterRequestReq != null ? filterRequestReq : new FilterRequestReq(null, null, null);
+        if (user.getRole() == RoleEnum.STUDENT) {
+            if (user.getStudent() == null) {
+                throw new BadRequestException("К аккаунту не привязана карточка студента");
+            }
+            scoped = new FilterRequestReq(scoped.results(), null, user.getStudent().getId());
+        } else if (user.getRole() == RoleEnum.RECRUITER) {
+            if (user.getRecruiter() == null) {
+                throw new BadRequestException("К аккаунту не привязан профиль рекрутёра");
+            }
+            scoped = new FilterRequestReq(scoped.results(), user.getRecruiter().getId(), null);
+        } else {
+            throw new AccessDeniedException("Доступно только студентам и рекрутёрам");
+        }
+
+        return getByFilter(pageable, scoped);
+    }
+
+    @Override
     @Transactional
     public RequestDTO create(AddRequestReq addRequestReq) {
         Optional<UserEnt> currentUserOpt = userTools.findCurrentUserFetchingLinks();

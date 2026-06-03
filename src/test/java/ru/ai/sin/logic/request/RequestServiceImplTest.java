@@ -287,7 +287,7 @@ class RequestServiceImplTest {
 
     @Test
     void create_requiresCompanyNameWhenUserHasNoLinkedRecruiter() {
-        UserEnt user = new UserEnt(RoleEnum.USER, "U", "guest1", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "U", "guest1", "h");
         user.setRecruiter(null);
         when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.of(user));
 
@@ -306,7 +306,7 @@ class RequestServiceImplTest {
     void create_usesLinkedRecruiterWithoutCompanyFields() {
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
-        UserEnt user = new UserEnt(RoleEnum.USER, "U", "rec_user", "h");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "U", "rec_user", "h");
         user.setRecruiter(recruiter);
         when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.of(user));
 

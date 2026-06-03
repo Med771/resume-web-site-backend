@@ -37,14 +37,14 @@ public class ExperienceController {
     private final SecurityHelper securityHelper;
 
     @Operation(summary = "Получить опыт по ID", description = "Возвращает запись опыта работы")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<ExperienceDTO> getById(@PathVariable @Min(1) long id) {
         return ResponseEntity.ok(experienceService.getById(id));
     }
 
     @Operation(summary = "Фильтр опыта", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
             @PageableDefault Pageable pageable,

@@ -11,9 +11,21 @@ import java.util.UUID;
 
 public interface SiteProjectRepo extends JpaRepository<SiteProjectEnt, UUID> {
 
-    List<SiteProjectEnt> findAllByOrderBySortOrderAsc();
+    @EntityGraph(attributePaths = {"images", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT p FROM SiteProjectEnt p ORDER BY p.sortOrder ASC")
+    List<SiteProjectEnt> findAllWithImagesByOrderBySortOrderAsc();
 
-    @EntityGraph(attributePaths = "students", type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = {"images", "skills", "students", "students.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT p FROM SiteProjectEnt p ORDER BY p.sortOrder ASC")
+    List<SiteProjectEnt> findAllWithDetailsByOrderBySortOrderAsc();
+
+    @EntityGraph(attributePaths = {"images", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
+    Optional<SiteProjectEnt> findWithImagesById(UUID id);
+
+    @EntityGraph(attributePaths = {"images", "skills", "students", "students.speciality"}, type = EntityGraph.EntityGraphType.LOAD)
+    Optional<SiteProjectEnt> findWithDetailsById(UUID id);
+
+    @EntityGraph(attributePaths = {"images", "students"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<SiteProjectEnt> findWithStudentsById(UUID id);
 
     @Query("""

@@ -8,22 +8,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import ru.ai.sin.config.property.RegistrationProperties;
 import ru.ai.sin.config.property.UserProperties;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.TooManyRequestsException;
 import ru.ai.sin.helper.JwtHelper;
-import ru.ai.sin.logic.registration.dto.StudentSelfRegistrationReq;
-import ru.ai.sin.logic.skill.SkillRepo;
-import ru.ai.sin.logic.student.StudentCvAttachmentService;
-import ru.ai.sin.logic.student.StudentMapper;
-import ru.ai.sin.logic.student.StudentRepo;
+import ru.ai.sin.logic.registration.dto.StudentAccountRegistrationReq;
 import ru.ai.sin.logic.user.UserRepo;
-import ru.ai.sin.models.enums.BusynessEnum;
-import ru.ai.sin.tools.SpecialityTools;
+import ru.ai.sin.logic.verification.PhoneVerificationService;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,17 +38,9 @@ class StudentRegistrationServiceImplTest {
     @Mock
     private UserProperties userProperties;
     @Mock
+    private PhoneVerificationService phoneVerificationService;
+    @Mock
     private UserRepo userRepo;
-    @Mock
-    private StudentRepo studentRepo;
-    @Mock
-    private SkillRepo skillRepo;
-    @Mock
-    private StudentMapper studentMapper;
-    @Mock
-    private SpecialityTools specialityTools;
-    @Mock
-    private StudentCvAttachmentService studentCvAttachmentService;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -69,9 +54,6 @@ class StudentRegistrationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(registrationProperties.getMaxSkillsPerProfile()).thenReturn(30);
-        lenient().when(registrationProperties.getMaxExperiencesInRegistration()).thenReturn(12);
-        lenient().when(registrationProperties.getMaxInstitutionsInRegistration()).thenReturn(8);
         lenient().when(registrationProperties.isReservedUsername(anyString())).thenReturn(false);
         lenient().when(userProperties.getLogins()).thenReturn(List.of());
         lenient().when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
@@ -82,12 +64,8 @@ class StudentRegistrationServiceImplTest {
                 passwordPolicy,
                 registrationProperties,
                 userProperties,
+                phoneVerificationService,
                 userRepo,
-                studentRepo,
-                skillRepo,
-                studentMapper,
-                specialityTools,
-                studentCvAttachmentService,
                 passwordEncoder,
                 authenticationManager,
                 jwtHelper
@@ -96,27 +74,8 @@ class StudentRegistrationServiceImplTest {
 
     @Test
     void register_passwordMismatch_throwsBadRequest() {
-        StudentSelfRegistrationReq b = baseReq();
-        StudentSelfRegistrationReq req = new StudentSelfRegistrationReq(
-                b.username(),
-                b.password(),
-                "other",
-                b.name(),
-                b.city(),
-                b.hhLink(),
-                b.birthDate(),
-                b.bio(),
-                b.busyness(),
-                b.firstName(),
-                b.lastName(),
-                b.email(),
-                b.phoneNumber(),
-                b.telegramUsername(),
-                b.specialityId(),
-                b.skillsIds(),
-                b.experiences(),
-                b.institutions()
-        );
+        StudentAccountRegistrationReq req = new StudentAccountRegistrationReq(
+                "user1", "SecurePass123", "other", "Имя", "+79990001122", UUID.randomUUID());
 
         assertThatThrownBy(() -> service.registerAndIssueTokens(req, httpRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -126,27 +85,8 @@ class StudentRegistrationServiceImplTest {
     @Test
     void register_reservedUsername_throwsBadRequest() {
         when(registrationProperties.isReservedUsername("root")).thenReturn(true);
-        StudentSelfRegistrationReq b = baseReq();
-        StudentSelfRegistrationReq req = new StudentSelfRegistrationReq(
-                "root",
-                "SecurePass123",
-                "SecurePass123",
-                b.name(),
-                b.city(),
-                b.hhLink(),
-                b.birthDate(),
-                b.bio(),
-                b.busyness(),
-                b.firstName(),
-                b.lastName(),
-                b.email(),
-                b.phoneNumber(),
-                b.telegramUsername(),
-                b.specialityId(),
-                b.skillsIds(),
-                b.experiences(),
-                b.institutions()
-        );
+        StudentAccountRegistrationReq req = new StudentAccountRegistrationReq(
+                "root", "SecurePass123", "SecurePass123", null, "+79990001122", UUID.randomUUID());
 
         assertThatThrownBy(() -> service.registerAndIssueTokens(req, httpRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -162,26 +102,14 @@ class StudentRegistrationServiceImplTest {
                 .isInstanceOf(TooManyRequestsException.class);
     }
 
-    private static StudentSelfRegistrationReq baseReq() {
-        return new StudentSelfRegistrationReq(
+    private static StudentAccountRegistrationReq baseReq() {
+        return new StudentAccountRegistrationReq(
                 "newuser_x",
                 "SecurePass123",
                 "SecurePass123",
                 "Имя",
-                "Moscow",
-                "https://hh.ru/x",
-                LocalDate.of(2001, 1, 15),
-                "bio",
-                BusynessEnum.FREE,
-                "Иван",
-                "Иванов",
-                "ivan+" + UUID.randomUUID() + "@test.local",
                 "+79990001122",
-                "ivan_tg",
-                1L,
-                List.of(),
-                null,
-                null
+                UUID.randomUUID()
         );
     }
 }

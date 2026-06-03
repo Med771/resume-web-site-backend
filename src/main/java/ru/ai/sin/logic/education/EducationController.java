@@ -34,7 +34,7 @@ public class EducationController {
     private final EducationService educationService;
 
     @Operation(summary = "Получить образование по ID", description = "Возвращает запись справочника образования")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<EducationDTO> getById(@PathVariable @Min(1) long id) {
         EducationDTO educationDTO = educationService.getById(id);

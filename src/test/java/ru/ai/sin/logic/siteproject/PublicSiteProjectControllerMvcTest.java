@@ -32,7 +32,7 @@ class PublicSiteProjectControllerMvcTest {
 
     @Test
     void list_okWithoutAuth() throws Exception {
-        when(siteProjectService.listPublicVisible()).thenReturn(List.of());
+        when(siteProjectService.listPublicVisible(null)).thenReturn(List.of());
         mockMvc.perform(get("/public/projects"))
                 .andExpect(status().isOk());
     }

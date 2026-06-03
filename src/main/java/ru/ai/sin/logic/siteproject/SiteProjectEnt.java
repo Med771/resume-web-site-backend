@@ -1,5 +1,6 @@
 package ru.ai.sin.logic.siteproject;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -9,7 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import ru.ai.sin.logic.skill.SkillEnt;
 import ru.ai.sin.logic.student.StudentEnt;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +23,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.models.embeddables.TimeStamped;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,13 +44,14 @@ public class SiteProjectEnt {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 255)
+    private String section;
+
     @Column(columnDefinition = "TEXT")
     private String summary;
 
     @Column(columnDefinition = "TEXT")
     private String body;
-
-    private String imagePath;
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
@@ -60,6 +67,18 @@ public class SiteProjectEnt {
 
     @Embedded
     private TimeStamped timestamps = new TimeStamped();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
+    private List<SiteProjectImageEnt> images = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "site_project_skills",
+            joinColumns = @JoinColumn(name = "site_project_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id", referencedColumnName = "id")
+    )
+    private Set<SkillEnt> skills = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

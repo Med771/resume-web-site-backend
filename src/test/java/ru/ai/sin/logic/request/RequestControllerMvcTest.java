@@ -48,7 +48,7 @@ class RequestControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void create_allowedForUserRole() throws Exception {
         mockMvc.perform(post("/request")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,7 +58,7 @@ class RequestControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void create_allowedForGuestRole() throws Exception {
         mockMvc.perform(post("/request")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ class RequestControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void studentDecision_forbiddenForRecruiterUserRole() throws Exception {
         mockMvc.perform(post("/request/1/student-decision")
                         .contentType(MediaType.APPLICATION_JSON)

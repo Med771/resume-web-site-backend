@@ -89,7 +89,7 @@ public class RecruiterRegistrationAdminServiceImpl implements RecruiterRegistrat
         }
 
         UserEnt user = new UserEnt(
-                RoleEnum.USER,
+                RoleEnum.RECRUITER,
                 r.getName(),
                 r.getUsername(),
                 r.getPasswordHash()

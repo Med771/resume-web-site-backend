@@ -9,6 +9,8 @@ import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectDTO;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectStudentsReq;
+import ru.ai.sin.logic.skill.SkillMapper;
+import ru.ai.sin.logic.skill.SkillRepo;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.student.StudentRepo;
 
@@ -32,6 +34,10 @@ class SiteProjectServiceImplTest {
     private SiteProjectRepo siteProjectRepo;
     @Mock
     private StudentRepo studentRepo;
+    @Mock
+    private SkillRepo skillRepo;
+    @Mock
+    private SkillMapper skillMapper;
 
     private SiteProjectServiceImpl service;
 
@@ -41,7 +47,7 @@ class SiteProjectServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new SiteProjectServiceImpl(siteProjectRepo, studentRepo);
+        service = new SiteProjectServiceImpl(siteProjectRepo, studentRepo, skillRepo, skillMapper);
     }
 
     @Test
@@ -50,9 +56,9 @@ class SiteProjectServiceImplTest {
         SiteProjectEnt authOnly = project("Auth only", false, null, null);
         SiteProjectEnt expired = project("Expired", true, null, LocalDateTime.now().minusDays(1));
 
-        when(siteProjectRepo.findAllByOrderBySortOrderAsc()).thenReturn(List.of(publicProject, authOnly, expired));
+        when(siteProjectRepo.findAllWithImagesByOrderBySortOrderAsc()).thenReturn(List.of(publicProject, authOnly, expired));
 
-        assertThat(service.listPublicVisible())
+        assertThat(service.listPublicVisible(null))
                 .extracting(SiteProjectDTO::title)
                 .containsExactly("Public");
     }
@@ -63,11 +69,46 @@ class SiteProjectServiceImplTest {
         SiteProjectEnt authOnly = project("Auth only", false, null, null);
         SiteProjectEnt expired = project("Expired", true, null, LocalDateTime.now().minusDays(1));
 
-        when(siteProjectRepo.findAllByOrderBySortOrderAsc()).thenReturn(List.of(publicProject, authOnly, expired));
+        when(siteProjectRepo.findAllWithImagesByOrderBySortOrderAsc()).thenReturn(List.of(publicProject, authOnly, expired));
 
-        assertThat(service.listAuthenticatedVisible())
+        assertThat(service.listAuthenticatedVisible(false, null))
                 .extracting(SiteProjectDTO::title)
                 .containsExactly("Public", "Auth only");
+    }
+
+    @Test
+    void listAuthenticatedVisible_recruiterIncludesStudentsFlag() {
+        SiteProjectEnt publicProject = project("Public", true, null, null);
+        when(siteProjectRepo.findAllWithDetailsByOrderBySortOrderAsc()).thenReturn(List.of(publicProject));
+
+        assertThat(service.listAuthenticatedVisible(true, null))
+                .singleElement()
+                .satisfies(dto -> assertThat(dto.students()).isNotNull());
+    }
+
+    @Test
+    void listAuthenticatedVisible_studentExcludesStudents() {
+        SiteProjectEnt publicProject = project("Public", true, null, null);
+        when(siteProjectRepo.findAllWithImagesByOrderBySortOrderAsc()).thenReturn(List.of(publicProject));
+
+        assertThat(service.listAuthenticatedVisible(false, null))
+                .singleElement()
+                .satisfies(dto -> assertThat(dto.students()).isNull());
+    }
+
+    @Test
+    void listPublicVisible_findStringFiltersBySection() {
+        SiteProjectEnt match = project("Web app", true, null, null);
+        match.setSection("Веб-разработка");
+        match.setSummary("React dashboard");
+        SiteProjectEnt other = project("Other", true, null, null);
+        other.setSection("Игры");
+
+        when(siteProjectRepo.findAllWithImagesByOrderBySortOrderAsc()).thenReturn(List.of(match, other));
+
+        assertThat(service.listPublicVisible("веб"))
+                .extracting(SiteProjectDTO::title)
+                .containsExactly("Web app");
     }
 
     private static SiteProjectEnt project(String title, boolean visibleToAnonymous,

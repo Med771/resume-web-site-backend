@@ -68,7 +68,7 @@ class RecruiterControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void getMe_okWhenLinked() throws Exception {
         when(recruiterService.getLinkedForCurrentUser()).thenReturn(Optional.of(sampleRecruiter()));
 
@@ -77,7 +77,7 @@ class RecruiterControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void getMe_notFoundWhenUnlinked() throws Exception {
         when(recruiterService.getLinkedForCurrentUser()).thenReturn(Optional.empty());
 
@@ -86,7 +86,7 @@ class RecruiterControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void getById_ok() throws Exception {
         when(recruiterService.getById(REC_ID)).thenReturn(sampleRecruiter());
 
@@ -95,7 +95,7 @@ class RecruiterControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void create_forbiddenForUser() throws Exception {
         mockMvc.perform(post("/recruiter")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +119,7 @@ class RecruiterControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void filter_forbiddenForUser() throws Exception {
         mockMvc.perform(post("/recruiter/filter")
                         .contentType(MediaType.APPLICATION_JSON)

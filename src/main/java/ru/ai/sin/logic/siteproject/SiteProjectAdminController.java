@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.ai.sin.logic.siteproject.dto.CreateSiteProjectReq;
@@ -47,8 +48,19 @@ public class SiteProjectAdminController {
 
                     **401/403** — нет или недостаточно прав.""")
     @GetMapping
-    public ResponseEntity<List<SiteProjectDTO>> list() {
-        return ResponseEntity.ok(siteProjectService.listAdminOrdered());
+    public ResponseEntity<List<SiteProjectDTO>> list(
+            @Parameter(description = "Поиск по названию, описанию, тексту и разделу")
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(siteProjectService.listAdminOrdered(q));
+    }
+
+    @Operation(
+            summary = "Проект по id (админ)",
+            description = "Полная карточка проекта с участниками. **404**, если проект не найден.")
+    @GetMapping("/{id}")
+    public ResponseEntity<SiteProjectDTO> getById(
+            @Parameter(description = "UUID проекта", required = true) @PathVariable UUID id) {
+        return ResponseEntity.ok(siteProjectService.getAdminById(id));
     }
 
     @Operation(

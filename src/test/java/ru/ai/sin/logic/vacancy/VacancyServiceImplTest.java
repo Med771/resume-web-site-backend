@@ -67,7 +67,7 @@ class VacancyServiceImplTest {
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
         recruiter.setCompanyName("Co");
-        UserEnt user = new UserEnt(RoleEnum.USER, "n", "u", "p");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "n", "u", "p");
         user.setRecruiter(recruiter);
 
         VacancyEnt v = new VacancyEnt();
@@ -87,7 +87,7 @@ class VacancyServiceImplTest {
 
     @Test
     void create_withoutRecruiterProfile_throwsBadRequest() {
-        UserEnt user = new UserEnt(RoleEnum.GUEST, "n", "guest", "p");
+        UserEnt user = new UserEnt(RoleEnum.RECRUITER, "n", "guest", "p");
         when(userTools.findCurrentUserFetchingRecruiter()).thenReturn(Optional.of(user));
 
         CreateVacancyReq req = new CreateVacancyReq(

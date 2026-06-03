@@ -73,7 +73,7 @@ class AdminAnalyticsControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "RECRUITER")
     void summary_forbidden() throws Exception {
         AnalyticsSummaryReq body = new AnalyticsSummaryReq(
                 LocalDateTime.now().minusDays(1),
@@ -98,7 +98,7 @@ class AdminAnalyticsControllerMvcTest {
     @WithMockUser(roles = "ADMIN")
     void entityPopulation_okWithEmptyBody() throws Exception {
         when(analyticsService.summarizeEntityPopulation(any())).thenReturn(
-                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, 6, null, null));
+                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, null, null));
         mockMvc.perform(post("/admin/analytics/entity-population")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +110,7 @@ class AdminAnalyticsControllerMvcTest {
     @WithMockUser(roles = "ADMIN")
     void entityPopulation_okWithWindow() throws Exception {
         when(analyticsService.summarizeEntityPopulation(any())).thenReturn(
-                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, 6, 2L, 1L));
+                new EntityPopulationSummaryDTO(10, 1, 2, 3, 4, 5, 2L, 1L));
         EntityPopulationSummaryReq body = new EntityPopulationSummaryReq(
                 LocalDateTime.now().minusDays(7),
                 LocalDateTime.now());

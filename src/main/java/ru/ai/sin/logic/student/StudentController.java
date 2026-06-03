@@ -64,12 +64,12 @@ public class StudentController {
     @Operation(
             summary = "Получить студента по UUID",
             description = """
-                    **GUEST**, **USER** или **ADMIN**. Полная карточка `StudentDTO`.
+                    **RECRUITER** или **ADMIN**. Полная карточка `StudentDTO`.
 
                     Студенты с курсом **NEW** для не-админов возвращают **404** (как при отсутствии id).
 
                     Это **не** публичная витрина: требуется аутентификация по cookie/JWT.""")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
         StudentDTO studentDTO = studentService.getById(id);
@@ -82,12 +82,12 @@ public class StudentController {
             description = """
                     Постраничная выдача `StudentCardDTO` по фильтрам из тела.
 
-                    **Видимость курса NEW:** в списке только для **ADMIN**; для GUEST/USER такие карточки отфильтровываются.
+                    **Видимость курса NEW:** в списке только для **ADMIN**; для RECRUITER такие карточки отфильтровываются.
 
                     **Пагинация:** `page`, `size` в query. **Сортировка:** только из JSON (`sortBy`, `sortDirection`, `useDefaultRanking`), не из `sort=`.
 
                     При `useDefaultRanking=true` (или null — см. серверные умолчания) применяется авто-ранжирование (аватар, `profileTextScore`, дата создания и т.д. в зависимости от `sortBy`).""")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping(path = "/cardsFilter")
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
             @PageableDefault Pageable pageable,
@@ -105,7 +105,7 @@ public class StudentController {
                     Как `POST /student/cardsFilter`, но элементы страницы — полные `StudentDTO` (включая `publicProfileConsent`, `profileTextScore`).
 
                     Правила **NEW**, пагинации и сортировки — те же.""")
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
             @PageableDefault Pageable pageable,

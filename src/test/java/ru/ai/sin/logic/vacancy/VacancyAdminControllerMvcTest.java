@@ -41,7 +41,7 @@ class VacancyAdminControllerMvcTest {
     }
 
     @Test
-    @WithMockUser(roles = "GUEST")
+    @WithMockUser(roles = "RECRUITER")
     void filter_forbiddenForGuest() throws Exception {
         mockMvc.perform(post("/admin/vacancies/filter")
                         .contentType(MediaType.APPLICATION_JSON)

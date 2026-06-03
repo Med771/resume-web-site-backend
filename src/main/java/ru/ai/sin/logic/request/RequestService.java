@@ -11,6 +11,8 @@ public interface RequestService {
 
     PageResponse<RequestDTO> getByFilter(Pageable pageable, FilterRequestReq filterRequestReq);
 
+    PageResponse<RequestDTO> getMineByFilter(Pageable pageable, FilterRequestReq filterRequestReq);
+
     RequestDTO create(AddRequestReq addRequestReq);
 
     void studentRespond(long requestId, StudentRequestDecisionReq req);
