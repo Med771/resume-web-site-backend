@@ -13,13 +13,17 @@ import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.skill.SkillMapper;
 import ru.ai.sin.logic.skill.dto.SkillDTO;
 import ru.ai.sin.logic.vacancy.dto.FilterVacancyModerationReq;
+import ru.ai.sin.logic.vacancy.dto.PatchVacancyVitrinaReq;
+import ru.ai.sin.logic.vacancy.dto.ReorderVacanciesReq;
 import ru.ai.sin.logic.vacancy.dto.VacancyDTO;
 import ru.ai.sin.logic.vacancy.dto.VacancyModerationRejectReq;
 import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.models.enums.VacancyStatus;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -91,6 +95,38 @@ public class VacancyModerationAdminServiceImpl implements VacancyModerationAdmin
         log.info("Vacancy rejected: id={} by={}", id, v.getModeratedByUsername());
     }
 
+    @Override
+    @Transactional
+    public void reorder(ReorderVacanciesReq req) {
+        List<UUID> ids = req.orderedIds();
+        Set<UUID> unique = new HashSet<>(ids);
+        if (unique.size() != ids.size()) {
+            throw new BadRequestException("Duplicate ids in reorder list");
+        }
+        for (int i = 0; i < ids.size(); i++) {
+            UUID id = ids.get(i);
+            VacancyEnt v = vacancyRepo.findById(id)
+                    .orElseThrow(() -> new NotFoundException("Вакансия не найдена: " + id));
+            v.setManualSortOrder(i);
+            vacancyRepo.save(v);
+        }
+    }
+
+    @Override
+    @Transactional
+    public VacancyDTO patchVitrina(UUID id, PatchVacancyVitrinaReq req) {
+        VacancyEnt v = vacancyRepo.findWithDetailsById(id)
+                .orElseThrow(() -> new NotFoundException("Вакансия не найдена: " + id));
+        if (req.visibleToAnonymous() != null) {
+            v.setVisibleToAnonymous(req.visibleToAnonymous());
+        }
+        if (req.manualSortOrder() != null) {
+            v.setManualSortOrder(req.manualSortOrder());
+        }
+        vacancyRepo.save(v);
+        return toDto(v);
+    }
+
     private VacancyDTO toDto(VacancyEnt v) {
         List<SkillDTO> skills = v.getSkills().stream().map(skillMapper::toDTO).toList();
         var ts = v.getTimestamps();
@@ -116,7 +152,9 @@ public class VacancyModerationAdminServiceImpl implements VacancyModerationAdmin
                 v.getModerationRejectionReason(),
                 vacancyRepo.countApplicationsByVacancyId(v.getId()),
                 null,
-                ts != null ? ts.getCreatedAt() : null
+                ts != null ? ts.getCreatedAt() : null,
+                v.getManualSortOrder(),
+                v.isVisibleToAnonymous()
         );
     }
 }

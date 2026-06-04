@@ -41,6 +41,8 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     private final SecurityHelper securityHelper;
 
+    private final RecruiterDeletionService recruiterDeletionService;
+
     @Override
     @Transactional(readOnly = true)
     public RecruiterDTO getById(UUID id) {
@@ -120,17 +122,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     @Override
     @Transactional
     public void deleteById(UUID id) {
-        RecruiterEnt recruiterEnt = recruiterTools.getRecruiterOrThrow(id);
-
-        try {
-            recruiterRepo.deleteById(id);
-        }
-        catch (DataIntegrityViolationException ex) {
-            log.warn("Error while deleting recruiter: {}", ex.getMessage());
-
-            throw new BadRequestException("Error while deleting recruiter");
-        }
-
+        recruiterTools.getRecruiterOrThrow(id);
+        recruiterDeletionService.deleteRecruiterCascade(id);
         log.info("User {} deleted recruiter id={}", securityHelper.getCurrentUsername(), id);
     }
 }

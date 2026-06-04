@@ -343,6 +343,27 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
+    public StudentDTO patchMe(PatchStudentMeReq req) {
+        UserEnt user = userRepo.findByUsernameFetchingLinks(securityHelper.getCurrentUsername())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (user.getRole() != RoleEnum.STUDENT || user.getStudent() == null) {
+            throw new BadRequestException("К аккаунту не привязана карточка студента");
+        }
+        if (req.hintsDisabled() != null) {
+            user.setHintsDisabled(req.hintsDisabled());
+            userRepo.save(user);
+        }
+        if (req.publicProfileConsent() != null) {
+            StudentEnt studentEnt = user.getStudent();
+            studentEnt.setPublicProfileConsent(req.publicProfileConsent());
+            StudentProfileScoring.applyTo(studentEnt);
+            return studentTools.mapToDTO(studentEnt);
+        }
+        return studentTools.mapToDTO(user.getStudent());
+    }
+
+    @Override
+    @Transactional
     public void deleteById(UUID id) {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
         StudentDTO snapshot = studentTools.mapToDTO(studentEnt);
@@ -353,6 +374,7 @@ public class StudentServiceImpl implements StudentService {
             experienceRepo.deleteByStudent_Id(id);
             institutionRepo.deleteByStudent_Id(id);
             portfolioRepo.deleteByStudent_Id(id);
+            userRepo.findByStudent_Id(id).ifPresent(userRepo::delete);
             studentRepo.delete(studentEnt);
         }
         catch (DataIntegrityViolationException ex) {
@@ -513,5 +535,21 @@ public class StudentServiceImpl implements StudentService {
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    @Override
+    @Transactional
+    public void reorder(ReorderStudentsReq req) {
+        List<UUID> ids = req.orderedIds();
+        Set<UUID> unique = new HashSet<>(ids);
+        if (unique.size() != ids.size()) {
+            throw new BadRequestException("Duplicate ids in reorder list");
+        }
+        for (int i = 0; i < ids.size(); i++) {
+            UUID id = ids.get(i);
+            StudentEnt student = studentTools.getStudentOrThrow(id);
+            student.setManualSortOrder(i);
+            studentRepo.save(student);
+        }
     }
 }

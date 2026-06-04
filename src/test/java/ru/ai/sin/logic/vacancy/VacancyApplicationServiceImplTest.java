@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.ai.sin.exception.models.BadRequestException;
+import ru.ai.sin.helper.AccountAccessHelper;
+import ru.ai.sin.logic.chat.ChatService;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
@@ -33,6 +35,10 @@ class VacancyApplicationServiceImplTest {
     private UserTools userTools;
     @Mock
     private StudentTools studentTools;
+    @Mock
+    private ChatService chatService;
+    @Mock
+    private AccountAccessHelper accountAccessHelper;
 
     private VacancyApplicationServiceImpl service;
 
@@ -42,7 +48,7 @@ class VacancyApplicationServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new VacancyApplicationServiceImpl(
-                vacancyApplicationRepo, vacancyRepo, userTools, studentTools, null);
+                vacancyApplicationRepo, vacancyRepo, userTools, studentTools, chatService, accountAccessHelper);
     }
 
     @Test

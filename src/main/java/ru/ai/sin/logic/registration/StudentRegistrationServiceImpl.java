@@ -19,6 +19,7 @@ import ru.ai.sin.logic.registration.dto.StudentAccountRegistrationReq;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.verification.PhoneVerificationService;
+import ru.ai.sin.models.enums.AccountStatus;
 import ru.ai.sin.models.enums.RoleEnum;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -78,6 +79,7 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
                 passwordEncoder.encode(req.password())
         );
         user.setPhoneVerified(true);
+        user.setAccountStatus(AccountStatus.PENDING_APPROVAL);
 
         try {
             userRepo.save(user);

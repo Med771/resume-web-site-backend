@@ -32,6 +32,9 @@ class VacancyControllerMvcTest {
     private VacancyApplicationService vacancyApplicationService;
 
     @MockBean
+    private VacancyApplicationTuDecisionService vacancyApplicationTuDecisionService;
+
+    @MockBean
     private JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
 
     @Test

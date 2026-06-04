@@ -33,16 +33,18 @@ public class AuthController {
     private final CookieHelper cookieHelper;
 
     @Operation(
-            summary = "Заявка на регистрацию работодателя",
-            description = "Создаёт заявку со статусом PENDING. Вход возможен только после одобрения администратором "
-                    + "(эндпоинты /admin/recruiter-registration-requests). Cookie не выдаются.")
+            summary = "Регистрация работодателя",
+            description = "Создаёт профиль рекрутера и пользователя со статусом PENDING_APPROVAL. Выдаёт cookie для входа в ЛК.")
     @PostMapping("/register-recruiter")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void registerRecruiter(
             @Valid @RequestBody RecruiterSelfRegistrationReq req,
-            HttpServletRequest httpRequest
+            HttpServletRequest httpRequest,
+            HttpServletResponse response
     ) {
-        recruiterSelfRegistrationService.submit(req, httpRequest);
+        TokenPair tokens = recruiterSelfRegistrationService.registerAndIssueTokens(req, httpRequest);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
     }
 
     @Operation(

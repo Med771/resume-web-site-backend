@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/public/registration/**").permitAll()
                         .requestMatchers("/public/students/**").permitAll()
                         .requestMatchers("/public/projects/**").permitAll()
+                        .requestMatchers("/public/vacancies/**").permitAll()
                         .requestMatchers("/public/analytics/**").permitAll()
                         .requestMatchers("/main/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()

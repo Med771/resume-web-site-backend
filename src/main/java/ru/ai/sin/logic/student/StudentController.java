@@ -61,6 +61,13 @@ public class StudentController {
                 .orElseThrow(() -> new NotFoundException("К аккаунту не привязана карточка студента")));
     }
 
+    @Operation(summary = "Обновить настройки текущего студента (согласие на витрину, hints)")
+    @PreAuthorize("hasRole('STUDENT')")
+    @PatchMapping(path = "/me")
+    public ResponseEntity<StudentDTO> patchMe(@Valid @RequestBody PatchStudentMeReq req) {
+        return ResponseEntity.ok(studentService.patchMe(req));
+    }
+
     @Operation(
             summary = "Получить студента по UUID",
             description = """

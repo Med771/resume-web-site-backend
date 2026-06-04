@@ -18,6 +18,9 @@ import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.config.property.JwtProperties;
 import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.logic.user.UserEnt;
+import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.models.enums.AccountStatus;
 
 import java.util.Arrays;
 
@@ -30,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtHelper jwtHelper;
     private final JwtProperties jwtProperties;
     private final SecurityHelper securityHelper;
+    private final UserRepo userRepo;
 
     /**
      * Метод для Login
@@ -70,7 +74,10 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
         String role = securityHelper.getCurrentRoleOptional()
                 .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
-        return new AuthMeDTO(username, role);
+        UserEnt user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
+        AccountStatus status = user.getAccountStatus() != null ? user.getAccountStatus() : AccountStatus.APPROVED;
+        return new AuthMeDTO(username, role, status.getCode(), user.isHintsDisabled());
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {

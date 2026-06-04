@@ -30,6 +30,7 @@ import ru.ai.sin.logic.request.dto.*;
 public class RequestController {
 
     private final RequestService requestService;
+    private final TuDecisionService tuDecisionService;
 
     @Operation(summary = "Получить заявку по ID", description = "Возвращает детальную информацию о заявке")
     @PreAuthorize("hasRole('ADMIN')")
@@ -76,6 +77,16 @@ public class RequestController {
             @PathVariable @Min(1) long id,
             @Valid @RequestBody StudentRequestDecisionReq req) {
         requestService.studentRespond(id, req);
+    }
+
+    @Operation(summary = "Решение по ТУ", description = "Подтверждение или отказ по заявке на этапе ТУ")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER')")
+    @PostMapping(path = "/{id}/tu-decision")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void tuDecision(
+            @PathVariable @Min(1) long id,
+            @Valid @RequestBody TuDecisionReq req) {
+        tuDecisionService.decideOnRequest(id, req);
     }
 
     @Operation(summary = "Удалить заявку", description = "Удаляет заявку по ID")

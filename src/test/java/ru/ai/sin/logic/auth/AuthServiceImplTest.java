@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import ru.ai.sin.config.property.JwtProperties;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.auth.dto.LoginRequest;
 import ru.ai.sin.logic.auth.dto.TokenPair;
 
@@ -37,6 +38,9 @@ class AuthServiceImplTest {
     @Mock
     private SecurityHelper securityHelper;
 
+    @Mock
+    private UserRepo userRepo;
+
     private JwtProperties jwtProperties;
 
     private AuthServiceImpl authService;
@@ -47,7 +51,7 @@ class AuthServiceImplTest {
         JwtProperties.CookieProperties cookie = new JwtProperties.CookieProperties();
         cookie.setRefreshTokenName("REFRESH_TOKEN");
         jwtProperties.setCookie(cookie);
-        authService = new AuthServiceImpl(authenticationManager, jwtHelper, jwtProperties, securityHelper);
+        authService = new AuthServiceImpl(authenticationManager, jwtHelper, jwtProperties, securityHelper, userRepo);
     }
 
     @Test

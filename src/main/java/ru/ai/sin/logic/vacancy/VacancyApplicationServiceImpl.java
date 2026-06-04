@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.logic.chat.ChatEnt;
 import ru.ai.sin.logic.chat.ChatService;
 import ru.ai.sin.logic.chat.ChatSystemEvent;
@@ -39,10 +40,12 @@ public class VacancyApplicationServiceImpl implements VacancyApplicationService 
     private final UserTools userTools;
     private final StudentTools studentTools;
     private final ChatService chatService;
+    private final AccountAccessHelper accountAccessHelper;
 
     @Override
     @Transactional
     public VacancyApplicationDTO apply(UUID vacancyId, ApplyVacancyReq req) {
+        accountAccessHelper.requireApprovedAccount();
         StudentEnt student = requireCurrentStudent();
         if (student.getCourse() == CourseEnum.NEW) {
             throw new BadRequestException("Отклик недоступен для студентов с курсом NEW");

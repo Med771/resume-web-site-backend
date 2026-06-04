@@ -93,7 +93,8 @@ public class VacancyServiceImpl implements VacancyService {
         v.setCompanyName(recruiter.getCompanyName());
         v.setStatus(VacancyStatus.DRAFT);
         applyFields(v, req.title(), req.description(), req.city(), req.workFormat(), req.employmentType(),
-                req.specialityId(), req.skillIds(), req.publishedFrom(), req.publishedTo(), req.slotsCount());
+                req.specialityId(), req.skillIds(), req.publishedFrom(), req.publishedTo(), req.slotsCount(),
+                req.visibleToAnonymous());
         return toDto(vacancyRepo.save(v), null);
     }
 
@@ -102,7 +103,8 @@ public class VacancyServiceImpl implements VacancyService {
     public VacancyDTO update(UUID id, UpdateVacancyReq req) {
         VacancyEnt v = loadOwnedEditable(id);
         applyFields(v, req.title(), req.description(), req.city(), req.workFormat(), req.employmentType(),
-                req.specialityId(), req.skillIds(), req.publishedFrom(), req.publishedTo(), req.slotsCount());
+                req.specialityId(), req.skillIds(), req.publishedFrom(), req.publishedTo(), req.slotsCount(),
+                req.visibleToAnonymous());
         return toDto(vacancyRepo.save(v), null);
     }
 
@@ -204,7 +206,7 @@ public class VacancyServiceImpl implements VacancyService {
         return false;
     }
 
-    static boolean isInPublicationWindow(VacancyEnt v) {
+    public static boolean isInPublicationWindow(VacancyEnt v) {
         LocalDateTime now = LocalDateTime.now();
         if (v.getPublishedFrom() != null && v.getPublishedFrom().isAfter(now)) {
             return false;
@@ -233,7 +235,8 @@ public class VacancyServiceImpl implements VacancyService {
             List<Long> skillIds,
             LocalDateTime publishedFrom,
             LocalDateTime publishedTo,
-            Integer slotsCount
+            Integer slotsCount,
+            Boolean visibleToAnonymous
     ) {
         v.setTitle(title.trim());
         v.setDescription(description);
@@ -251,6 +254,9 @@ public class VacancyServiceImpl implements VacancyService {
         v.setPublishedFrom(publishedFrom);
         v.setPublishedTo(publishedTo);
         v.setSlotsCount(slotsCount);
+        if (visibleToAnonymous != null) {
+            v.setVisibleToAnonymous(visibleToAnonymous);
+        }
     }
 
     private Set<SkillEnt> resolveSkillsByIds(List<Long> skillIds) {
@@ -324,7 +330,9 @@ public class VacancyServiceImpl implements VacancyService {
                 v.getModerationRejectionReason(),
                 vacancyRepo.countApplicationsByVacancyId(v.getId()),
                 hasApplied,
-                ts != null ? ts.getCreatedAt() : null
+                ts != null ? ts.getCreatedAt() : null,
+                v.getManualSortOrder(),
+                v.isVisibleToAnonymous()
         );
     }
 }

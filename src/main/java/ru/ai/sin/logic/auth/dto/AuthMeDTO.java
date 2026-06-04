@@ -7,6 +7,10 @@ public record AuthMeDTO(
         @Schema(description = "Логин пользователя")
         String username,
         @Schema(description = "Роль: STUDENT, RECRUITER, ADMIN")
-        String role
+        String role,
+        @Schema(description = "Статус аккаунта: PENDING_APPROVAL, APPROVED, REJECTED")
+        String accountStatus,
+        @Schema(description = "Подсказки при создании резюме/вакансий отключены")
+        boolean hintsDisabled
 ) {
 }

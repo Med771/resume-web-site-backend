@@ -27,6 +27,7 @@ import ru.ai.sin.logic.user.UserRepo;
 
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.models.enums.CourseEnum;
@@ -58,6 +59,8 @@ public class RequestServiceImpl implements RequestService {
     private final SecurityHelper securityHelper;
 
     private final ChatService chatService;
+
+    private final AccountAccessHelper accountAccessHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -111,6 +114,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO create(AddRequestReq addRequestReq) {
+        accountAccessHelper.requireApprovedAccount();
         Optional<UserEnt> currentUserOpt = userTools.findCurrentUserFetchingLinks();
         currentUserOpt.ifPresent(u -> {
             if (u.getRole() == RoleEnum.STUDENT) {

@@ -19,6 +19,7 @@ import ru.ai.sin.logic.request.dto.StudentRequestDecisionReq;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.ResultEnum;
@@ -58,6 +59,8 @@ class RequestServiceImplTest {
     private SecurityHelper securityHelper;
     @Mock
     private ChatService chatService;
+    @Mock
+    private AccountAccessHelper accountAccessHelper;
 
     private RequestServiceImpl service;
 
@@ -75,7 +78,8 @@ class RequestServiceImplTest {
                 userRepo,
                 userTools,
                 securityHelper,
-                chatService
+                chatService,
+                accountAccessHelper
         );
     }
 

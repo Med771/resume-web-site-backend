@@ -39,6 +39,10 @@ public interface StudentService {
             UUID id,
             PatchStudentReq patchStudentReq);
 
+    StudentDTO patchMe(PatchStudentMeReq req);
+
+    void reorder(ReorderStudentsReq req);
+
     // ---------- DELETE METHODS ----------
     void deleteById(UUID id);
 }

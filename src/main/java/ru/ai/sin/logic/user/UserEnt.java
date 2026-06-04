@@ -10,6 +10,8 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.models.enums.AccountStatus;
+import ru.ai.sin.models.enums.convertor.AccountStatusConverter;
 import ru.ai.sin.models.enums.convertor.RoleEnumConverter;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -42,6 +44,13 @@ public class UserEnt {
 
     @Column(name = "phone_verified", nullable = false)
     private boolean phoneVerified = false;
+
+    @Column(name = "account_status", length = 32, nullable = false)
+    @Convert(converter = AccountStatusConverter.class)
+    private AccountStatus accountStatus = AccountStatus.APPROVED;
+
+    @Column(name = "hints_disabled", nullable = false)
+    private boolean hintsDisabled = false;
 
     /** Профиль рекрутера для повторных заявок без повторного ввода данных */
     @ManyToOne(fetch = FetchType.LAZY)
