@@ -22,9 +22,7 @@
 | GET | `/public/registration/skills` | Справочник навыков |
 | GET | `/public/registration/companies` | Справочник компаний |
 | GET | `/public/registration/educations` | Справочник образования |
-| GET | `/public/students/{id}` | Витрина: **укороченная** карточка при `publicProfileConsent` и курс ≠ `NEW` |
-| POST | `/public/students/cards` | Витрина: страница карточек; тело `FilterStudentReq` (опционально `null`); сортировка только в JSON |
-| GET | `/public/projects` | Лента проектов для анонимов (`visibleToAnonymous`, окна публикации) |
+| GET | `/public/vitrina/home` | Витрина главной: `{ students: StudentCardDTO[], projects: SiteProjectDTO[] }` |
 | POST | `/public/analytics/events` | Запись события аналитики; **204**; при лимите IP — **429** |
 | GET | `/main/status` | Liveness; **204** |
 | GET | `/main/photo/{image_path}` | Байты файла изображения из хранилища |
@@ -71,20 +69,17 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 
 ---
 
-## `/public/students` — витрина без входа
+## `/public/vitrina` — витрина главной (без входа)
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| GET | `/public/students/{id}` | `StudentCardDTO`; **404** если нет согласия / `NEW` / нет записи |
-| POST | `/public/students/cards` | `PageResponse<StudentCardDTO>`; тело `FilterStudentReq` (можно опустить); сервер дополнительно требует `publicProfileConsent` и курс ≠ `NEW`; сортировка: `sortBy` (в т.ч. `MANUAL_SORT_ORDER`), `sortDirection`, `useDefaultRanking` (релевантность: `manualSortOrder` → аватар → score → дата) |
+| GET | `/public/vitrina/home` | `PublicHomeVitrinaDTO`: топ карточек студентов (`publicProfileConsent`, курс ≠ `NEW`) и проектов (`visibleToAnonymous` + окно публикации); лимиты — `app.vitrina.home` |
 
 ---
 
-## `/public/projects` — PublicProjects
+## `/public/students`, `/public/projects` — устаревший публичный доступ
 
-| Метод | Путь | Описание |
-|-------|------|----------|
-| GET | `/public/projects` | Список `SiteProjectDTO` для анонимов (`visibleToAnonymous` + окно публикации) |
+Эндпоинты сохранены в коде, но **не** в `permitAll` — анонимный запрос вернёт **401**. Используйте `GET /public/vitrina/home` на главной и authenticated API после входа.
 
 ---
 
@@ -147,9 +142,9 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | Метод | Путь | Роли | Описание |
 |-------|------|------|----------|
 | GET | `/student/me` | **STUDENT** | Своя карточка `StudentDTO`; **404** если нет привязки |
-| GET | `/student/{id}` | **GUEST**, **USER**, **ADMIN** | Полный `StudentDTO`; курс **NEW** для не-админа → **404** |
-| POST | `/student/cardsFilter` | **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentCardDTO>`; тело `FilterStudentReq`; **NEW** только в выдаче у админа; сортировка только из JSON (релевантность начинается с `manualSortOrder` ASC) |
-| POST | `/student/filter` | **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentDTO>`; те же правила |
+| GET | `/student/{id}` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | Полный `StudentDTO`; курс **NEW** для не-админа → **404**; требуется **APPROVED** (кроме ADMIN) |
+| POST | `/student/cardsFilter` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentCardDTO>`; тело `FilterStudentReq`; **NEW** только в выдаче у админа; **APPROVED** обязателен (кроме ADMIN) |
+| POST | `/student/filter` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentDTO>`; те же правила |
 | POST | `/student/photo/{id}` | **ADMIN** | `multipart/form-data`, часть **`avatarFile`**; **204** |
 | POST | `/student` | **ADMIN** | Создание; **201**; опционально **`publicProfileConsent`**, **`manualSortOrder`** в теле `AddStudentReq` |
 | POST | `/student/extended` | **ADMIN** | Создание с вложенными сущностями; **201**; те же опциональные поля, что и в `AddStudentReq` |
@@ -157,7 +152,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | PATCH | `/student/{id}` | **ADMIN** | Частичное `PatchStudentReq`; **200**; то же для `manualSortOrder` |
 | DELETE | `/student/{id}` | **ADMIN** | Каскадное удаление связанных данных; **204** |
 
-Роль **STUDENT** к `GET /student/{id}`, `POST /student/cardsFilter`, `POST /student/filter` **не** допускается (каталог через эти пути студенту недоступен).
+Роль **STUDENT** с **APPROVED** может читать каталог через `GET /student/{id}`, `POST /student/cardsFilter`, `POST /student/filter`. Пользователи **PENDING_APPROVAL** получают **403**.
 
 ---
 

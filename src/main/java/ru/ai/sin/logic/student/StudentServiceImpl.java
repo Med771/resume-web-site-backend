@@ -15,6 +15,7 @@ import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.models.embeddables.ContactInformation;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.chat.ChatRepo;
@@ -65,6 +66,7 @@ public class StudentServiceImpl implements StudentService {
 
     private final FileHelper fileHelper;
     private final SecurityHelper securityHelper;
+    private final AccountAccessHelper accountAccessHelper;
     private final UserTools userTools;
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -77,6 +79,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDTO getById(UUID id) {
+        accountAccessHelper.requireApprovedAccount();
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         if (studentEnt.getCourse() == CourseEnum.NEW && !securityHelper.isCurrentUserAdmin()) {
@@ -117,6 +120,7 @@ public class StudentServiceImpl implements StudentService {
             Pageable pageable,
             FilterStudentReq filterStudentReq
     ) {
+        accountAccessHelper.requireApprovedAccount();
         Sort sort = StudentSortResolver.resolve(filterStudentReq);
         Pageable effectivePageable = org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),
@@ -145,6 +149,7 @@ public class StudentServiceImpl implements StudentService {
             Pageable pageable,
             FilterStudentReq filterStudentReq
     ) {
+        accountAccessHelper.requireApprovedAccount();
         Sort sort = StudentSortResolver.resolve(filterStudentReq);
         Pageable effectivePageable = org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),

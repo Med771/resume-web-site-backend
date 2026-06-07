@@ -38,7 +38,7 @@ import java.util.UUID;
         name = "Student",
         description = """
                 Управление карточками студентов для **вошедших** пользователей (роли см. на методах).
-                Публичная витрина без входа — `PublicStudents` (`/public/students/...`).
+                Публичная витрина главной — `GET /public/vitrina/home` (без входа).
 
                 **Сортировка списков** (`POST /student/cardsFilter`, `POST /student/filter`): порядок задаётся полями `FilterStudentReq.sortBy`, `sortDirection`, `useDefaultRanking`;
                 параметр query `sort` **игнорируется**.
@@ -71,12 +71,12 @@ public class StudentController {
     @Operation(
             summary = "Получить студента по UUID",
             description = """
-                    **RECRUITER** или **ADMIN**. Полная карточка `StudentDTO`.
+                    **STUDENT**, **RECRUITER** или **ADMIN** с одобренным аккаунтом. Полная карточка `StudentDTO`.
 
                     Студенты с курсом **NEW** для не-админов возвращают **404** (как при отсутствии id).
 
-                    Это **не** публичная витрина: требуется аутентификация по cookie/JWT.""")
-    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
+                    Требуется аутентификация по cookie/JWT и статус аккаунта **APPROVED** (кроме ADMIN).""")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @GetMapping(path = "/{id}")
     public ResponseEntity<StudentDTO> getById(@PathVariable @NotNull UUID id) {
         StudentDTO studentDTO = studentService.getById(id);
@@ -89,12 +89,12 @@ public class StudentController {
             description = """
                     Постраничная выдача `StudentCardDTO` по фильтрам из тела.
 
-                    **Видимость курса NEW:** в списке только для **ADMIN**; для RECRUITER такие карточки отфильтровываются.
+                    **Видимость курса NEW:** в списке только для **ADMIN**; для остальных ролей такие карточки отфильтровываются.
 
                     **Пагинация:** `page`, `size` в query. **Сортировка:** только из JSON (`sortBy`, `sortDirection`, `useDefaultRanking`), не из `sort=`.
 
-                    При `useDefaultRanking=true` (или null — см. серверные умолчания) применяется авто-ранжирование (аватар, `profileTextScore`, дата создания и т.д. в зависимости от `sortBy`).""")
-    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
+                    Требуется статус аккаунта **APPROVED** (кроме ADMIN).""")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @PostMapping(path = "/cardsFilter")
     public ResponseEntity<PageResponse<StudentCardDTO>> getCardsAllByFilters(
             @PageableDefault Pageable pageable,
@@ -111,8 +111,8 @@ public class StudentController {
             description = """
                     Как `POST /student/cardsFilter`, но элементы страницы — полные `StudentDTO` (включая `publicProfileConsent`, `profileTextScore`).
 
-                    Правила **NEW**, пагинации и сортировки — те же.""")
-    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
+                    Правила **NEW**, пагинации и сортировки — те же. Требуется **APPROVED** (кроме ADMIN).""")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(
             @PageableDefault Pageable pageable,

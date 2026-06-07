@@ -18,16 +18,16 @@
 
 ## Публичная витрина без входа
 
-Без cookie (`permitAll`):
+Без cookie (`permitAll`) — **только главная страница**:
 
 | Метод | Путь | Назначение |
 |-------|------|------------|
-| GET | `/public/students/{id}` | Карточка только при `public_profile_consent` и не курс `NEW` |
-| POST | `/public/students/cards` | Список карточек с теми же ограничениями; тело как у `POST /student/cardsFilter` |
-| GET | `/public/projects` | Лента проектов для анонимов |
+| GET | `/public/vitrina/home` | Агрегат витрины: `{ students, projects }` с лимитами из `app.vitrina.home` |
 | POST | `/public/analytics/events` | Событие аналитики (лимит `app.analytics.rate-limit-per-ip-per-minute`) |
 
-Для **`POST /student/cardsFilter`**, **`POST /student/filter`** и **`POST /public/students/cards`** порядок выдачи задаётся полями **`sortBy`**, **`sortDirection`**, **`useDefaultRanking`** в JSON (`FilterStudentReq`), а не произвольным `sort=` в query — иначе возможна нестабильность и «sort injection».
+Пути `/public/students/**`, `/public/projects/**`, `/public/vacancies/**` **требуют JWT** (каталоги и вакансии — после регистрации и одобрения аккаунта).
+
+Для **`POST /student/cardsFilter`** и **`POST /student/filter`** порядок выдачи задаётся полями **`sortBy`**, **`sortDirection`**, **`useDefaultRanking`** в JSON (`FilterStudentReq`), а не произвольным `sort=` в query.
 
 Поля **`public_profile_consent`**, **`manual_sort_order`** и **`profile_text_score`** приходят в DTO студента при ответах API; при **создании админом** первые два можно задать в теле `POST /student` / `POST /student/extended` (см. Swagger).
 
@@ -36,7 +36,7 @@
 | Роль | Типичные сценарии |
 |------|-------------------|
 | **GUEST** / **USER** | Каталог студентов, `POST /request`, `GET /recruiter/me`, чаты `/chat/...`. |
-| **STUDENT** | `GET /student/me`, чаты, `POST /request/{id}/student-decision`. **Создавать заявку нельзя.** |
+| **STUDENT** | `GET /student/me`, каталог `POST /student/cardsFilter`, `GET /student/{id}` (после **APPROVED**), чаты, `POST /request/{id}/student-decision`. **Создавать заявку нельзя.** |
 | **ADMIN** | Фильтр/удаление заявок, мягкое удаление сообщений, полная история чатов в REST, **`/admin/projects`**, **`POST /admin/analytics/summary`**. |
 
 Spring ожидает authorities вида **`ROLE_*`**; это согласовано с данными пользователя в БД.
