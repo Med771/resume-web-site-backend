@@ -16,6 +16,7 @@ import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.logic.institution.dto.*;
@@ -42,6 +43,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     private final StudentTools studentTools;
 
     private final SecurityHelper securityHelper;
+    private final AccountAccessHelper accountAccessHelper;
 
     private void updateActiveEducationOrThrow(long educationId, InstitutionEnt institutionEnt) {
         institutionEnt.setEducation(educationTools.getEducationOrThrow(educationId));
@@ -62,6 +64,8 @@ public class InstitutionServiceImpl implements InstitutionService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<InstitutionDTO> getAllByFilter(Pageable pageable, FilterInstitutionReq filterInstitutionReq) {
+        accountAccessHelper.requireCanReadStudentResumeDetails(filterInstitutionReq.studentId());
+
         Page<InstitutionEnt> page = institutionRepo.findAll(
                 InstitutionSpecifications.byFilters(filterInstitutionReq),
                 pageable);

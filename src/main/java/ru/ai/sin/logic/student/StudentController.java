@@ -127,12 +127,12 @@ public class StudentController {
     @Operation(
             summary = "Загрузить или заменить фото студента",
             description = """
-                    Только **ADMIN**. Часть `multipart/form-data`, имя части файла: **`avatarFile`**.
+                    **STUDENT** — только своей карточки; **ADMIN** — любой. Часть `multipart/form-data`, имя части файла: **`avatarFile`**.
 
                     После успешной загрузки пересчитывается `profileTextScore` и может измениться порядок в релевантной сортировке.
 
-                    **204** при успехе. **404** — нет студента. **400** — неверный формат/файл.""")
-    @PreAuthorize("hasRole('ADMIN')")
+                    **204** при успехе. **404** — нет студента. **400** — неверный формат/файл. **403** — чужой профиль.""")
+    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
     @PostMapping(path = "/photo/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setPhoto(

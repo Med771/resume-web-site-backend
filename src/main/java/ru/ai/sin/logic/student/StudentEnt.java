@@ -93,6 +93,9 @@ public class StudentEnt {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<ExperienceEnt> companies = new ArrayList<>();
 
+    @Column(name = "catalog_visible", nullable = false)
+    private boolean catalogVisible = true;
+
     @Column(name = "public_profile_consent", nullable = false)
     private boolean publicProfileConsent;
 

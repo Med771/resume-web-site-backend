@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.ai.sin.logic.student.dto.BulkStudentVisibilityReq;
+import ru.ai.sin.logic.student.dto.BulkStudentVisibilityResult;
 import ru.ai.sin.logic.student.dto.ReorderStudentsReq;
 
 @RestController
@@ -29,5 +31,11 @@ public class StudentAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reorder(@Valid @RequestBody ReorderStudentsReq req) {
         studentService.reorder(req);
+    }
+
+    @Operation(summary = "Массово изменить видимость карточек студентов в каталоге и/или на главной")
+    @PostMapping("/bulk-visibility")
+    public BulkStudentVisibilityResult bulkVisibility(@Valid @RequestBody BulkStudentVisibilityReq req) {
+        return studentService.bulkUpdateVisibility(req);
     }
 }

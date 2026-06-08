@@ -21,7 +21,6 @@ import ru.ai.sin.logic.vacancy.dto.ApplyVacancyReq;
 import ru.ai.sin.logic.vacancy.dto.RejectApplicationReq;
 import ru.ai.sin.logic.vacancy.dto.VacancyApplicationDTO;
 import ru.ai.sin.models.PageResponse;
-import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.models.enums.VacancyApplicationStatus;
 import ru.ai.sin.models.enums.VacancyStatus;
@@ -47,8 +46,8 @@ public class VacancyApplicationServiceImpl implements VacancyApplicationService 
     public VacancyApplicationDTO apply(UUID vacancyId, ApplyVacancyReq req) {
         accountAccessHelper.requireApprovedAccount();
         StudentEnt student = requireCurrentStudent();
-        if (student.getCourse() == CourseEnum.NEW) {
-            throw new BadRequestException("Отклик недоступен для студентов с курсом NEW");
+        if (!student.isCatalogVisible()) {
+            throw new BadRequestException("Отклик недоступен: профиль студента ещё не опубликован в каталоге");
         }
         VacancyEnt vacancy = vacancyRepo.findWithDetailsById(vacancyId)
                 .orElseThrow(() -> new NotFoundException("Вакансия не найдена: " + vacancyId));

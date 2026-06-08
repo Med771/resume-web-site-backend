@@ -44,7 +44,7 @@ public class ExperienceController {
     }
 
     @Operation(summary = "Фильтр опыта", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
-    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<ExperienceDTO>> findAllByFilter(
             @PageableDefault Pageable pageable,

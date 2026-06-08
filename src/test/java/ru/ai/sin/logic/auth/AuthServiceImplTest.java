@@ -18,6 +18,8 @@ import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.auth.dto.LoginRequest;
 import ru.ai.sin.logic.auth.dto.TokenPair;
+import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,6 +43,12 @@ class AuthServiceImplTest {
     @Mock
     private UserRepo userRepo;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RegistrationPasswordPolicy registrationPasswordPolicy;
+
     private JwtProperties jwtProperties;
 
     private AuthServiceImpl authService;
@@ -51,7 +59,14 @@ class AuthServiceImplTest {
         JwtProperties.CookieProperties cookie = new JwtProperties.CookieProperties();
         cookie.setRefreshTokenName("REFRESH_TOKEN");
         jwtProperties.setCookie(cookie);
-        authService = new AuthServiceImpl(authenticationManager, jwtHelper, jwtProperties, securityHelper, userRepo);
+        authService = new AuthServiceImpl(
+                authenticationManager,
+                jwtHelper,
+                jwtProperties,
+                securityHelper,
+                userRepo,
+                passwordEncoder,
+                registrationPasswordPolicy);
     }
 
     @Test

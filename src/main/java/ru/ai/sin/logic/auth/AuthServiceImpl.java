@@ -11,10 +11,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ru.ai.sin.logic.auth.dto.*;
+import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.config.property.JwtProperties;
 import ru.ai.sin.helper.SecurityHelper;
@@ -34,6 +37,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtProperties jwtProperties;
     private final SecurityHelper securityHelper;
     private final UserRepo userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final RegistrationPasswordPolicy passwordPolicy;
 
     /**
      * Метод для Login
@@ -78,6 +83,20 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Not authenticated"));
         AccountStatus status = user.getAccountStatus() != null ? user.getAccountStatus() : AccountStatus.APPROVED;
         return new AuthMeDTO(username, role, status.getCode(), user.isHintsDisabled());
+    }
+
+    @Override
+    public void changePassword(ChangePasswordReq req) {
+        String username = securityHelper.getCurrentUsername();
+        UserEnt user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Неверный текущий пароль");
+        }
+        passwordPolicy.validate(req.newPassword());
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        userRepo.save(user);
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {

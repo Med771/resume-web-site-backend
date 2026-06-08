@@ -13,11 +13,12 @@ import jakarta.validation.constraints.Size;
 import ru.ai.sin.logic.student.dto.CreateStudentExperienceReq;
 import ru.ai.sin.logic.student.dto.CreateStudentInstitutionReq;
 import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(name = "StudentResumeOnboardingReq", description = "Заполнение резюме после регистрации аккаунта студента. Курс на сервере всегда NEW.")
+@Schema(name = "StudentResumeOnboardingReq", description = "Заполнение резюме после регистрации аккаунта студента.")
 public record StudentResumeOnboardingReq(
         @Size(min = 1, max = 255)
         String city,
@@ -32,6 +33,10 @@ public record StudentResumeOnboardingReq(
 
         @Size(max = 2000)
         String bio,
+
+        @NotNull
+        @Schema(description = "Текущий курс (1–4)")
+        CourseEnum course,
 
         @NotNull
         BusynessEnum busyness,

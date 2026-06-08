@@ -35,7 +35,6 @@ import ru.ai.sin.tools.SkillTools;
 import ru.ai.sin.tools.SpecialityTools;
 import ru.ai.sin.tools.StudentTools;
 import ru.ai.sin.tools.UserTools;
-import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 
 import java.util.HashSet;
@@ -63,6 +62,7 @@ public class StudentServiceImpl implements StudentService {
     private final SpecialityTools specialityTools;
     private final SkillTools skillTools;
     private final StudentCvAttachmentService studentCvAttachmentService;
+    private final StudentSkillsMutator studentSkillsMutator;
 
     private final FileHelper fileHelper;
     private final SecurityHelper securityHelper;
@@ -79,10 +79,16 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDTO getById(UUID id) {
-        accountAccessHelper.requireApprovedAccount();
+        boolean isOwnProfile = userTools.findCurrentUserFetchingLinks()
+                .filter(u -> u.getRole() == RoleEnum.STUDENT && u.getStudent() != null)
+                .map(u -> u.getStudent().getId().equals(id))
+                .orElse(false);
+        if (!isOwnProfile) {
+            accountAccessHelper.requireApprovedAccount();
+        }
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
-        if (studentEnt.getCourse() == CourseEnum.NEW && !securityHelper.isCurrentUserAdmin()) {
+        if (!studentEnt.isCatalogVisible() && !securityHelper.isCurrentUserAdmin() && !isOwnProfile) {
             throw new NotFoundException("Failed to find student by id " + id);
         }
 
@@ -100,6 +106,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void setPhoto(UUID id, MultipartFile file) {
+        accountAccessHelper.requireStudentOwnsProfile(id);
         fileHelper.validateMultipart(file);
 
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
@@ -120,7 +127,10 @@ public class StudentServiceImpl implements StudentService {
             Pageable pageable,
             FilterStudentReq filterStudentReq
     ) {
-        accountAccessHelper.requireApprovedAccount();
+        UserEnt currentUser = accountAccessHelper.requireCurrentUser();
+        if (currentUser.getRole() != RoleEnum.STUDENT) {
+            accountAccessHelper.requireApprovedAccount();
+        }
         Sort sort = StudentSortResolver.resolve(filterStudentReq);
         Pageable effectivePageable = org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),
@@ -131,11 +141,25 @@ public class StudentServiceImpl implements StudentService {
                 StudentSpecifications.byFilters(filterStudentReq, securityHelper.isCurrentUserAdmin(), false),
                 effectivePageable);
 
+        List<StudentCardDTO> cards = new java.util.ArrayList<>(
+                page.getContent().stream().map(studentTools::mapToCardDTO).toList());
+
+        userTools.findCurrentUserFetchingLinks()
+                .filter(u -> u.getRole() == RoleEnum.STUDENT && u.getStudent() != null)
+                .map(u -> u.getStudent())
+                .ifPresent(ownStudent -> {
+                    UUID ownId = ownStudent.getId();
+                    boolean alreadyListed = cards.stream().anyMatch(c -> c.id().equals(ownId));
+                    if (!alreadyListed) {
+                        cards.add(0, studentTools.mapToCardDTO(ownStudent));
+                    }
+                });
+
         return new PageResponse<>(
-                page.getContent().stream().map(studentTools::mapToCardDTO).toList(),
+                cards,
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                page.getTotalElements(),
+                page.getTotalElements() + (cards.size() - page.getNumberOfElements()),
                 page.getTotalPages());
     }
 
@@ -176,10 +200,8 @@ public class StudentServiceImpl implements StudentService {
 
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(addStudentReq.specialityId());
 
-        Set<SkillEnt> skillEntSet = resolveSkillsByIdsOrThrow(addStudentReq.skillsIds());
-
         studentEnt.setSpeciality(specialityEnt);
-        studentEnt.setSkills(skillEntSet);
+        studentSkillsMutator.replaceSkills(studentEnt, addStudentReq.skillsIds());
         applyCreateCatalogFlags(addStudentReq, studentEnt);
 
         try {
@@ -250,7 +272,6 @@ public class StudentServiceImpl implements StudentService {
         StudentEnt studentEnt = studentTools.getStudentOrThrow(id);
 
         SpecialityEnt specialityEnt = specialityTools.getSpecialityOrThrow(updateStudentReq.specialityId());
-        Set<SkillEnt> skillEntSet = resolveSkillsByIdsOrThrow(updateStudentReq.skillsIds());
 
         studentMapper.updateEntityFromDto(updateStudentReq, studentEnt);
 
@@ -261,7 +282,7 @@ public class StudentServiceImpl implements StudentService {
         studentEnt.getUserInformation().setFirstName(updateStudentReq.firstName());
         studentEnt.getUserInformation().setLastName(updateStudentReq.lastName());
         studentEnt.setSpeciality(specialityEnt);
-        studentEnt.setSkills(skillEntSet);
+        studentSkillsMutator.replaceSkills(studentEnt, updateStudentReq.skillsIds());
 
         if (updateStudentReq.publicProfileConsent() != null) {
             studentEnt.setPublicProfileConsent(updateStudentReq.publicProfileConsent());
@@ -328,10 +349,13 @@ public class StudentServiceImpl implements StudentService {
             studentEnt.setSpeciality(specialityTools.getSpecialityOrThrow(patchStudentReq.specialityId()));
         }
         if (patchStudentReq.skillsIds() != null) {
-            studentEnt.setSkills(resolveSkillsByIdsOrThrow(patchStudentReq.skillsIds()));
+            studentSkillsMutator.replaceSkills(studentEnt, patchStudentReq.skillsIds());
         }
         if (patchStudentReq.publicProfileConsent() != null) {
             studentEnt.setPublicProfileConsent(patchStudentReq.publicProfileConsent());
+        }
+        if (patchStudentReq.catalogVisible() != null) {
+            studentEnt.setCatalogVisible(patchStudentReq.catalogVisible());
         }
         if (Boolean.TRUE.equals(patchStudentReq.clearManualSortOrder())) {
             studentEnt.setManualSortOrder(null);
@@ -462,21 +486,8 @@ public class StudentServiceImpl implements StudentService {
         studentEnt.setManualSortOrder(addStudentReq.manualSortOrder());
     }
 
-    private Set<SkillEnt> resolveSkillsByIdsOrThrow(List<Long> skillsIds) {
-        if (skillsIds == null || skillsIds.isEmpty()) {
-            return Set.of();
-        }
-
-        Set<Long> uniqueSkillIds = new HashSet<>(skillsIds);
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(uniqueSkillIds);
-        if (skillEntSet.size() != uniqueSkillIds.size()) {
-            throw new BadRequestException("Some skills were not found by ids");
-        }
-        return skillEntSet;
-    }
-
     private Set<SkillEnt> resolveSkillsForExtended(CreateStudentExtendedReq req) {
-        Set<SkillEnt> resolvedSkills = new HashSet<>(resolveSkillsByIdsOrThrow(req.skillsIds()));
+        Set<SkillEnt> resolvedSkills = new HashSet<>(studentSkillsMutator.resolveSkillsByIdsOrThrow(req.skillsIds()));
 
         if (req.skills() == null || req.skills().isEmpty()) {
             return resolvedSkills;
@@ -540,6 +551,50 @@ public class StudentServiceImpl implements StudentService {
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    @Override
+    @Transactional
+    public BulkStudentVisibilityResult bulkUpdateVisibility(BulkStudentVisibilityReq req) {
+        List<StudentEnt> students = resolveBulkVisibilityTargets(req);
+        int updated = 0;
+        for (StudentEnt student : students) {
+            boolean changed = false;
+            if (req.catalogVisible() != null && student.isCatalogVisible() != req.catalogVisible()) {
+                student.setCatalogVisible(req.catalogVisible());
+                changed = true;
+            }
+            if (req.publicProfileConsent() != null
+                    && student.isPublicProfileConsent() != req.publicProfileConsent()) {
+                student.setPublicProfileConsent(req.publicProfileConsent());
+                changed = true;
+            }
+            if (changed) {
+                studentRepo.save(student);
+                updated++;
+            }
+        }
+        log.info(
+                "Bulk visibility update by {}: matched={} updated={} catalogVisible={} publicProfileConsent={}",
+                securityHelper.getCurrentUsername(),
+                students.size(),
+                updated,
+                req.catalogVisible(),
+                req.publicProfileConsent());
+        return new BulkStudentVisibilityResult(updated, students.size());
+    }
+
+    private List<StudentEnt> resolveBulkVisibilityTargets(BulkStudentVisibilityReq req) {
+        if (req.studentIds() != null && !req.studentIds().isEmpty()) {
+            return studentRepo.findAllById(req.studentIds());
+        }
+        if (!req.effectiveAll()) {
+            throw new BadRequestException("Укажите studentIds или all=true");
+        }
+        if (req.effectiveOnlyApproved()) {
+            return studentRepo.findAllWithApprovedAccount();
+        }
+        return studentRepo.findAll();
     }
 
     @Override

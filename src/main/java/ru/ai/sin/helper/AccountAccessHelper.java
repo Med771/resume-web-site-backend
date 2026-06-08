@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.ForbiddenException;
+import ru.ai.sin.exception.models.NotFoundException;
+import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.models.enums.AccountStatus;
 import ru.ai.sin.models.enums.RoleEnum;
+import ru.ai.sin.tools.StudentTools;
+import ru.ai.sin.tools.UserTools;
 
 import java.util.UUID;
 
@@ -17,6 +21,8 @@ public class AccountAccessHelper {
 
     private final SecurityHelper securityHelper;
     private final UserRepo userRepo;
+    private final UserTools userTools;
+    private final StudentTools studentTools;
 
     public UserEnt requireCurrentUser() {
         String username = securityHelper.getCurrentUsername();
@@ -68,6 +74,17 @@ public class AccountAccessHelper {
         }
     }
 
+    public void requireRecruiterOwnsProfile(UUID recruiterId) {
+        UserEnt user = requireCurrentUser();
+        if (user.getRole() == RoleEnum.ADMIN) {
+            return;
+        }
+        if (user.getRole() != RoleEnum.RECRUITER || user.getRecruiter() == null
+                || !user.getRecruiter().getId().equals(recruiterId)) {
+            throw new ForbiddenException("Нет доступа к профилю рекрутера");
+        }
+    }
+
     public void requireStudentOwnsProfile(UUID studentId) {
         UserEnt user = requireCurrentUser();
         if (user.getRole() == RoleEnum.ADMIN) {
@@ -76,6 +93,34 @@ public class AccountAccessHelper {
         if (user.getRole() != RoleEnum.STUDENT || user.getStudent() == null
                 || !user.getStudent().getId().equals(studentId)) {
             throw new ForbiddenException("Нет доступа к профилю студента");
+        }
+    }
+
+    /**
+     * Те же правила видимости, что у {@code StudentServiceImpl#getById}: свой профиль всегда;
+     * чужой — только при {@code catalogVisible} и одобренном аккаунте (кроме ADMIN).
+     */
+    public void requireCanReadStudentResumeDetails(UUID studentId) {
+        if (studentId == null) {
+            UserEnt user = requireCurrentUser();
+            if (user.getRole() == RoleEnum.ADMIN || user.getRole() == RoleEnum.RECRUITER) {
+                requireApprovedAccount();
+                return;
+            }
+            throw new ForbiddenException("Нет доступа к данным резюме");
+        }
+
+        boolean isOwnProfile = userTools.findCurrentUserFetchingLinks()
+                .filter(u -> u.getRole() == RoleEnum.STUDENT && u.getStudent() != null)
+                .map(u -> u.getStudent().getId().equals(studentId))
+                .orElse(false);
+        if (!isOwnProfile) {
+            requireApprovedAccount();
+        }
+
+        StudentEnt studentEnt = studentTools.getStudentOrThrow(studentId);
+        if (!studentEnt.isCatalogVisible() && !securityHelper.isCurrentUserAdmin() && !isOwnProfile) {
+            throw new NotFoundException("Failed to find student by id " + studentId);
         }
     }
 

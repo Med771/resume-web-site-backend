@@ -42,7 +42,7 @@ public class PortfolioController {
     }
 
     @Operation(summary = "Фильтр портфолио", description = "Принимает DTO фильтра в request body и Pageable без параметра sort")
-    @PreAuthorize("hasAnyRole('RECRUITER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<PortfolioDTO>> findAllByFilter(
             @PageableDefault Pageable pageable,

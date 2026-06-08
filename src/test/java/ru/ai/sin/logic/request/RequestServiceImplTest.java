@@ -102,7 +102,7 @@ class RequestServiceImplTest {
     }
 
     @Test
-    void create_throwsNotFoundWhenStudentIsNewAndUserNotAdmin() {
+    void create_throwsNotFoundWhenStudentHiddenFromCatalogAndUserNotAdmin() {
         when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.empty());
 
         RecruiterEnt recruiter = new RecruiterEnt();
@@ -111,7 +111,7 @@ class RequestServiceImplTest {
 
         StudentEnt student = new StudentEnt();
         student.setId(studentId);
-        student.setCourse(CourseEnum.NEW);
+        student.setCatalogVisible(false);
         when(studentTools.getStudentOrThrow(studentId)).thenReturn(student);
         when(securityHelper.isCurrentUserAdmin()).thenReturn(false);
 
@@ -128,7 +128,7 @@ class RequestServiceImplTest {
     }
 
     @Test
-    void create_allowsWhenStudentIsNewAndUserIsAdmin() {
+    void create_allowsWhenStudentHiddenFromCatalogAndUserIsAdmin() {
         RecruiterEnt recruiter = new RecruiterEnt();
         recruiter.setId(recruiterId);
         UserEnt admin = new UserEnt(RoleEnum.ADMIN, "a", "admin", "x");
@@ -138,7 +138,7 @@ class RequestServiceImplTest {
 
         StudentEnt student = new StudentEnt();
         student.setId(studentId);
-        student.setCourse(CourseEnum.NEW);
+        student.setCatalogVisible(false);
         when(studentTools.getStudentOrThrow(studentId)).thenReturn(student);
 
         ChatEnt chat = new ChatEnt();

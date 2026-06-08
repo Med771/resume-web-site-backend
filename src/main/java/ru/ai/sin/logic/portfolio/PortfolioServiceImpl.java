@@ -16,6 +16,7 @@ import ru.ai.sin.logic.portfolio.dto.FilterPortfolioReq;
 
 import ru.ai.sin.logic.student.StudentEnt;
 
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.tools.PortfolioTools;
@@ -34,6 +35,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final StudentTools studentTools;
 
     private final SecurityHelper securityHelper;
+    private final AccountAccessHelper accountAccessHelper;
 
     @Override
     public PortfolioDTO getById(long id) {
@@ -42,6 +44,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public PageResponse<PortfolioDTO> getAllByFilter(Pageable pageable, FilterPortfolioReq filterPortfolioReq) {
+        accountAccessHelper.requireCanReadStudentResumeDetails(filterPortfolioReq.studentId());
+
         Page<PortfolioEnt> page = portfolioRepo.findAll(
                 PortfolioSpecifications.byFilters(filterPortfolioReq),
                 pageable);

@@ -12,7 +12,6 @@ import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.vacancy.dto.ApplyVacancyReq;
-import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.models.enums.VacancyStatus;
 import ru.ai.sin.tools.StudentTools;
@@ -52,10 +51,10 @@ class VacancyApplicationServiceImplTest {
     }
 
     @Test
-    void apply_rejectsNewCourseStudent() {
+    void apply_rejectsHiddenFromCatalogStudent() {
         StudentEnt student = new StudentEnt();
         student.setId(studentId);
-        student.setCourse(CourseEnum.NEW);
+        student.setCatalogVisible(false);
         UserEnt user = new UserEnt(RoleEnum.STUDENT, "s", "stu", "p");
         user.setStudent(student);
 
@@ -63,14 +62,14 @@ class VacancyApplicationServiceImplTest {
 
         assertThatThrownBy(() -> service.apply(vacancyId, new ApplyVacancyReq(null)))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("NEW");
+                .hasMessageContaining("каталог");
     }
 
     @Test
     void apply_rejectsUnpublishedVacancy() {
         StudentEnt student = new StudentEnt();
         student.setId(studentId);
-        student.setCourse(CourseEnum.FIRST);
+        student.setCatalogVisible(true);
         UserEnt user = new UserEnt(RoleEnum.STUDENT, "s", "stu", "p");
         user.setStudent(student);
 

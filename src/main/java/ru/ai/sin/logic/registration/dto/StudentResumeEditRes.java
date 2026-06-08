@@ -3,6 +3,7 @@ package ru.ai.sin.logic.registration.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +16,7 @@ public record StudentResumeEditRes(
         LocalDate birthDate,
         String bio,
         BusynessEnum busyness,
+        CourseEnum course,
         String firstName,
         String lastName,
         String email,

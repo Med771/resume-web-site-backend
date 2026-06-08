@@ -81,6 +81,9 @@ public record PatchStudentReq(
                         `null` — не менять текущее значение в БД.""")
         Boolean publicProfileConsent,
 
+        @Schema(description = "Видимость в каталоге рекрутёров; `null` — не менять")
+        Boolean catalogVisible,
+
         @Schema(description = """
                 Если `true` — сбросить ручной номер сортировки (`NULL` в БД); иначе при непустом `manualSortOrder` — записать число.""")
         Boolean clearManualSortOrder,

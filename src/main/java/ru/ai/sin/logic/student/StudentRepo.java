@@ -46,6 +46,14 @@ public interface StudentRepo extends
             """)
     boolean existsByNormalizedEmail(@Param("email") String email);
 
+    @Query("""
+            SELECT s FROM StudentEnt s
+            WHERE EXISTS (
+                SELECT 1 FROM UserEnt u
+                WHERE u.student = s AND u.accountStatus = ru.ai.sin.models.enums.AccountStatus.APPROVED
+            )""")
+    java.util.List<StudentEnt> findAllWithApprovedAccount();
+
     @Query("select count(s) from StudentEnt s")
     long countAllStudents();
 

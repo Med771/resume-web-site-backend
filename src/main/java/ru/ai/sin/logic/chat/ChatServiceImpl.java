@@ -23,6 +23,7 @@ import ru.ai.sin.logic.chat.dto.PostChatMessageReq;
 import ru.ai.sin.logic.chat.event.ChatMessagePublishedEvent;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.chat.MessagingGateService;
+import ru.ai.sin.logic.profile.ProfileCommunicationGateService;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
@@ -44,6 +45,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageRepo chatMessageRepo;
     private final ChatReadStateRepo chatReadStateRepo;
     private final MessagingGateService messagingGateService;
+    private final ProfileCommunicationGateService profileCommunicationGateService;
     private final UserRepo userRepo;
     private final SecurityHelper securityHelper;
     private final ApplicationEventPublisher eventPublisher;
@@ -81,6 +83,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public Page<ChatSummaryDTO> listMyChats(Pageable pageable) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         Page<ChatEnt> page;
         if (user.getRole() == RoleEnum.ADMIN) {
             page = chatRepo.findAllByOrderByLastActivityAtDesc(pageable);
@@ -98,6 +101,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public ChatSummaryDTO getChatSummary(UUID chatId) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -108,6 +112,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public Page<ChatMessageDTO> listMessages(UUID chatId, Pageable pageable) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -121,6 +126,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public ChatMessageDTO sendTextMessage(UUID chatId, PostChatMessageReq req) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -145,6 +151,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public ChatMessageDTO sendMessageWithAttachment(UUID chatId, String body, MultipartFile file) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -187,6 +194,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public ChatMessageDTO editMessage(UUID chatId, UUID messageId, PatchChatMessageReq req) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -241,6 +249,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public void markRead(UUID chatId, MarkChatReadReq req) {
         UserEnt user = requireUserWithLinks();
+        requireCommunicationReady(user);
         ChatEnt chat = chatRepo.findById(chatId)
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
@@ -277,6 +286,13 @@ public class ChatServiceImpl implements ChatService {
         ChatMessageDTO dto = toDto(m);
         eventPublisher.publishEvent(new ChatMessagePublishedEvent(chat.getId(), dto));
         return dto;
+    }
+
+    private void requireCommunicationReady(UserEnt user) {
+        if (user.getRole() == RoleEnum.ADMIN) {
+            return;
+        }
+        profileCommunicationGateService.requireReadyForCommunication();
     }
 
     private void assertCanPostUserMessage(UserEnt user, ChatEnt chat) {

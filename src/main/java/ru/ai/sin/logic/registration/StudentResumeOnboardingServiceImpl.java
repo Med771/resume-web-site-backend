@@ -9,11 +9,17 @@ import ru.ai.sin.logic.experience.ExperienceEnt;
 import ru.ai.sin.logic.experience.ExperienceRepo;
 import ru.ai.sin.logic.institution.InstitutionEnt;
 import ru.ai.sin.logic.institution.InstitutionRepo;
+import ru.ai.sin.logic.portfolio.PortfolioEnt;
+import ru.ai.sin.logic.portfolio.PortfolioMapper;
+import ru.ai.sin.logic.portfolio.PortfolioRepo;
+import ru.ai.sin.logic.portfolio.dto.AddPortfolioReq;
+import ru.ai.sin.logic.portfolio.dto.PortfolioDTO;
+import ru.ai.sin.logic.registration.dto.StudentPortfolioItemReq;
 import ru.ai.sin.logic.registration.dto.StudentResumeEditRes;
 import ru.ai.sin.logic.registration.dto.StudentResumeOnboardingReq;
 import ru.ai.sin.logic.skill.SkillEnt;
-import ru.ai.sin.logic.skill.SkillRepo;
 import ru.ai.sin.logic.student.StudentCvAttachmentService;
+import ru.ai.sin.logic.student.StudentSkillsMutator;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.student.StudentProfileScoring;
 import ru.ai.sin.logic.student.StudentRepo;
@@ -22,14 +28,15 @@ import ru.ai.sin.logic.student.dto.CreateStudentExtendedReq;
 import ru.ai.sin.logic.student.dto.StudentDTO;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.models.embeddables.ContactInformation;
+import ru.ai.sin.models.embeddables.UserInformation;
+import ru.ai.sin.models.enums.BusynessEnum;
 import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.tools.SpecialityTools;
 import ru.ai.sin.tools.UserTools;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -43,21 +50,27 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
     private final StudentCvAttachmentService studentCvAttachmentService;
     private final ExperienceRepo experienceRepo;
     private final InstitutionRepo institutionRepo;
-    private final SkillRepo skillRepo;
+    private final StudentSkillsMutator studentSkillsMutator;
     private final SpecialityTools specialityTools;
+    private final PortfolioRepo portfolioRepo;
+    private final PortfolioMapper portfolioMapper;
 
     @Override
     @Transactional
     public StudentDTO completeResume(StudentResumeOnboardingReq req) {
         UserEnt user = requireStudentUser();
+        validateCourse(req.course());
         if (user.getStudent() != null) {
-            throw new BadRequestException("Резюме уже создано");
+            return updateResume(req);
         }
 
-        CreateStudentExtendedReq extendedReq = toExtendedReq(req, CourseEnum.NEW);
+        CreateStudentExtendedReq extendedReq = toExtendedReq(req, req.course());
         StudentDTO created = studentService.createExtended(extendedReq);
         studentRepo.findById(created.id()).ifPresent(student -> {
+            student.setCatalogVisible(false);
+            studentRepo.save(student);
             user.setStudent(student);
+            syncRegistrationContacts(user, req);
             userRepo.save(user);
         });
 
@@ -69,6 +82,7 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
     @Transactional
     public StudentDTO updateResume(StudentResumeOnboardingReq req) {
         UserEnt user = requireStudentUser();
+        validateCourse(req.course());
         StudentEnt studentEnt = user.getStudent();
         if (studentEnt == null) {
             throw new BadRequestException("К аккаунту не привязана карточка студента");
@@ -76,13 +90,13 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
 
         applyProfileFields(studentEnt, req);
         studentEnt.setSpeciality(specialityTools.getSpecialityOrThrow(req.specialityId()));
-        studentEnt.setSkills(resolveSkills(req.skillsIds()));
+        studentSkillsMutator.replaceSkills(studentEnt, req.skillsIds());
 
         studentCvAttachmentService.attachExperiences(studentEnt, req.experiences());
         studentCvAttachmentService.attachInstitutions(studentEnt, req.institutions());
 
         StudentProfileScoring.applyTo(studentEnt);
-        studentRepo.save(studentEnt);
+        syncRegistrationContacts(user, req);
 
         StudentDTO updated = studentService.getLinkedForCurrentUser()
                 .orElseThrow(() -> new BadRequestException("Не удалось обновить резюме"));
@@ -96,7 +110,7 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
         UserEnt user = requireStudentUser();
         StudentEnt studentEnt = user.getStudent();
         if (studentEnt == null) {
-            throw new BadRequestException("К аккаунту не привязана карточка студента");
+            return buildResumeDefaultsFromUser(user);
         }
 
         List<Long> skillsIds = studentRepo.findSkillsByStudentId(studentEnt.getId()).stream()
@@ -115,6 +129,7 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
 
         var contact = studentEnt.getContactInformation();
         var userInfo = studentEnt.getUserInformation();
+        NameParts nameParts = parseDisplayName(user.getName());
 
         return new StudentResumeEditRes(
                 studentEnt.getCity(),
@@ -122,17 +137,62 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
                 studentEnt.getBirthDate(),
                 studentEnt.getBio(),
                 studentEnt.getBusyness(),
-                userInfo != null ? userInfo.getFirstName() : null,
-                userInfo != null ? userInfo.getLastName() : null,
-                userInfo != null ? userInfo.getEmail() : null,
-                contact != null ? contact.getPhoneNumber() : null,
+                studentEnt.getCourse(),
+                coalesce(userInfo != null ? userInfo.getFirstName() : null, nameParts.firstName()),
+                coalesce(userInfo != null ? userInfo.getLastName() : null, nameParts.lastName()),
+                coalesce(userInfo != null ? userInfo.getEmail() : null, user.getRegistrationEmail()),
+                coalesce(contact != null ? contact.getPhoneNumber() : null, user.getRegistrationPhone()),
                 contact != null ? contact.getTelegramUsername() : null,
-                studentEnt.getSpeciality().getId(),
+                studentEnt.getSpeciality() != null ? studentEnt.getSpeciality().getId() : 0L,
                 skillsIds,
                 experiences,
                 institutions
         );
     }
+
+    private StudentResumeEditRes buildResumeDefaultsFromUser(UserEnt user) {
+        NameParts nameParts = parseDisplayName(user.getName());
+        return new StudentResumeEditRes(
+                null,
+                null,
+                null,
+                null,
+                BusynessEnum.FREE,
+                null,
+                nameParts.firstName(),
+                nameParts.lastName(),
+                user.getRegistrationEmail(),
+                user.getRegistrationPhone(),
+                null,
+                0L,
+                List.of(),
+                List.of(),
+                List.of()
+        );
+    }
+
+    private static String coalesce(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) {
+            return primary.trim();
+        }
+        if (fallback != null && !fallback.isBlank()) {
+            return fallback.trim();
+        }
+        return null;
+    }
+
+    private static NameParts parseDisplayName(String displayName) {
+        if (displayName == null || displayName.isBlank()) {
+            return new NameParts(null, null);
+        }
+        String[] parts = displayName.trim().split("\\s+");
+        if (parts.length == 1) {
+            return new NameParts(parts[0], null);
+        }
+        return new NameParts(parts[1], parts[0]);
+    }
+
+    private record NameParts(String firstName, String lastName) {}
 
     @Override
     @Transactional(readOnly = true)
@@ -184,28 +244,36 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
         studentEnt.setBirthDate(req.birthDate());
         studentEnt.setBio(req.bio());
         studentEnt.setBusyness(req.busyness());
+        studentEnt.setCourse(req.course());
 
-        if (studentEnt.getUserInformation() != null) {
-            studentEnt.getUserInformation().setFirstName(req.firstName());
-            studentEnt.getUserInformation().setLastName(req.lastName());
-            studentEnt.getUserInformation().setEmail(req.email());
+        if (studentEnt.getUserInformation() == null) {
+            studentEnt.setUserInformation(new UserInformation());
         }
-        if (studentEnt.getContactInformation() != null) {
-            studentEnt.getContactInformation().setPhoneNumber(req.phoneNumber());
-            studentEnt.getContactInformation().setTelegramUsername(req.telegramUsername());
+        if (studentEnt.getContactInformation() == null) {
+            studentEnt.setContactInformation(new ContactInformation());
+        }
+
+        studentEnt.getUserInformation().setFirstName(req.firstName());
+        studentEnt.getUserInformation().setLastName(req.lastName());
+        studentEnt.getUserInformation().setEmail(req.email());
+        studentEnt.getContactInformation().setPhoneNumber(req.phoneNumber());
+        studentEnt.getContactInformation().setTelegramUsername(req.telegramUsername());
+    }
+
+    private static void validateCourse(CourseEnum course) {
+        if (course == null || course == CourseEnum.NEW) {
+            throw new BadRequestException("Укажите курс обучения (1–4)");
         }
     }
 
-    private Set<SkillEnt> resolveSkills(List<Long> skillsIds) {
-        if (skillsIds == null || skillsIds.isEmpty()) {
-            return Set.of();
+    private void syncRegistrationContacts(UserEnt user, StudentResumeOnboardingReq req) {
+        if (req.email() != null && !req.email().isBlank()) {
+            user.setRegistrationEmail(req.email().trim());
         }
-        Set<Long> uniqueSkillIds = new HashSet<>(skillsIds);
-        Set<SkillEnt> skillEntSet = skillRepo.findAllByIdIn(uniqueSkillIds);
-        if (skillEntSet.size() != uniqueSkillIds.size()) {
-            throw new BadRequestException("Some skills were not found by ids");
+        if (req.phoneNumber() != null && !req.phoneNumber().isBlank()) {
+            user.setRegistrationPhone(req.phoneNumber().trim());
         }
-        return skillEntSet;
+        userRepo.save(user);
     }
 
     private StudentResumeEditRes.StudentResumeExperienceItem toExperienceItem(ExperienceEnt ent) {
@@ -230,5 +298,47 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
                 ent.getStartYear(),
                 ent.getEndYear()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PortfolioDTO> listPortfoliosForCurrentUser() {
+        StudentEnt student = requireStudentWithProfile();
+        return portfolioRepo.findAllByStudent_Id(student.getId()).stream()
+                .map(portfolioMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public PortfolioDTO addPortfolio(StudentPortfolioItemReq req) {
+        StudentEnt student = requireStudentWithProfile();
+        AddPortfolioReq addReq = new AddPortfolioReq(
+                req.name().trim(),
+                req.link().trim(),
+                req.additionalInfo() != null && !req.additionalInfo().isBlank() ? req.additionalInfo().trim() : null,
+                student.getId());
+        PortfolioEnt entity = portfolioMapper.toEntity(addReq, student);
+        return portfolioMapper.toDTO(portfolioRepo.save(entity));
+    }
+
+    @Override
+    @Transactional
+    public void deletePortfolio(long portfolioId) {
+        StudentEnt student = requireStudentWithProfile();
+        PortfolioEnt portfolio = portfolioRepo.findById(portfolioId)
+                .orElseThrow(() -> new BadRequestException("Портфолио не найдено"));
+        if (!portfolio.getStudent().getId().equals(student.getId())) {
+            throw new BadRequestException("Нет доступа к этой записи портфолио");
+        }
+        portfolioRepo.delete(portfolio);
+    }
+
+    private StudentEnt requireStudentWithProfile() {
+        UserEnt user = requireStudentUser();
+        if (user.getStudent() == null) {
+            throw new BadRequestException("К аккаунту не привязана карточка студента");
+        }
+        return user.getStudent();
     }
 }

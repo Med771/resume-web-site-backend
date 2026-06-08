@@ -37,6 +37,6 @@ public class PublicHomeVitrinaService {
     }
 
     private static FilterStudentReq emptyFilter() {
-        return new FilterStudentReq(null, null, null, null, null, null, null, null, null, null);
+        return new FilterStudentReq(null, null, null, null, null, null, null, null, null, null, null, null);
     }
 }

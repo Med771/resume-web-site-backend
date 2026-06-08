@@ -43,6 +43,8 @@ public interface StudentService {
 
     void reorder(ReorderStudentsReq req);
 
+    BulkStudentVisibilityResult bulkUpdateVisibility(BulkStudentVisibilityReq req);
+
     // ---------- DELETE METHODS ----------
     void deleteById(UUID id);
 }

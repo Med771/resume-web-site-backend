@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.ai.sin.config.property.RegistrationProperties;
 import ru.ai.sin.config.property.UserProperties;
 import ru.ai.sin.exception.models.BadRequestException;
@@ -62,7 +63,7 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
         passwordPolicy.validate(req.password());
 
         String username = req.username().trim();
-        String email = req.email().trim();
+        String email = trimToNull(req.email());
         String phone = trimToNull(req.phoneNumber());
 
         if (phone != null) {
@@ -73,19 +74,37 @@ public class RecruiterSelfRegistrationServiceImpl implements RecruiterSelfRegist
 
         validateUsernameAvailable(username);
 
-        if (recruiterRepo.existsByNormalizedEmail(email)) {
+        if (email != null && recruiterRepo.existsByNormalizedEmail(email)) {
             throw conflict();
         }
 
+        String companyName = trimToNull(req.companyName());
+        String firstName = trimToNull(req.firstName());
+        String lastName = trimToNull(req.lastName());
+        String city = trimToNull(req.city());
+        if (!StringUtils.hasText(companyName)) {
+            throw new BadRequestException("Укажите название компании");
+        }
+        if (!StringUtils.hasText(firstName) || !StringUtils.hasText(lastName)) {
+            throw new BadRequestException("Укажите имя и фамилию");
+        }
+        if (email == null) {
+            throw new BadRequestException("Укажите email");
+        }
+        if (!StringUtils.hasText(city)) {
+            throw new BadRequestException("Укажите город");
+        }
+
         AddRecruiterReq addRecruiterReq = new AddRecruiterReq(
-                req.companyName().trim(),
-                trimToNull(req.firstName()),
-                trimToNull(req.lastName()),
+                companyName,
+                firstName,
+                lastName,
                 email,
                 phone,
                 trimToNull(req.telegramUsername())
         );
         RecruiterEnt recruiter = recruiterMapper.toEntity(addRecruiterReq);
+        recruiter.setCity(city);
         try {
             recruiter = recruiterRepo.save(recruiter);
         } catch (DataIntegrityViolationException ex) {

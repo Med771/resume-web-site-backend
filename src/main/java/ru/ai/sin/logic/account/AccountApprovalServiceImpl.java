@@ -11,12 +11,21 @@ import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.account.dto.AccountApprovalUserDTO;
 import ru.ai.sin.logic.account.dto.AccountRejectReq;
+import ru.ai.sin.logic.recruiter.RecruiterEnt;
+import ru.ai.sin.logic.skill.SkillEnt;
+import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.logic.student.StudentRepo;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.models.enums.AccountStatus;
+import ru.ai.sin.models.enums.BusynessEnum;
+import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -25,6 +34,7 @@ import java.util.UUID;
 public class AccountApprovalServiceImpl implements AccountApprovalService {
 
     private final UserRepo userRepo;
+    private final StudentRepo studentRepo;
     private final SecurityHelper securityHelper;
 
     @Override
@@ -53,6 +63,11 @@ public class AccountApprovalServiceImpl implements AccountApprovalService {
         }
         user.setAccountStatus(AccountStatus.APPROVED);
         userRepo.save(user);
+        StudentEnt student = user.getStudent();
+        if (student != null) {
+            student.setCatalogVisible(true);
+            studentRepo.save(student);
+        }
         log.info("Account approved: userId={} by {}", userId, securityHelper.getCurrentUsername());
     }
 
@@ -71,15 +86,102 @@ public class AccountApprovalServiceImpl implements AccountApprovalService {
     }
 
     private AccountApprovalUserDTO toDto(UserEnt u) {
+        String email = null;
+        String phone = null;
+        String telegram = null;
+        String companyName = null;
+        String city = null;
+        String firstName = null;
+        String lastName = null;
+        String speciality = null;
+        CourseEnum course = null;
+        BusynessEnum busyness = null;
+        String bio = null;
+        Integer profileTextScore = null;
+        List<String> skills = List.of();
+        LocalDateTime createdAt = null;
+
+        RecruiterEnt recruiter = u.getRecruiter();
+        if (recruiter != null) {
+            companyName = recruiter.getCompanyName();
+            if (recruiter.getUserInformation() != null) {
+                firstName = recruiter.getUserInformation().getFirstName();
+                lastName = recruiter.getUserInformation().getLastName();
+                email = recruiter.getUserInformation().getEmail();
+            }
+            if (recruiter.getContactInformation() != null) {
+                phone = recruiter.getContactInformation().getPhoneNumber();
+                telegram = recruiter.getContactInformation().getTelegramUsername();
+            }
+            if (recruiter.getTimestamps() != null) {
+                createdAt = recruiter.getTimestamps().getCreatedAt();
+            }
+        }
+
+        StudentEnt student = u.getStudent();
+        if (student != null) {
+            city = student.getCity();
+            bio = student.getBio();
+            course = student.getCourse();
+            busyness = student.getBusyness();
+            profileTextScore = student.getProfileTextScore();
+            if (student.getUserInformation() != null) {
+                if (firstName == null) {
+                    firstName = student.getUserInformation().getFirstName();
+                }
+                if (lastName == null) {
+                    lastName = student.getUserInformation().getLastName();
+                }
+                if (email == null) {
+                    email = student.getUserInformation().getEmail();
+                }
+            }
+            if (student.getContactInformation() != null) {
+                if (phone == null) {
+                    phone = student.getContactInformation().getPhoneNumber();
+                }
+                if (telegram == null) {
+                    telegram = student.getContactInformation().getTelegramUsername();
+                }
+            }
+            if (student.getSpeciality() != null) {
+                speciality = student.getSpeciality().getName();
+            }
+            if (student.getSkills() != null) {
+                skills = student.getSkills().stream()
+                        .map(SkillEnt::getName)
+                        .filter(Objects::nonNull)
+                        .limit(16)
+                        .toList();
+            }
+            if (createdAt == null && student.getTimestamps() != null) {
+                createdAt = student.getTimestamps().getCreatedAt();
+            }
+        }
+
         return new AccountApprovalUserDTO(
                 u.getId(),
                 u.getUsername(),
                 u.getName(),
                 u.getRole(),
                 u.getAccountStatus(),
-                u.getStudent() != null ? u.getStudent().getId() : null,
-                u.getRecruiter() != null ? u.getRecruiter().getId() : null,
-                null
+                student != null ? student.getId() : null,
+                recruiter != null ? recruiter.getId() : null,
+                createdAt,
+                u.isPhoneVerified(),
+                email,
+                phone,
+                telegram,
+                companyName,
+                city,
+                firstName,
+                lastName,
+                speciality,
+                course,
+                busyness,
+                bio,
+                profileTextScore,
+                skills
         );
     }
 }

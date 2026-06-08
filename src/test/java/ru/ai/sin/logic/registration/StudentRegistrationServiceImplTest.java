@@ -75,7 +75,7 @@ class StudentRegistrationServiceImplTest {
     @Test
     void register_passwordMismatch_throwsBadRequest() {
         StudentAccountRegistrationReq req = new StudentAccountRegistrationReq(
-                "user1", "SecurePass123", "other", null, null, null, null, "+79990001122", UUID.randomUUID());
+                "user1", "SecurePass123", "other", null, null, null, null, null, "+79990001122", UUID.randomUUID());
 
         assertThatThrownBy(() -> service.registerAndIssueTokens(req, httpRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -86,7 +86,7 @@ class StudentRegistrationServiceImplTest {
     void register_reservedUsername_throwsBadRequest() {
         when(registrationProperties.isReservedUsername("root")).thenReturn(true);
         StudentAccountRegistrationReq req = new StudentAccountRegistrationReq(
-                "root", "SecurePass123", "SecurePass123", null, null, null, null, "+79990001122", UUID.randomUUID());
+                "root", "SecurePass123", "SecurePass123", null, null, null, null, null, "+79990001122", UUID.randomUUID());
 
         assertThatThrownBy(() -> service.registerAndIssueTokens(req, httpRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -110,6 +110,7 @@ class StudentRegistrationServiceImplTest {
                 null,
                 "Иван",
                 "Иванов",
+                null,
                 null,
                 "+79990001122",
                 UUID.randomUUID()

@@ -16,6 +16,7 @@ import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.logic.experience.dto.*;
@@ -43,6 +44,7 @@ public class ExperienceServiceImpl implements ExperienceService {
     private final StudentTools studentTools;
 
     private final SecurityHelper securityHelper;
+    private final AccountAccessHelper accountAccessHelper;
 
     private void updateActiveCompanyOrThrow(long companyId, ExperienceEnt experienceEnt) {
         experienceEnt.setCompany(companyTools.getCompanyOrThrow(companyId));
@@ -61,6 +63,8 @@ public class ExperienceServiceImpl implements ExperienceService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ExperienceDTO> getAllByFilter(Pageable pageable, FilterExperienceReq filterExperienceReq) {
+        accountAccessHelper.requireCanReadStudentResumeDetails(filterExperienceReq.studentId());
+
         Page<ExperienceEnt> page = experienceRepo.findAll(
                 ExperienceSpecifications.byFilters(filterExperienceReq),
                 pageable);

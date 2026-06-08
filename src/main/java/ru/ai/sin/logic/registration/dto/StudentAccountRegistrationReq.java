@@ -1,6 +1,7 @@
 package ru.ai.sin.logic.registration.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -39,6 +40,11 @@ public record StudentAccountRegistrationReq(
         @Schema(description = "Отчество (необязательно)")
         @Size(max = 255)
         String middleName,
+
+        @Schema(description = "Email (необязательно на шаге аккаунта, для предзаполнения резюме)")
+        @Email
+        @Size(max = 255)
+        String email,
 
         @Schema(description = "Номер телефона (должен совпадать с подтверждённым в Telegram)")
         @NotBlank

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ru.ai.sin.logic.auth.dto.*;
@@ -95,5 +96,13 @@ public class AuthController {
     @GetMapping("/me")
     public AuthMeDTO me() {
         return authService.getCurrentSession();
+    }
+
+    @Operation(summary = "Сменить пароль текущего пользователя")
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/change-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@Valid @RequestBody ChangePasswordReq req) {
+        authService.changePassword(req);
     }
 }

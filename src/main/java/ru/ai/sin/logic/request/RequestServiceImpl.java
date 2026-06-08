@@ -30,7 +30,6 @@ import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
-import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.ResultEnum;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -125,7 +124,7 @@ public class RequestServiceImpl implements RequestService {
         RecruiterEnt recruiterEnt = resolveRecruiterForNewRequest(addRequestReq, currentUserOpt);
 
         StudentEnt studentEnt = studentTools.getStudentOrThrow(addRequestReq.studentId());
-        if (studentEnt.getCourse() == CourseEnum.NEW && !securityHelper.isCurrentUserAdmin()) {
+        if (!studentEnt.isCatalogVisible() && !securityHelper.isCurrentUserAdmin()) {
             throw new NotFoundException("Failed to find student by id " + addRequestReq.studentId());
         }
 

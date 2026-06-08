@@ -15,6 +15,7 @@ import ru.ai.sin.helper.FileHelper;
 import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.logic.chat.dto.PatchChatMessageReq;
 import ru.ai.sin.logic.chat.dto.PostChatMessageReq;
+import ru.ai.sin.logic.profile.ProfileCommunicationGateService;
 import ru.ai.sin.models.embeddables.TimeStamped;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;
@@ -46,6 +47,8 @@ class ChatServiceImplTest {
     @Mock
     private MessagingGateService messagingGateService;
     @Mock
+    private ProfileCommunicationGateService profileCommunicationGateService;
+    @Mock
     private UserRepo userRepo;
     @Mock
     private SecurityHelper securityHelper;
@@ -68,6 +71,7 @@ class ChatServiceImplTest {
                 chatMessageRepo,
                 chatReadStateRepo,
                 messagingGateService,
+                profileCommunicationGateService,
                 userRepo,
                 securityHelper,
                 eventPublisher,

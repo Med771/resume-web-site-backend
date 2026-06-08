@@ -52,6 +52,14 @@ public class UserEnt {
     @Column(name = "hints_disabled", nullable = false)
     private boolean hintsDisabled = false;
 
+    /** Телефон, подтверждённый при регистрации (для предзаполнения резюме) */
+    @Column(name = "registration_phone", length = 32)
+    private String registrationPhone;
+
+    /** Email, указанный при регистрации (для предзаполнения резюме) */
+    @Column(name = "registration_email", length = 255)
+    private String registrationEmail;
+
     /** Профиль рекрутера для повторных заявок без повторного ввода данных */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id")

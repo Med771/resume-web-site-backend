@@ -52,6 +52,18 @@ public record StudentDTO(
         @Schema(description = "Фамилия")
         String lastName,
 
+        @Schema(description = "Email (только для владельца и админки)")
+        String email,
+
+        @Schema(description = "Телефон")
+        String phoneNumber,
+
+        @Schema(description = "Telegram username")
+        String telegramUsername,
+
+        @Schema(description = "ID специальности")
+        Long specialityId,
+
         @Schema(description = "Название специальности")
         @NotNull
         String speciality,
@@ -65,6 +77,9 @@ public record StudentDTO(
                         Согласие владельца карточки (выставляется **админом**) на показ **укороченной** анкеты без JWT.
                         Сам по себе флаг не публикует курс `NEW` — публичные методы дополнительно отфильтровывают такие записи.""")
         boolean publicProfileConsent,
+
+        @Schema(description = "Видимость карточки в каталоге для рекрутёров и одобренных пользователей")
+        boolean catalogVisible,
 
         @Schema(description = "Денормализованная метрика объёма текстовых полей; обновляется при сохранении карточки; участвует в сортировке")
         int profileTextScore,

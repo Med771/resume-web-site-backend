@@ -46,4 +46,5 @@ public class AccountApprovalAdminController {
     public void reject(@PathVariable UUID userId, @Valid @RequestBody(required = false) AccountRejectReq body) {
         accountApprovalService.reject(userId, body);
     }
+
 }

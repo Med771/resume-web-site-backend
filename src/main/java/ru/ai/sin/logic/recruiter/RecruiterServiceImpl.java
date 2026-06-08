@@ -16,6 +16,7 @@ import ru.ai.sin.models.PageResponse;
 
 import ru.ai.sin.exception.models.BadRequestException;
 
+import ru.ai.sin.helper.AccountAccessHelper;
 import ru.ai.sin.helper.SecurityHelper;
 
 import ru.ai.sin.logic.recruiter.dto.*;
@@ -40,6 +41,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     private final UserTools userTools;
 
     private final SecurityHelper securityHelper;
+    private final AccountAccessHelper accountAccessHelper;
 
     private final RecruiterDeletionService recruiterDeletionService;
 
@@ -108,6 +110,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     @Override
     @Transactional
     public RecruiterDTO patch(UUID id, PatchRecruiterReq patchRecruiterReq) {
+        accountAccessHelper.requireRecruiterOwnsProfile(id);
         RecruiterEnt recruiterEnt = recruiterTools.getRecruiterOrThrow(id);
 
         recruiterMapper.patchEntityFromDto(patchRecruiterReq, recruiterEnt);

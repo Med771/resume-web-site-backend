@@ -80,6 +80,8 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
         );
         user.setPhoneVerified(true);
         user.setAccountStatus(AccountStatus.PENDING_APPROVAL);
+        user.setRegistrationPhone(phone);
+        user.setRegistrationEmail(emptyToNull(req.email()));
 
         try {
             userRepo.save(user);
