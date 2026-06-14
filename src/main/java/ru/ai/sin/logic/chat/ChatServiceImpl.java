@@ -117,8 +117,9 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new NotFoundException("Chat not found"));
         assertCanAccess(user, chat);
         boolean fullHistory = user.getRole() == RoleEnum.ADMIN || isMessagingAllowed(chat);
+        Pageable paging = pagingOnly(pageable);
         return chatMessageRepo
-                .findVisibleByChatIdGated(chatId, fullHistory, ChatMessageKind.SYSTEM, pageable)
+                .findVisibleByChatIdGated(chatId, fullHistory, ChatMessageKind.SYSTEM, paging)
                 .map(this::toDto);
     }
 
@@ -381,6 +382,17 @@ public class ChatServiceImpl implements ChatService {
             return "";
         }
         return s.length() <= 160 ? s : s.substring(0, 160 - 1) + "…";
+    }
+
+    /**
+     * Клиенты передают {@code sort=createdAt}, но в JPA поле — {@code timestamps.createdAt}.
+     * Сортировка уже задана в {@link ChatMessageRepo}; лишний Sort из Pageable ломает запрос.
+     */
+    private static Pageable pagingOnly(Pageable pageable) {
+        if (pageable.isUnpaged()) {
+            return pageable;
+        }
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
     }
 
     private ChatMessageDTO toDto(ChatMessageEnt m) {
