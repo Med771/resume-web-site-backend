@@ -8,7 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectDTO;
+import ru.ai.sin.logic.siteproject.dto.SiteProjectImageReq;
 import ru.ai.sin.logic.siteproject.dto.SiteProjectStudentsReq;
+import ru.ai.sin.logic.siteproject.dto.UpdateSiteProjectReq;
 import ru.ai.sin.logic.skill.SkillMapper;
 import ru.ai.sin.logic.skill.SkillRepo;
 import ru.ai.sin.logic.student.StudentEnt;
@@ -121,6 +123,53 @@ class SiteProjectServiceImplTest {
         e.setPublishedTo(publishedTo);
         e.setSortOrder(0);
         return e;
+    }
+
+    @Test
+    void getAdminById_deduplicatesImagesFromPersistenceBag() {
+        SiteProjectEnt project = project("Gallery", true, null, null);
+        project.setId(projectId);
+        SiteProjectImageEnt image = new SiteProjectImageEnt();
+        UUID imageId = UUID.randomUUID();
+        image.setId(imageId);
+        image.setProject(project);
+        image.setImagePath("photo.jpg");
+        image.setSortOrder(0);
+        project.getImages().add(image);
+        project.getImages().add(image);
+
+        when(siteProjectRepo.findWithDetailsById(projectId)).thenReturn(Optional.of(project));
+
+        assertThat(service.getAdminById(projectId).images())
+                .hasSize(1)
+                .first()
+                .satisfies(dto -> assertThat(dto.id()).isEqualTo(imageId));
+    }
+
+    @Test
+    void update_deduplicatesDuplicateImagePayload() {
+        SiteProjectEnt project = project("Gallery", true, null, null);
+        project.setId(projectId);
+        when(siteProjectRepo.findWithImagesById(projectId)).thenReturn(Optional.of(project));
+        when(siteProjectRepo.save(project)).thenReturn(project);
+
+        service.update(projectId, new UpdateSiteProjectReq(
+                "Gallery",
+                null,
+                null,
+                null,
+                List.of(
+                        new SiteProjectImageReq(null, "a.jpg", null, 0),
+                        new SiteProjectImageReq(null, "a.jpg", null, 1)
+                ),
+                List.of(),
+                true,
+                null,
+                null
+        ));
+
+        assertThat(project.getImages()).hasSize(1);
+        assertThat(project.getImages().getFirst().getImagePath()).isEqualTo("a.jpg");
     }
 
     @Test

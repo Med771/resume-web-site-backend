@@ -228,13 +228,19 @@ public class SiteProjectServiceImpl implements SiteProjectService {
         if (imageReqs == null || imageReqs.isEmpty()) {
             return;
         }
+        Set<String> seen = new HashSet<>();
         int fallbackOrder = 0;
         for (SiteProjectImageReq req : imageReqs) {
             validateImageItem(req);
+            String path = blankToNull(req.imagePath());
+            String url = blankToNull(req.imageUrl());
+            if (!seen.add(path + "\0" + url)) {
+                continue;
+            }
             SiteProjectImageEnt image = new SiteProjectImageEnt();
             image.setProject(project);
-            image.setImagePath(blankToNull(req.imagePath()));
-            image.setImageUrl(blankToNull(req.imageUrl()));
+            image.setImagePath(path);
+            image.setImageUrl(url);
             image.setSortOrder(req.sortOrder() != null ? req.sortOrder() : fallbackOrder);
             project.getImages().add(image);
             fallbackOrder++;
@@ -309,14 +315,7 @@ public class SiteProjectServiceImpl implements SiteProjectService {
                     .map(this::toParticipant)
                     .toList();
         }
-        List<SiteProjectImageDTO> images = e.getImages().stream()
-                .sorted(Comparator.comparingInt(SiteProjectImageEnt::getSortOrder))
-                .map(img -> new SiteProjectImageDTO(
-                        img.getId(),
-                        img.getImagePath(),
-                        img.getImageUrl(),
-                        img.getSortOrder()))
-                .toList();
+        List<SiteProjectImageDTO> images = mapUniqueImages(e.getImages());
         List<SkillDTO> skills = e.getSkills().stream()
                 .sorted(Comparator.comparing(SkillEnt::getName, String.CASE_INSENSITIVE_ORDER))
                 .map(skillMapper::toDTO)
@@ -335,6 +334,19 @@ public class SiteProjectServiceImpl implements SiteProjectService {
                 e.getPublishedTo(),
                 students
         );
+    }
+
+    private static List<SiteProjectImageDTO> mapUniqueImages(List<SiteProjectImageEnt> images) {
+        Set<UUID> seenIds = new HashSet<>();
+        return images.stream()
+                .sorted(Comparator.comparingInt(SiteProjectImageEnt::getSortOrder))
+                .filter(img -> img.getId() != null && seenIds.add(img.getId()))
+                .map(img -> new SiteProjectImageDTO(
+                        img.getId(),
+                        img.getImagePath(),
+                        img.getImageUrl(),
+                        img.getSortOrder()))
+                .toList();
     }
 
     private SiteProjectParticipantDTO toParticipant(StudentEnt student) {
