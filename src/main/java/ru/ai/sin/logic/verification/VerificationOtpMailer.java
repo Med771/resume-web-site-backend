@@ -1,0 +1,66 @@
+package ru.ai.sin.logic.verification;
+
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Component;
+import ru.ai.sin.config.property.MailProperties;
+import ru.ai.sin.exception.models.BadRequestException;
+
+import java.nio.charset.StandardCharsets;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class VerificationOtpMailer {
+
+    private final JavaMailSender mailSender;
+    private final MailProperties mailProperties;
+
+    public void sendOtp(String toEmail, String code, int ttlMinutes) {
+        if (!mailProperties.isEnabled()) {
+            throw new BadRequestException("Отправка кодов на почту отключена");
+        }
+        String from = mailProperties.getFrom();
+        if (from == null || from.isBlank()) {
+            throw new BadRequestException("Почтовый отправитель не настроен");
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, StandardCharsets.UTF_8.name());
+            helper.setFrom(from.trim());
+            helper.setTo(toEmail.trim());
+            helper.setSubject("Код подтверждения — Singularity Resume");
+            helper.setText(buildBody(code, ttlMinutes), false);
+            mailSender.send(message);
+            log.info("Verification OTP email sent to {}", maskEmail(toEmail));
+        } catch (Exception ex) {
+            log.warn("Failed to send verification OTP to {}: {}", maskEmail(toEmail), ex.getMessage());
+            throw new BadRequestException("Не удалось отправить код на почту. Попробуйте позже.");
+        }
+    }
+
+    private static String buildBody(String code, int ttlMinutes) {
+        return """
+                Здравствуйте!
+
+                Ваш код подтверждения: %s
+
+                Код действует %d мин. Никому не сообщайте этот код.
+
+                Если вы не запрашивали код, просто проигнорируйте это письмо.
+                """.formatted(code, ttlMinutes);
+    }
+
+    static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "***";
+        }
+        int at = email.indexOf('@');
+        String local = email.substring(0, at);
+        String maskedLocal = local.length() <= 2 ? "**" : local.charAt(0) + "***";
+        return maskedLocal + email.substring(at);
+    }
+}

@@ -23,20 +23,39 @@
 
 ## 3. Webhook (prod / staging)
 
-Telegram должен слать updates на ваш backend:
+Telegram должен слать updates на **API-домен** (backend), не на www:
 
 ```
-POST https://api.singularity-resume.ru/telegram/webhook
+POST https://test2-api.singularity-resume.ru/telegram/webhook
 Header: X-Telegram-Bot-Api-Secret-Token: <TELEGRAM_WEBHOOK_SECRET>
 ```
 
-Установка webhook (один раз):
+**Почему не `test2-www`:** www проксирует только статику SPA. `POST /telegram/webhook` на www даёт **405** или HTML — webhook не дойдёт до Spring. Нужен отдельный хост `*-api.*` с proxy на backend (порт 8001). Пример nginx: [../docs/nginx-test2.example.conf](../docs/nginx-test2.example.conf).
+
+Установка webhook (один раз). **Выполняйте на сервере** — с рабочего ПК в РФ `api.telegram.org` часто недоступен (таймаут):
+
+```bash
+python3 tmp/set_telegram_webhook.py \
+  --url https://test2-api.singularity-resume.ru/telegram/webhook
+```
+
+Переменные `TELEGRAM_BOT_TOKEN` и `TELEGRAM_WEBHOOK_SECRET` должны быть заданы в окружении backend (или переданы флагами `--token` / `--secret`).
+
+Альтернатива — `curl` на сервере:
 
 ```bash
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -d "url=https://api.singularity-resume.ru/telegram/webhook" \
+  -d "url=https://test2-api.singularity-resume.ru/telegram/webhook" \
   -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
 ```
+
+Проверка:
+
+```bash
+curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"
+```
+
+На API-хосте `POST /telegram/webhook` с JSON `{}` и заголовком секрета должен отвечать **200** (не 405 и не HTML фронта).
 
 ## 4. Локальная разработка
 

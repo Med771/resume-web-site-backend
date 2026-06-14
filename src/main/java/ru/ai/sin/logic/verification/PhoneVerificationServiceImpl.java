@@ -2,8 +2,10 @@ package ru.ai.sin.logic.verification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.ai.sin.config.property.MailProperties;
 import ru.ai.sin.config.property.TelegramProperties;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
@@ -15,6 +17,7 @@ import ru.ai.sin.models.enums.PhoneVerificationStatus;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -23,12 +26,16 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
 
     private final PhoneVerificationRepo phoneVerificationRepo;
     private final TelegramProperties telegramProperties;
+    private final MailProperties mailProperties;
     private final TelegramBotClient telegramBotClient;
+    private final VerificationOtpMailer verificationOtpMailer;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public PhoneVerificationStartRes startVerification(PhoneVerificationStartReq req) {
-        ensureTelegramEnabledOrDev();
+        String email = normalizeEmail(req.email());
+        ensureCanStartVerification(email);
 
         String normalized = normalizePhone(req.phoneNumber());
         PhoneVerificationEnt ent = new PhoneVerificationEnt();
@@ -36,7 +43,17 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         ent.setStatus(PhoneVerificationStatus.PENDING);
         ent.setCreatedAt(LocalDateTime.now());
         ent.setExpiresAt(LocalDateTime.now().plusMinutes(telegramProperties.getVerificationTtlMinutes()));
-        ent = phoneVerificationRepo.save(ent);
+
+        if (email != null && mailProperties.isEnabled()) {
+            String otp = generateOtpCode();
+            ent.setEmail(email);
+            ent.setOtpCodeHash(passwordEncoder.encode(otp));
+            ent = phoneVerificationRepo.save(ent);
+            verificationOtpMailer.sendOtp(email, otp, telegramProperties.getVerificationTtlMinutes());
+            log.info("Phone verification started with email OTP: verificationId={}", ent.getId());
+        } else {
+            ent = phoneVerificationRepo.save(ent);
+        }
 
         String botUsername = resolveBotUsername();
         String deepLink = "https://t.me/" + botUsername + "?start=" + ent.getId();
@@ -61,11 +78,11 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
     @Transactional(readOnly = true)
     public void requireConfirmed(UUID verificationId, String phoneNumber) {
         PhoneVerificationEnt ent = phoneVerificationRepo.findById(verificationId)
-                .orElseThrow(() -> new BadRequestException("Подтвердите номер телефона в Telegram"));
+                .orElseThrow(() -> new BadRequestException("Подтвердите номер телефона"));
 
         PhoneVerificationStatus status = resolveEffectiveStatus(ent);
         if (status != PhoneVerificationStatus.CONFIRMED) {
-            throw new BadRequestException("Номер телефона ещё не подтверждён в Telegram");
+            throw new BadRequestException("Номер телефона ещё не подтверждён");
         }
         if (!normalizePhone(phoneNumber).equals(ent.getPhoneNumber())) {
             throw new BadRequestException("Номер телефона не совпадает с подтверждённым");
@@ -75,16 +92,7 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
     @Override
     @Transactional
     public PhoneVerificationStatusRes confirmWithDevCode(UUID verificationId, String code) {
-        if (!telegramProperties.isAllowDevConfirm()) {
-            throw new BadRequestException("Подтверждение кодом недоступно");
-        }
-        String expected = telegramProperties.getDevConfirmCode();
-        if (expected == null || expected.isBlank()) {
-            throw new BadRequestException("Тестовый код не настроен");
-        }
-        if (!expected.equals(code != null ? code.trim() : "")) {
-            throw new BadRequestException("Неверный код подтверждения");
-        }
+        String submitted = code != null ? code.trim() : "";
 
         PhoneVerificationEnt ent = phoneVerificationRepo.findById(verificationId)
                 .orElseThrow(() -> new NotFoundException("Сессия верификации не найдена"));
@@ -97,11 +105,25 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
             return new PhoneVerificationStatusRes(ent.getId(), PhoneVerificationStatus.CONFIRMED);
         }
 
-        ent.setStatus(PhoneVerificationStatus.CONFIRMED);
-        ent.setConfirmedAt(LocalDateTime.now());
-        phoneVerificationRepo.save(ent);
-        log.warn("Phone verified via dev code: verificationId={} phone={}", ent.getId(), ent.getPhoneNumber());
-        return new PhoneVerificationStatusRes(ent.getId(), PhoneVerificationStatus.CONFIRMED);
+        if (ent.getOtpCodeHash() != null) {
+            if (!passwordEncoder.matches(submitted, ent.getOtpCodeHash())) {
+                throw new BadRequestException("Неверный код подтверждения");
+            }
+            return markConfirmed(ent, "email-otp");
+        }
+
+        if (!telegramProperties.isAllowDevConfirm()) {
+            throw new BadRequestException("Подтверждение кодом недоступно");
+        }
+        String expected = telegramProperties.getDevConfirmCode();
+        if (expected == null || expected.isBlank()) {
+            throw new BadRequestException("Тестовый код не настроен");
+        }
+        if (!expected.equals(submitted)) {
+            throw new BadRequestException("Неверный код подтверждения");
+        }
+
+        return markConfirmed(ent, "dev-code");
     }
 
     @Override
@@ -136,6 +158,15 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         if (textObj instanceof String text && text.startsWith("/start")) {
             handleStart(chatId, text);
         }
+    }
+
+    private PhoneVerificationStatusRes markConfirmed(PhoneVerificationEnt ent, String channel) {
+        ent.setStatus(PhoneVerificationStatus.CONFIRMED);
+        ent.setConfirmedAt(LocalDateTime.now());
+        ent.setOtpCodeHash(null);
+        phoneVerificationRepo.save(ent);
+        log.info("Phone verified via {}: verificationId={} phone={}", channel, ent.getId(), ent.getPhoneNumber());
+        return new PhoneVerificationStatusRes(ent.getId(), PhoneVerificationStatus.CONFIRMED);
     }
 
     private void handleStart(long chatId, String text) {
@@ -195,6 +226,7 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         pending.setStatus(PhoneVerificationStatus.CONFIRMED);
         pending.setConfirmedAt(LocalDateTime.now());
         pending.setTelegramUserId(telegramUserId);
+        pending.setOtpCodeHash(null);
         phoneVerificationRepo.save(pending);
 
         telegramBotClient.removeKeyboard(chatId, "Номер телефона подтверждён. Вернитесь на сайт и завершите регистрацию.");
@@ -208,9 +240,25 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         return ent.getStatus();
     }
 
+    private void ensureCanStartVerification(String email) {
+        if (telegramProperties.isAllowDevConfirm()) {
+            return;
+        }
+        if (telegramProperties.isEnabled()) {
+            return;
+        }
+        if (mailProperties.isEnabled() && email != null) {
+            return;
+        }
+        if (mailProperties.isEnabled()) {
+            throw new BadRequestException("Укажите email для отправки кода подтверждения");
+        }
+        ensureTelegramEnabled();
+    }
+
     private void ensureTelegramEnabled() {
         if (!telegramProperties.isEnabled()) {
-            throw new BadRequestException("Верификация через Telegram временно недоступна");
+            throw new BadRequestException("Верификация временно недоступна");
         }
         if (telegramProperties.getBotUsername() == null || telegramProperties.getBotUsername().isBlank()) {
             throw new BadRequestException("Telegram-бот не настроен");
@@ -220,21 +268,32 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         }
     }
 
-    private void ensureTelegramEnabledOrDev() {
-        if (telegramProperties.isAllowDevConfirm()) {
-            return;
+    private String resolveBotUsername() {
+        String username = null;
+        if (telegramProperties.getBotUsername() != null && !telegramProperties.getBotUsername().isBlank()) {
+            username = telegramProperties.getBotUsername().trim();
+        } else if (telegramProperties.isAllowDevConfirm()) {
+            return "dev_bot";
+        } else if (!telegramProperties.isEnabled()) {
+            return "mail_only";
+        } else {
+            throw new BadRequestException("Telegram-бот не настроен");
         }
-        ensureTelegramEnabled();
+        if (username.startsWith("@")) {
+            username = username.substring(1);
+        }
+        return username;
     }
 
-    private String resolveBotUsername() {
-        if (telegramProperties.getBotUsername() != null && !telegramProperties.getBotUsername().isBlank()) {
-            return telegramProperties.getBotUsername();
+    static String generateOtpCode() {
+        return String.format("%04d", ThreadLocalRandom.current().nextInt(10_000));
+    }
+
+    static String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
         }
-        if (telegramProperties.isAllowDevConfirm()) {
-            return "dev_bot";
-        }
-        throw new BadRequestException("Telegram-бот не настроен");
+        return email.trim().toLowerCase();
     }
 
     static String normalizePhone(String phone) {
