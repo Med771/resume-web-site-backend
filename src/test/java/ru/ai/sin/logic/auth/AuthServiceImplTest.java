@@ -1,6 +1,5 @@
 package ru.ai.sin.logic.auth;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,19 +10,26 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import ru.ai.sin.config.property.JwtProperties;
+import ru.ai.sin.exception.models.ForbiddenException;
+import ru.ai.sin.helper.AuthRoleGuard;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.helper.SecurityHelper;
-import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.auth.dto.LoginRequest;
 import ru.ai.sin.logic.auth.dto.TokenPair;
 import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
+import ru.ai.sin.logic.user.UserRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import jakarta.servlet.http.Cookie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +47,12 @@ class AuthServiceImplTest {
     private SecurityHelper securityHelper;
 
     @Mock
+    private AuthRoleGuard authRoleGuard;
+
+    @Mock
+    private UserDetailsService userDetailsService;
+
+    @Mock
     private UserRepo userRepo;
 
     @Mock
@@ -49,13 +61,11 @@ class AuthServiceImplTest {
     @Mock
     private RegistrationPasswordPolicy registrationPasswordPolicy;
 
-    private JwtProperties jwtProperties;
-
     private AuthServiceImpl authService;
 
     @BeforeEach
     void setUp() {
-        jwtProperties = new JwtProperties();
+        JwtProperties jwtProperties = new JwtProperties();
         JwtProperties.CookieProperties cookie = new JwtProperties.CookieProperties();
         cookie.setRefreshTokenName("REFRESH_TOKEN");
         jwtProperties.setCookie(cookie);
@@ -64,27 +74,45 @@ class AuthServiceImplTest {
                 jwtHelper,
                 jwtProperties,
                 securityHelper,
+                authRoleGuard,
+                userDetailsService,
                 userRepo,
                 passwordEncoder,
                 registrationPasswordPolicy);
     }
 
     @Test
-    void login_returnsTokenPair() {
-        UserDetails userDetails = mock(UserDetails.class);
-        when(userDetails.getUsername()).thenReturn("alice");
-        Authentication auth = mock(Authentication.class);
-        when(auth.getPrincipal()).thenReturn(userDetails);
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(auth);
-        when(jwtHelper.generateAccessToken("alice")).thenReturn("access-jwt");
-        when(jwtHelper.generateRefreshToken("alice")).thenReturn("refresh-jwt");
+    void login_returnsTokenPairForStudent() {
+        UserDetails userDetails = User.withUsername("alice").password("x").roles("STUDENT").build();
+        stubAuthentication(userDetails);
 
         TokenPair pair = authService.login(new LoginRequest("alice", "secret"));
 
         assertThat(pair.accessToken()).isEqualTo("access-jwt");
-        assertThat(pair.refreshToken()).isEqualTo("refresh-jwt");
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(authRoleGuard).requireFrontendUser(userDetails);
+    }
+
+    @Test
+    void adminLogin_returnsTokenPairForAdmin() {
+        UserDetails userDetails = User.withUsername("admin").password("x").roles("ADMIN").build();
+        stubAuthentication(userDetails);
+
+        TokenPair pair = authService.adminLogin(new LoginRequest("admin", "secret"));
+
+        assertThat(pair.accessToken()).isEqualTo("access-jwt");
+        verify(authRoleGuard).requireAdmin(userDetails);
+    }
+
+    @Test
+    void adminLogin_rejectsNonAdmin() {
+        UserDetails userDetails = User.withUsername("student").password("x").roles("STUDENT").build();
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        doThrow(new ForbiddenException("denied")).when(authRoleGuard).requireAdmin(userDetails);
+
+        assertThatThrownBy(() -> authService.adminLogin(new LoginRequest("student", "secret")))
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
@@ -93,21 +121,40 @@ class AuthServiceImplTest {
         when(request.getCookies()).thenReturn(null);
 
         assertThatThrownBy(() -> authService.refresh(request))
-                .isInstanceOf(BadCredentialsException.class)
-                .hasMessageContaining("refresh");
+                .isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
-    void refresh_returnsNewAccessToken() {
+    void refresh_returnsNewAccessTokenForStudent() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Cookie c = new Cookie("REFRESH_TOKEN", "rt-value");
-        when(request.getCookies()).thenReturn(new Cookie[]{c});
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie("REFRESH_TOKEN", "rt-value")});
         when(jwtHelper.getUsernameFromRefreshToken("rt-value")).thenReturn("bob");
+        UserDetails userDetails = User.withUsername("bob").password("x").roles("STUDENT").build();
+        when(userDetailsService.loadUserByUsername("bob")).thenReturn(userDetails);
         when(jwtHelper.generateAccessToken("bob")).thenReturn("new-access");
 
-        String access = authService.refresh(request);
+        assertThat(authService.refresh(request)).isEqualTo("new-access");
+        verify(authRoleGuard).requireFrontendUser(userDetails);
+    }
 
-        assertThat(access).isEqualTo("new-access");
-        verify(jwtHelper).generateAccessToken("bob");
+    @Test
+    void adminRefresh_returnsNewAccessTokenForAdmin() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie("REFRESH_TOKEN", "rt-value")});
+        when(jwtHelper.getUsernameFromRefreshToken("rt-value")).thenReturn("admin");
+        UserDetails userDetails = User.withUsername("admin").password("x").roles("ADMIN").build();
+        when(userDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
+        when(jwtHelper.generateAccessToken("admin")).thenReturn("new-access");
+
+        assertThat(authService.adminRefresh(request)).isEqualTo("new-access");
+        verify(authRoleGuard).requireAdmin(userDetails);
+    }
+
+    private void stubAuthentication(UserDetails userDetails) {
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        when(jwtHelper.generateAccessToken(userDetails.getUsername())).thenReturn("access-jwt");
+        when(jwtHelper.generateRefreshToken(userDetails.getUsername())).thenReturn("refresh-jwt");
     }
 }

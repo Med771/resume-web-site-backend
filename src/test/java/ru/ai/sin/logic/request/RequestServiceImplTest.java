@@ -24,6 +24,8 @@ import ru.ai.sin.helper.SecurityHelper;
 import ru.ai.sin.models.enums.CourseEnum;
 import ru.ai.sin.models.enums.ResultEnum;
 import ru.ai.sin.models.enums.RoleEnum;
+import ru.ai.sin.logic.notification.UserInboxNotificationService;
+import ru.ai.sin.models.enums.TuPhase;
 import ru.ai.sin.tools.RecruiterTools;
 import ru.ai.sin.tools.RequestTools;
 import ru.ai.sin.tools.StudentTools;
@@ -61,6 +63,8 @@ class RequestServiceImplTest {
     private ChatService chatService;
     @Mock
     private AccountAccessHelper accountAccessHelper;
+    @Mock
+    private UserInboxNotificationService inboxNotificationService;
 
     private RequestServiceImpl service;
 
@@ -79,8 +83,16 @@ class RequestServiceImplTest {
                 userTools,
                 securityHelper,
                 chatService,
-                accountAccessHelper
+                accountAccessHelper,
+                inboxNotificationService
         );
+    }
+
+    private static RequestDTO sampleDto(
+            long id, UUID chatId, ResultEnum result, UUID recruiterId, UUID studentId) {
+        return new RequestDTO(
+                id, chatId, result, null, null, null, recruiterId, studentId,
+                null, null, null, null, null, null, TuPhase.NOT_APPLICABLE);
     }
 
     @Test
@@ -151,9 +163,7 @@ class RequestServiceImplTest {
             return saved;
         });
 
-        RequestDTO dto = new RequestDTO(
-                200L, chatId, ResultEnum.WAITING, null, null, null, recruiterId, studentId
-        );
+        RequestDTO dto = sampleDto(200L, chatId, ResultEnum.WAITING, recruiterId, studentId);
         when(requestTools.mapToDTO(any(RequestEnt.class))).thenReturn(dto);
 
         AddRequestReq req = new AddRequestReq(
@@ -190,9 +200,7 @@ class RequestServiceImplTest {
             return saved;
         });
 
-        RequestDTO dto = new RequestDTO(
-                100L, chatId, ResultEnum.WAITING, null, null, null, recruiterId, studentId
-        );
+        RequestDTO dto = sampleDto(100L, chatId, ResultEnum.WAITING, recruiterId, studentId);
         when(requestTools.mapToDTO(any(RequestEnt.class))).thenReturn(dto);
 
         AddRequestReq req = new AddRequestReq(
@@ -331,7 +339,7 @@ class RequestServiceImplTest {
         });
 
         when(requestTools.mapToDTO(any(RequestEnt.class))).thenReturn(
-                new RequestDTO(55L, chatId, ResultEnum.WAITING, null, null, null, recruiterId, studentId)
+                sampleDto(55L, chatId, ResultEnum.WAITING, recruiterId, studentId)
         );
 
         AddRequestReq req = new AddRequestReq(

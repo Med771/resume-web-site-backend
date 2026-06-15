@@ -160,7 +160,7 @@ class StudentControllerMvcTest {
         String body = """
                 {"city":"C","hhLink":"https://h","birthDate":"2000-01-01","bio":null,"course":"FIRST","busyness":"EMPLOYED",\
                 "firstName":"A","lastName":"B","email":"a@b.c","phoneNumber":"+79001234567","telegramUsername":"tg",\
-                "specialityId":1,"skillsIds":[1]}""";
+                "specialityId":1,"skillsIds":[1],"username":"stu_user","password":"pass1234"}""";
 
         mockMvc.perform(post("/student")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +177,7 @@ class StudentControllerMvcTest {
         String body = """
                 {"city":"C","hhLink":"https://h","birthDate":"2000-01-01","bio":null,"course":"FIRST","busyness":"EMPLOYED",\
                 "firstName":"A","lastName":"B","email":"a@b.c","phoneNumber":"+79001234567","telegramUsername":"tg",\
-                "specialityId":1,"skillsIds":[1]}""";
+                "specialityId":1,"skillsIds":[1],"username":"stu_user","password":"pass1234"}""";
 
         mockMvc.perform(post("/student")
                         .contentType(MediaType.APPLICATION_JSON)

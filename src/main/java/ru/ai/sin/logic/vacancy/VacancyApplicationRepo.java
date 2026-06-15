@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.ai.sin.models.enums.VacancyApplicationStatus;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,4 +41,12 @@ public interface VacancyApplicationRepo extends JpaRepository<VacancyApplication
     @Modifying
     @Query("DELETE FROM VacancyApplicationEnt a WHERE a.vacancy.recruiter.id = :recruiterId")
     void deleteByVacancyRecruiterId(@Param("recruiterId") UUID recruiterId);
+
+    List<VacancyApplicationEnt> findByAppChat_Id(UUID appChatId);
+
+    @EntityGraph(attributePaths = {"vacancy", "vacancy.recruiter", "student", "appChat"}, type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT a FROM VacancyApplicationEnt a WHERE a.appChat.id = :chatId")
+    List<VacancyApplicationEnt> findByAppChat_IdWithDetails(@Param("chatId") UUID chatId);
+
+    void deleteByAppChat_Id(UUID appChatId);
 }

@@ -182,6 +182,8 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | PATCH | `/chat/{chatId}/messages/{messageId}` | любой | Редактирование; `PatchChatMessageReq` |
 | POST | `/chat/{chatId}/read` | любой | Отметка прочитанного; `MarkChatReadReq`; **204** |
 | DELETE | `/chat/{chatId}/messages/{messageId}` | **ADMIN** | Мягкое удаление; **204** |
+| GET | `/chat/{chatId}/context` | **ADMIN** | Связанные заявки и отклики на вакансии (`ChatContextDTO`); **200** |
+| DELETE | `/chat/{chatId}` | **ADMIN** | Полное удаление чата, заявок и откликов по `appChatId`; **204** |
 
 Подробности видимости сообщений: [backend.md](./backend.md).
 
@@ -318,6 +320,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | STOMP broker | подписки на `/topic/...` |
 | Основной топик чата | `/topic/chats/{chatId}` |
 | Сообщения до принятия заявки (для админского UI) | `/topic/chats/{chatId}/staff` |
+| Inbox-уведомления пользователя (badge, toast, список чатов) | `/topic/users/{userId}/inbox` — payload `UserInboxNotificationDTO` |
 
 `{chatId}` — UUID прикладного чата (`appChatId` в `RequestDTO`).
 

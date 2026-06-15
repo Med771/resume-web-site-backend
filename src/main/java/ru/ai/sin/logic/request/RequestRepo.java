@@ -40,4 +40,8 @@ public interface RequestRepo extends JpaRepository<RequestEnt, Long>, JpaSpecifi
     void deleteByStudent_Id(UUID studentId);
 
     void deleteByRecruiter_Id(UUID recruiterId);
+
+    List<RequestEnt> findByAppChat_IdOrderByIdDesc(UUID appChatId);
+
+    void deleteByAppChat_Id(UUID appChatId);
 }

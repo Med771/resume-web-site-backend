@@ -5,27 +5,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import ru.ai.sin.logic.auth.dto.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import ru.ai.sin.helper.CookieHelper;
+import ru.ai.sin.logic.auth.dto.AuthMeDTO;
+import ru.ai.sin.logic.auth.dto.ChangePasswordReq;
+import ru.ai.sin.logic.auth.dto.LoginRequest;
+import ru.ai.sin.logic.auth.dto.TokenPair;
 import ru.ai.sin.logic.recruiter.registration.RecruiterSelfRegistrationService;
 import ru.ai.sin.logic.recruiter.registration.dto.RecruiterSelfRegistrationReq;
 import ru.ai.sin.logic.registration.StudentRegistrationService;
 import ru.ai.sin.logic.registration.dto.StudentAccountRegistrationReq;
 
-import ru.ai.sin.helper.CookieHelper;
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Auth", description = "Операции аутентификации и управления сессией")
+@Tag(name = "Auth", description = "Аутентификация основного сайта (STUDENT / RECRUITER)")
 public class AuthController {
 
     private final AuthService authService;
@@ -43,9 +46,7 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-        TokenPair tokens = recruiterSelfRegistrationService.registerAndIssueTokens(req, httpRequest);
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
+        setAuthCookies(response, recruiterSelfRegistrationService.registerAndIssueTokens(req, httpRequest));
     }
 
     @Operation(
@@ -59,40 +60,32 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-        TokenPair tokens = studentRegistrationService.registerAndIssueTokens(req, httpRequest);
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
+        setAuthCookies(response, studentRegistrationService.registerAndIssueTokens(req, httpRequest));
     }
 
-    @Operation(summary = "Вход в систему", description = "Проверяет логин/пароль и устанавливает access и refresh токены в cookie")
+    @Operation(summary = "Вход на основной сайт", description = "STUDENT / RECRUITER. Администраторы — /auth/admin/login")
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        TokenPair tokens = authService.login(request);
-
-        // Устанавливаем cookies
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
+        setAuthCookies(response, authService.login(request));
     }
 
-    @Operation(summary = "Обновить access токен", description = "Использует refresh токен из cookie и выдает новый access токен")
+    @Operation(summary = "Обновить access-токен основного сайта")
     @PostMapping("/refresh")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
-        String newAccessToken = authService.refresh(request);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(newAccessToken).toString());
+        String accessToken = authService.refresh(request);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(accessToken).toString());
     }
 
-    @Operation(summary = "Выход из системы", description = "Очищает access и refresh cookie")
+    @Operation(summary = "Выход из основного сайта")
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logout(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearRefreshTokenCookie().toString());
+        clearAuthCookies(response);
     }
 
-    @Operation(summary = "Текущая сессия", description = "Логин и роль авторизованного пользователя")
+    @Operation(summary = "Текущая сессия основного сайта")
     @GetMapping("/me")
     public AuthMeDTO me() {
         return authService.getCurrentSession();
@@ -104,5 +97,15 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@Valid @RequestBody ChangePasswordReq req) {
         authService.changePassword(req);
+    }
+
+    private void setAuthCookies(HttpServletResponse response, TokenPair tokens) {
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createAccessTokenCookie(tokens.accessToken()).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.createRefreshTokenCookie(tokens.refreshToken()).toString());
+    }
+
+    private void clearAuthCookies(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearAccessTokenCookie().toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieHelper.clearRefreshTokenCookie().toString());
     }
 }

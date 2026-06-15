@@ -14,7 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.exception.models.NotFoundException;
 import ru.ai.sin.helper.FileHelper;
+import ru.ai.sin.helper.ParticipantDisplayNames;
 import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.helper.TuPhaseResolver;
+import ru.ai.sin.logic.chat.dto.ChatContextDTO;
 import ru.ai.sin.logic.chat.dto.ChatMessageDTO;
 import ru.ai.sin.logic.chat.dto.ChatSummaryDTO;
 import ru.ai.sin.logic.chat.dto.MarkChatReadReq;
@@ -23,11 +26,23 @@ import ru.ai.sin.logic.chat.dto.PostChatMessageReq;
 import ru.ai.sin.logic.chat.event.ChatMessagePublishedEvent;
 import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.chat.MessagingGateService;
-import ru.ai.sin.logic.profile.ProfileCommunicationGateService;
+import ru.ai.sin.logic.notification.UserInboxNotificationService;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.logic.request.RequestEnt;
+import ru.ai.sin.logic.request.RequestRepo;
+import ru.ai.sin.logic.request.dto.RequestDTO;
+import ru.ai.sin.logic.vacancy.VacancyApplicationEnt;
+import ru.ai.sin.logic.vacancy.VacancyApplicationRepo;
+import ru.ai.sin.logic.profile.ProfileCommunicationGateService;
+import ru.ai.sin.logic.vacancy.dto.VacancyApplicationDTO;
+import ru.ai.sin.models.enums.UserInboxNotificationType;
+import ru.ai.sin.tools.RequestTools;
+import ru.ai.sin.tools.VacancyApplicationTools;
 import ru.ai.sin.models.enums.ChatMessageKind;
+import ru.ai.sin.models.enums.ResultEnum;
+import ru.ai.sin.models.enums.TuPhase;
 import ru.ai.sin.models.enums.RoleEnum;
 
 import java.time.LocalDateTime;
@@ -50,6 +65,11 @@ public class ChatServiceImpl implements ChatService {
     private final SecurityHelper securityHelper;
     private final ApplicationEventPublisher eventPublisher;
     private final FileHelper fileHelper;
+    private final RequestRepo requestRepo;
+    private final RequestTools requestTools;
+    private final VacancyApplicationRepo vacancyApplicationRepo;
+    private final VacancyApplicationTools vacancyApplicationTools;
+    private final UserInboxNotificationService inboxNotificationService;
 
     @Override
     @Transactional
@@ -188,6 +208,7 @@ public class ChatServiceImpl implements ChatService {
         touch(fresh);
         ChatMessageDTO dto = toDto(m);
         eventPublisher.publishEvent(new ChatMessagePublishedEvent(fresh.getId(), dto));
+        notifyCounterpartyAboutMessage(fresh, user, dto);
         return dto;
     }
 
@@ -275,6 +296,41 @@ public class ChatServiceImpl implements ChatService {
         chatReadStateRepo.save(state);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ChatContextDTO getChatContext(UUID chatId) {
+        UserEnt user = requireUserWithLinks();
+        if (user.getRole() != RoleEnum.ADMIN) {
+            throw new AccessDeniedException("Контекст чата доступен только администратору");
+        }
+        ChatEnt chat = chatRepo.findById(chatId)
+                .orElseThrow(() -> new NotFoundException("Chat not found"));
+        ChatSummaryDTO summary = toSummary(chat, user);
+        List<RequestDTO> requests = requestRepo.findByAppChat_IdOrderByIdDesc(chatId).stream()
+                .map(requestTools::mapToDTO)
+                .toList();
+        List<VacancyApplicationDTO> applications = vacancyApplicationRepo.findByAppChat_IdWithDetails(chatId).stream()
+                .map(vacancyApplicationTools::mapToDTO)
+                .toList();
+        return new ChatContextDTO(chatId, summary, requests, applications);
+    }
+
+    @Override
+    @Transactional
+    public void adminDeleteChat(UUID chatId) {
+        UserEnt user = requireUserWithLinks();
+        if (user.getRole() != RoleEnum.ADMIN) {
+            throw new AccessDeniedException("Удаление чата доступно только администратору");
+        }
+        if (!chatRepo.existsById(chatId)) {
+            throw new NotFoundException("Chat not found");
+        }
+        requestRepo.deleteByAppChat_Id(chatId);
+        vacancyApplicationRepo.deleteByAppChat_Id(chatId);
+        chatRepo.deleteById(chatId);
+        log.info("Admin {} deleted chat {} with cascade", user.getUsername(), chatId);
+    }
+
     private ChatMessageDTO persistUserMessage(ChatEnt chat, UserEnt user, String text) {
         ChatMessageEnt m = new ChatMessageEnt();
         m.setChat(chat);
@@ -286,7 +342,65 @@ public class ChatServiceImpl implements ChatService {
         touch(chat);
         ChatMessageDTO dto = toDto(m);
         eventPublisher.publishEvent(new ChatMessagePublishedEvent(chat.getId(), dto));
+        notifyCounterpartyAboutMessage(chat, user, dto);
         return dto;
+    }
+
+    private void notifyCounterpartyAboutMessage(ChatEnt chat, UserEnt author, ChatMessageDTO dto) {
+        if (author.getRole() == RoleEnum.ADMIN) {
+            inboxNotificationService.userIdForStudent(chat.getStudent()).ifPresent(id ->
+                    notifyChatMessage(id, chat, author, dto));
+            inboxNotificationService.userIdForRecruiter(chat.getRecruiter()).ifPresent(id ->
+                    notifyChatMessage(id, chat, author, dto));
+            return;
+        }
+        UUID recipientId = null;
+        String counterpartyName = null;
+        if (author.getStudent() != null
+                && author.getStudent().getId().equals(chat.getStudent().getId())) {
+            recipientId = inboxNotificationService.userIdForRecruiter(chat.getRecruiter()).orElse(null);
+            counterpartyName = ParticipantDisplayNames.student(chat.getStudent());
+        } else if (author.getRecruiter() != null
+                && author.getRecruiter().getId().equals(chat.getRecruiter().getId())) {
+            recipientId = inboxNotificationService.userIdForStudent(chat.getStudent()).orElse(null);
+            counterpartyName = ParticipantDisplayNames.recruiter(chat.getRecruiter());
+        }
+        if (recipientId != null) {
+            inboxNotificationService.notifyUser(
+                    recipientId,
+                    UserInboxNotificationType.CHAT_MESSAGE,
+                    chat.getId(),
+                    null,
+                    null,
+                    messagePreview(dto.body(), dto.attachmentStorageName()),
+                    null,
+                    counterpartyName
+            );
+        }
+    }
+
+    private void notifyChatMessage(UUID recipientId, ChatEnt chat, UserEnt author, ChatMessageDTO dto) {
+        if (recipientId.equals(author.getId())) {
+            return;
+        }
+        inboxNotificationService.notifyUser(
+                recipientId,
+                UserInboxNotificationType.CHAT_MESSAGE,
+                chat.getId(),
+                null,
+                null,
+                messagePreview(dto.body(), dto.attachmentStorageName()),
+                null,
+                author.getUsername()
+        );
+    }
+
+    private String messagePreview(String body, String attachment) {
+        String b = body != null ? body : "";
+        if (StringUtils.hasText(attachment)) {
+            b = b + " 📎";
+        }
+        return truncate(b);
     }
 
     private void requireCommunicationReady(UserEnt user) {
@@ -348,14 +462,32 @@ public class ChatServiceImpl implements ChatService {
             preview = previewOf(lm);
         }
         long unread = countUnread(chat.getId(), viewer.getId());
+        RequestEnt activeRequest = findActiveRequest(chat.getId());
+        Long activeRequestId = activeRequest != null ? activeRequest.getId() : null;
+        ResultEnum activeRequestResult = activeRequest != null ? activeRequest.getResult() : null;
+        TuPhase tuPhase = activeRequest != null
+                ? TuPhaseResolver.fromRequest(activeRequest)
+                : TuPhase.NOT_APPLICABLE;
+        long messageCount = chatMessageRepo.countByChat_IdAndDeletedAtIsNull(chat.getId());
         return new ChatSummaryDTO(
                 chat.getId(),
                 chat.getRecruiter().getId(),
                 chat.getStudent().getId(),
                 preview,
                 chat.getLastActivityAt(),
-                unread
+                unread,
+                ParticipantDisplayNames.recruiter(chat.getRecruiter()),
+                ParticipantDisplayNames.student(chat.getStudent()),
+                activeRequestId,
+                activeRequestResult,
+                tuPhase,
+                messageCount
         );
+    }
+
+    private RequestEnt findActiveRequest(UUID chatId) {
+        List<RequestEnt> requests = requestRepo.findByAppChat_IdOrderByIdDesc(chatId);
+        return requests.isEmpty() ? null : requests.getFirst();
     }
 
     private String previewOf(ChatMessageEnt m) {

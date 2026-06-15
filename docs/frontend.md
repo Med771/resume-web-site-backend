@@ -63,8 +63,12 @@ Spring ожидает authorities вида **`ROLE_*`**; это согласов
 | PATCH | `/chat/{chatId}/messages/{messageId}` | Новое тело |
 | POST | `/chat/{chatId}/read` | `{ "messageId": "<uuid>" }` |
 | DELETE | `/chat/{chatId}/messages/{messageId}` | Только админ, мягкое удаление |
+| GET | `/chat/{chatId}/context` | Только **ADMIN**: связанные заявки и отклики на вакансии |
+| DELETE | `/chat/{chatId}` | Только **ADMIN**: полное удаление чата, заявок и откликов по `appChatId` |
 
-Параметры пагинации Spring: **`page`**, **`size`**. Для каталога студентов сортировка — в теле **`FilterStudentReq`**, не через query `sort`.
+Для **ADMIN** в `ChatSummaryDTO` дополнительно: `recruiterName`, `studentName`, `activeRequestId`, `activeRequestResult`, `tuPhase`, `messageCount`.
+
+В **`RequestDTO`** и **`VacancyApplicationDTO`** для списков и деталей доступны поля ТУ: `studentTuConfirmedAt`, `recruiterTuConfirmedAt`, `rejectionReasonCode`, `rejectionComment`, `recruiterDisplayName`, `studentDisplayName`, вычисляемое **`tuPhase`** (`WAITING_STUDENT` | `WAITING_RECRUITER` | `COMPLETED` | `REJECTED` | `NOT_APPLICABLE`). **`page`**, **`size`**. Для каталога студентов сортировка — в теле **`FilterStudentReq`**, не через query `sort`.
 
 ## WebSocket (STOMP + SockJS)
 
@@ -72,8 +76,9 @@ Spring ожидает authorities вида **`ROLE_*`**; это согласов
 - Подписки:
   - **`/topic/chats/{appChatId}`** — обязательна для рекрутера/студента/админа: системные события и полная переписка **после** принятия заявки.
   - **`/topic/chats/{appChatId}/staff`** — для **админского** UI, если нужен real-time по **пользовательским** сообщениям **до** принятия заявки (они туда не попадают в общий топик намеренно).
+  - **`/topic/users/{myUserId}/inbox`** — персональные уведомления, когда пользователь **не** на экране конкретного чата: новая заявка, решение студента, частичное/полное ТУ, отказ по ТУ, новое сообщение в чате. Payload — **`UserInboxNotificationDTO`** (`type`, `chatId`, `requestId?`, `applicationId?`, `preview`, `systemEvent?`, `occurredAt`, `counterpartyName?`). Типы: `NEW_REQUEST`, `REQUEST_DECISION`, `TU_PARTIAL`, `TU_CONFIRMED`, `TU_REJECTED`, `CHAT_MESSAGE`. Подписывайтесь только на **свой** `userId` (из `GET /auth/me`).
 
-После события по WS имеет смысл дозапрашивать `GET .../messages` для согласованности.
+Системные события ТУ в чате: `TU_STUDENT_CONFIRMED`, `TU_RECRUITER_CONFIRMED`, `TU_CONFIRMED`, `TU_REJECTED` (наряду с `REQUEST_SENT`, `STUDENT_ACCEPTED` и др.).
 
 **Важно:** в текущей конфигурации handshake **`/ws`** может быть доступен без JWT на уровне Spring Security; в продакшене контракт может усилиться — закладывайте передачу токена при connect, если появится требование.
 

@@ -208,7 +208,62 @@ class PlatformUpdateIntegrationTest extends AbstractPostgresIntegrationTest {
 
         mockMvc.perform(get("/request/" + requestId).cookie(adminCookies))
                 .andExpect(status().isOk())
-                .andExpect(r -> assertThat(r.getResponse().getContentAsString()).contains("SUCCESS"));
+                .andExpect(r -> {
+                    JsonNode body = objectMapper.readTree(r.getResponse().getContentAsString());
+                    assertThat(body.get("result").asText()).isEqualTo("SUCCESS");
+                    assertThat(body.get("tuPhase").asText()).isEqualTo("COMPLETED");
+                    assertThat(body.get("studentTuConfirmedAt").isNull()).isFalse();
+                    assertThat(body.get("recruiterTuConfirmedAt").isNull()).isFalse();
+                    assertThat(body.get("recruiterDisplayName").asText()).isNotBlank();
+                    assertThat(body.get("studentDisplayName").asText()).isNotBlank();
+                });
+    }
+
+    @Test
+    void adminDeleteChat_cascadesRequestAndMessages() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        Cookie[] adminCookies = login("admin", "admin");
+        long specialityId = createSpeciality(adminCookies, "SpecC-" + suffix);
+        long skillId = createSkill(adminCookies, "SkillC-" + suffix);
+        UUID studentId = createStudent(adminCookies, "chatdel_" + suffix + "@test.local", specialityId, skillId);
+
+        MvcResult recruiterResult = mockMvc.perform(post("/recruiter")
+                        .cookie(adminCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"companyName\":\"DelChatCorp\",\"firstName\":\"Chat\",\"lastName\":\"Del\",\"email\":\"chatdelrec_" + suffix + "@test.local\",\"phoneNumber\":\"+79990005566\"}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID recruiterId = UUID.fromString(objectMapper.readTree(recruiterResult.getResponse().getContentAsString()).get("id").asText());
+
+        mockMvc.perform(post("/user")
+                        .cookie(adminCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Chat Del\",\"username\":\"chatdelrec_" + suffix + "\",\"password\":\"pass-chatdel\",\"role\":\"RECRUITER\",\"recruiterId\":\"" + recruiterId + "\"}"))
+                .andExpect(status().isCreated());
+
+        Cookie[] recruiterCookies = login("chatdelrec_" + suffix, "pass-chatdel");
+
+        MvcResult requestResult = mockMvc.perform(post("/request")
+                        .cookie(recruiterCookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"companyName\":\"DelChatCorp\",\"firstName\":\"Chat\",\"lastName\":\"Del\",\"email\":\"chatdelrec_" + suffix + "@test.local\",\"phoneNumber\":\"+79990005566\",\"studentId\":\"" + studentId + "\"}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        JsonNode requestBody = objectMapper.readTree(requestResult.getResponse().getContentAsString());
+        long requestId = requestBody.get("id").asLong();
+        UUID chatId = UUID.fromString(requestBody.get("appChatId").asText());
+
+        mockMvc.perform(get("/chat/" + chatId + "/messages").cookie(adminCookies))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/chat/" + chatId).cookie(adminCookies))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/request/" + requestId).cookie(adminCookies))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/chat/" + chatId + "/messages").cookie(adminCookies))
+                .andExpect(status().isNotFound());
     }
 
     private Cookie[] login(String username, String password) throws Exception {

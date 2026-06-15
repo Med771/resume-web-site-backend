@@ -46,9 +46,9 @@ class VacancyControllerMvcTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void list_forbiddenForAdmin() throws Exception {
+    void list_allowedForAdmin() throws Exception {
         mockMvc.perform(get("/vacancies").with(csrf()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test

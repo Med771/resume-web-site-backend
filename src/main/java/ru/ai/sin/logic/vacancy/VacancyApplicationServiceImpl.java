@@ -20,12 +20,13 @@ import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.vacancy.dto.ApplyVacancyReq;
 import ru.ai.sin.logic.vacancy.dto.RejectApplicationReq;
 import ru.ai.sin.logic.vacancy.dto.VacancyApplicationDTO;
+import ru.ai.sin.tools.StudentTools;
+import ru.ai.sin.tools.VacancyApplicationTools;
+import ru.ai.sin.tools.UserTools;
 import ru.ai.sin.models.PageResponse;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.models.enums.VacancyApplicationStatus;
 import ru.ai.sin.models.enums.VacancyStatus;
-import ru.ai.sin.tools.StudentTools;
-import ru.ai.sin.tools.UserTools;
 
 import java.util.UUID;
 
@@ -38,6 +39,7 @@ public class VacancyApplicationServiceImpl implements VacancyApplicationService 
     private final VacancyRepo vacancyRepo;
     private final UserTools userTools;
     private final StudentTools studentTools;
+    private final VacancyApplicationTools vacancyApplicationTools;
     private final ChatService chatService;
     private final AccountAccessHelper accountAccessHelper;
 
@@ -201,19 +203,6 @@ public class VacancyApplicationServiceImpl implements VacancyApplicationService 
     }
 
     private VacancyApplicationDTO toDto(VacancyApplicationEnt app) {
-        var studentCard = studentTools.mapToCardDTO(app.getStudent());
-        var ts = app.getTimestamps();
-        return new VacancyApplicationDTO(
-                app.getId(),
-                app.getVacancy().getId(),
-                app.getVacancy().getTitle(),
-                app.getStudent().getId(),
-                studentCard,
-                app.getStatus(),
-                app.getCoverLetter(),
-                app.getRejectionReason(),
-                app.getAppChat() != null ? app.getAppChat().getId() : null,
-                ts != null ? ts.getCreatedAt() : null
-        );
+        return vacancyApplicationTools.mapToDTO(app);
     }
 }

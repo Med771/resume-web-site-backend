@@ -22,6 +22,11 @@ import ru.ai.sin.logic.recruiter.RecruiterEnt;
 import ru.ai.sin.logic.student.StudentEnt;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
+import ru.ai.sin.logic.notification.UserInboxNotificationService;
+import ru.ai.sin.logic.request.RequestRepo;
+import ru.ai.sin.logic.vacancy.VacancyApplicationRepo;
+import ru.ai.sin.tools.RequestTools;
+import ru.ai.sin.tools.VacancyApplicationTools;
 import ru.ai.sin.models.enums.ChatMessageKind;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -57,6 +62,16 @@ class ChatServiceImplTest {
     private ApplicationEventPublisher eventPublisher;
     @Mock
     private FileHelper fileHelper;
+    @Mock
+    private RequestRepo requestRepo;
+    @Mock
+    private RequestTools requestTools;
+    @Mock
+    private VacancyApplicationRepo vacancyApplicationRepo;
+    @Mock
+    private VacancyApplicationTools vacancyApplicationTools;
+    @Mock
+    private UserInboxNotificationService inboxNotificationService;
 
     private ChatServiceImpl chatService;
 
@@ -76,7 +91,12 @@ class ChatServiceImplTest {
                 userRepo,
                 securityHelper,
                 eventPublisher,
-                fileHelper
+                fileHelper,
+                requestRepo,
+                requestTools,
+                vacancyApplicationRepo,
+                vacancyApplicationTools,
+                inboxNotificationService
         );
     }
 

@@ -15,6 +15,7 @@ import ru.ai.sin.logic.vacancy.dto.ApplyVacancyReq;
 import ru.ai.sin.models.enums.RoleEnum;
 import ru.ai.sin.models.enums.VacancyStatus;
 import ru.ai.sin.tools.StudentTools;
+import ru.ai.sin.tools.VacancyApplicationTools;
 import ru.ai.sin.tools.UserTools;
 
 import java.util.Optional;
@@ -38,6 +39,8 @@ class VacancyApplicationServiceImplTest {
     private ChatService chatService;
     @Mock
     private AccountAccessHelper accountAccessHelper;
+    @Mock
+    private VacancyApplicationTools vacancyApplicationTools;
 
     private VacancyApplicationServiceImpl service;
 
@@ -47,7 +50,8 @@ class VacancyApplicationServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new VacancyApplicationServiceImpl(
-                vacancyApplicationRepo, vacancyRepo, userTools, studentTools, chatService, accountAccessHelper);
+                vacancyApplicationRepo, vacancyRepo, userTools, studentTools,
+                vacancyApplicationTools, chatService, accountAccessHelper);
     }
 
     @Test
