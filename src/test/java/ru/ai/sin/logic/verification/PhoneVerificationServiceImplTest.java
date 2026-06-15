@@ -14,6 +14,8 @@ import ru.ai.sin.logic.verification.dto.PhoneVerificationStartReq;
 import ru.ai.sin.models.enums.PhoneVerificationStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,6 +84,8 @@ class PhoneVerificationServiceImplTest {
         mailProperties.setEnabled(true);
         mailProperties.setFrom("sender@example.com");
 
+        when(phoneVerificationRepo.findByPhoneNumberAndStatusOrderByCreatedAtDesc(anyString(), any()))
+                .thenReturn(List.of());
         when(phoneVerificationRepo.save(any())).thenAnswer(invocation -> {
             PhoneVerificationEnt ent = invocation.getArgument(0);
             if (ent.getId() == null) {
@@ -89,15 +93,42 @@ class PhoneVerificationServiceImplTest {
             }
             return ent;
         });
+        when(verificationOtpMailer.trySendOtp(anyString(), anyString(), anyInt())).thenReturn(true);
 
         var res = service.startVerification(new PhoneVerificationStartReq("+79991234567", "user@example.com"));
 
         assertThat(res.verificationId()).isNotNull();
+        assertThat(res.emailOtpSent()).isTrue();
         ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
-        verify(verificationOtpMailer).sendOtp(emailCaptor.capture(), codeCaptor.capture(), eq(15));
+        verify(verificationOtpMailer).trySendOtp(emailCaptor.capture(), codeCaptor.capture(), eq(15));
         assertThat(emailCaptor.getValue()).isEqualTo("user@example.com");
         assertThat(codeCaptor.getValue()).matches("\\d{4}");
+    }
+
+    @Test
+    void startVerification_continuesWhenEmailFailsButTelegramEnabled() {
+        telegramProperties.setEnabled(true);
+        telegramProperties.setBotUsername("test_bot");
+        mailProperties.setEnabled(true);
+        mailProperties.setFrom("sender@example.com");
+
+        when(phoneVerificationRepo.findByPhoneNumberAndStatusOrderByCreatedAtDesc(anyString(), any()))
+                .thenReturn(List.of());
+        when(phoneVerificationRepo.save(any())).thenAnswer(invocation -> {
+            PhoneVerificationEnt ent = invocation.getArgument(0);
+            if (ent.getId() == null) {
+                ent.setId(UUID.randomUUID());
+            }
+            return ent;
+        });
+        when(verificationOtpMailer.trySendOtp(anyString(), anyString(), anyInt())).thenReturn(false);
+
+        var res = service.startVerification(new PhoneVerificationStartReq("+79991234567", "user@example.com"));
+
+        assertThat(res.verificationId()).isNotNull();
+        assertThat(res.emailOtpSent()).isFalse();
+        assertThat(res.botDeepLink()).contains("https://t.me/test_bot?start=");
     }
 
     @Test
@@ -130,6 +161,8 @@ class PhoneVerificationServiceImplTest {
         telegramProperties.setAllowDevConfirm(true);
         mailProperties.setEnabled(false);
 
+        when(phoneVerificationRepo.findByPhoneNumberAndStatusOrderByCreatedAtDesc(anyString(), any()))
+                .thenReturn(List.of());
         when(phoneVerificationRepo.save(any())).thenAnswer(invocation -> {
             PhoneVerificationEnt ent = invocation.getArgument(0);
             ent.setId(UUID.randomUUID());
@@ -147,6 +180,8 @@ class PhoneVerificationServiceImplTest {
         telegramProperties.setBotUsername("@my_bot");
         mailProperties.setEnabled(false);
 
+        when(phoneVerificationRepo.findByPhoneNumberAndStatusOrderByCreatedAtDesc(anyString(), any()))
+                .thenReturn(List.of());
         when(phoneVerificationRepo.save(any())).thenAnswer(invocation -> {
             PhoneVerificationEnt ent = invocation.getArgument(0);
             ent.setId(UUID.randomUUID());
@@ -155,6 +190,75 @@ class PhoneVerificationServiceImplTest {
 
         var res = service.startVerification(new PhoneVerificationStartReq("+79991234567", null));
         assertThat(res.botDeepLink()).contains("https://t.me/my_bot?start=");
+    }
+
+    @Test
+    void handleWebhookUpdate_contact_picksMatchingPendingWhenDuplicatesExist() {
+        telegramProperties.setEnabled(true);
+
+        long chatId = 42L;
+        PhoneVerificationEnt older = pendingEntity();
+        older.setTelegramChatId(chatId);
+        older.setCreatedAt(LocalDateTime.now().minusMinutes(5));
+
+        PhoneVerificationEnt newer = pendingEntity();
+        newer.setId(UUID.randomUUID());
+        newer.setTelegramChatId(chatId);
+        newer.setCreatedAt(LocalDateTime.now());
+
+        when(phoneVerificationRepo.findByTelegramChatIdAndStatusOrderByCreatedAtDesc(
+                chatId, PhoneVerificationStatus.PENDING))
+                .thenReturn(List.of(newer, older));
+        when(phoneVerificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Map<String, Object> update = Map.of(
+                "message", Map.of(
+                        "chat", Map.of("id", chatId),
+                        "contact", Map.of(
+                                "phone_number", "+79991234567",
+                                "user_id", 1001
+                        )
+                )
+        );
+
+        service.handleWebhookUpdate(update);
+
+        ArgumentCaptor<PhoneVerificationEnt> saved = ArgumentCaptor.forClass(PhoneVerificationEnt.class);
+        verify(phoneVerificationRepo).save(saved.capture());
+        assertThat(saved.getValue().getId()).isEqualTo(newer.getId());
+        assertThat(saved.getValue().getStatus()).isEqualTo(PhoneVerificationStatus.CONFIRMED);
+        verify(telegramBotClient).removeKeyboard(eq(chatId), anyString());
+    }
+
+    @Test
+    void handleWebhookUpdate_start_expiresOtherPendingForSameChat() {
+        telegramProperties.setEnabled(true);
+
+        long chatId = 77L;
+        PhoneVerificationEnt current = pendingEntity();
+        PhoneVerificationEnt other = pendingEntity();
+        other.setId(UUID.randomUUID());
+        other.setTelegramChatId(chatId);
+
+        when(phoneVerificationRepo.findById(current.getId())).thenReturn(java.util.Optional.of(current));
+        when(phoneVerificationRepo.findByTelegramChatIdAndStatusOrderByCreatedAtDesc(
+                chatId, PhoneVerificationStatus.PENDING))
+                .thenReturn(List.of(other));
+        when(phoneVerificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.handleWebhookUpdate(Map.of(
+                "message", Map.of(
+                        "chat", Map.of("id", chatId),
+                        "text", "/start " + current.getId()
+                )
+        ));
+
+        ArgumentCaptor<PhoneVerificationEnt> saved = ArgumentCaptor.forClass(PhoneVerificationEnt.class);
+        verify(phoneVerificationRepo, org.mockito.Mockito.atLeastOnce()).save(saved.capture());
+        assertThat(saved.getAllValues())
+                .anyMatch(v -> v.getId().equals(other.getId())
+                        && v.getStatus() == PhoneVerificationStatus.EXPIRED);
+        assertThat(current.getTelegramChatId()).isEqualTo(chatId);
     }
 
     private PhoneVerificationEnt pendingEntity() {

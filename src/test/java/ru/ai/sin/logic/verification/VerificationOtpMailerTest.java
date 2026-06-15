@@ -50,6 +50,7 @@ class VerificationOtpMailerTest {
     @Test
     void sendOtp_requiresEnabledMail() {
         mailProperties.setEnabled(false);
+        assertThat(mailer.trySendOtp("a@b.c", "1234", 15)).isFalse();
         assertThatThrownBy(() -> mailer.sendOtp("a@b.c", "1234", 15))
                 .isInstanceOf(BadRequestException.class);
     }

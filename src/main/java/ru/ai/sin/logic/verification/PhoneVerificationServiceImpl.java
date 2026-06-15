@@ -15,7 +15,9 @@ import ru.ai.sin.logic.verification.dto.PhoneVerificationStatusRes;
 import ru.ai.sin.models.enums.PhoneVerificationStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -38,19 +40,35 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         ensureCanStartVerification(email);
 
         String normalized = normalizePhone(req.phoneNumber());
+        expirePendingSessions(
+                phoneVerificationRepo.findByPhoneNumberAndStatusOrderByCreatedAtDesc(
+                        normalized, PhoneVerificationStatus.PENDING),
+                null);
+
         PhoneVerificationEnt ent = new PhoneVerificationEnt();
         ent.setPhoneNumber(normalized);
         ent.setStatus(PhoneVerificationStatus.PENDING);
         ent.setCreatedAt(LocalDateTime.now());
         ent.setExpiresAt(LocalDateTime.now().plusMinutes(telegramProperties.getVerificationTtlMinutes()));
 
+        boolean emailOtpSent = false;
         if (email != null && mailProperties.isEnabled()) {
             String otp = generateOtpCode();
             ent.setEmail(email);
             ent.setOtpCodeHash(passwordEncoder.encode(otp));
             ent = phoneVerificationRepo.save(ent);
-            verificationOtpMailer.sendOtp(email, otp, telegramProperties.getVerificationTtlMinutes());
-            log.info("Phone verification started with email OTP: verificationId={}", ent.getId());
+            emailOtpSent = verificationOtpMailer.trySendOtp(
+                    email, otp, telegramProperties.getVerificationTtlMinutes());
+            if (!emailOtpSent) {
+                ent.setOtpCodeHash(null);
+                phoneVerificationRepo.save(ent);
+                if (!hasVerificationFallback()) {
+                    throw new BadRequestException("Не удалось отправить код на почту. Попробуйте позже.");
+                }
+                log.warn("Email OTP not sent for verificationId={}, fallback available", ent.getId());
+            } else {
+                log.info("Phone verification started with email OTP: verificationId={}", ent.getId());
+            }
         } else {
             ent = phoneVerificationRepo.save(ent);
         }
@@ -62,7 +80,8 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
                 ent.getId(),
                 botUsername,
                 deepLink,
-                telegramProperties.getVerificationTtlMinutes()
+                telegramProperties.getVerificationTtlMinutes(),
+                emailOtpSent
         );
     }
 
@@ -190,6 +209,10 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
             return;
         }
 
+        expirePendingSessions(
+                phoneVerificationRepo.findByTelegramChatIdAndStatusOrderByCreatedAtDesc(
+                        chatId, PhoneVerificationStatus.PENDING),
+                ent.getId());
         ent.setTelegramChatId(chatId);
         phoneVerificationRepo.save(ent);
 
@@ -206,10 +229,7 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         String phone = normalizePhone(phoneObj.toString());
         String telegramUserId = userIdObj != null ? userIdObj.toString() : null;
 
-        PhoneVerificationEnt pending = phoneVerificationRepo
-                .findByTelegramChatIdAndStatus(chatId, PhoneVerificationStatus.PENDING)
-                .filter(v -> resolveEffectiveStatus(v) == PhoneVerificationStatus.PENDING)
-                .orElse(null);
+        PhoneVerificationEnt pending = findActivePendingForTelegramChat(chatId, phone).orElse(null);
 
         if (pending != null && !phone.equals(pending.getPhoneNumber())) {
             telegramBotClient.sendMessage(chatId,
@@ -233,11 +253,39 @@ public class PhoneVerificationServiceImpl implements PhoneVerificationService {
         log.info("Phone verified: verificationId={} phone={}", pending.getId(), phone);
     }
 
+    private Optional<PhoneVerificationEnt> findActivePendingForTelegramChat(long chatId, String phone) {
+        return phoneVerificationRepo
+                .findByTelegramChatIdAndStatusOrderByCreatedAtDesc(chatId, PhoneVerificationStatus.PENDING)
+                .stream()
+                .filter(v -> resolveEffectiveStatus(v) == PhoneVerificationStatus.PENDING)
+                .filter(v -> phone == null || phone.equals(v.getPhoneNumber()))
+                .findFirst();
+    }
+
+    private void expirePendingSessions(List<PhoneVerificationEnt> sessions, UUID keepId) {
+        LocalDateTime now = LocalDateTime.now();
+        for (PhoneVerificationEnt session : sessions) {
+            if (keepId != null && keepId.equals(session.getId())) {
+                continue;
+            }
+            if (session.getStatus() != PhoneVerificationStatus.PENDING) {
+                continue;
+            }
+            session.setStatus(PhoneVerificationStatus.EXPIRED);
+            session.setExpiresAt(now);
+            phoneVerificationRepo.save(session);
+        }
+    }
+
     private PhoneVerificationStatus resolveEffectiveStatus(PhoneVerificationEnt ent) {
         if (ent.getStatus() == PhoneVerificationStatus.PENDING && ent.getExpiresAt().isBefore(LocalDateTime.now())) {
             return PhoneVerificationStatus.EXPIRED;
         }
         return ent.getStatus();
+    }
+
+    private boolean hasVerificationFallback() {
+        return telegramProperties.isEnabled() || telegramProperties.isAllowDevConfirm();
     }
 
     private void ensureCanStartVerification(String email) {

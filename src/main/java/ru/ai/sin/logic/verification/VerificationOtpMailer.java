@@ -20,12 +20,23 @@ public class VerificationOtpMailer {
     private final MailProperties mailProperties;
 
     public void sendOtp(String toEmail, String code, int ttlMinutes) {
+        if (!trySendOtp(toEmail, code, ttlMinutes)) {
+            throw new BadRequestException("Не удалось отправить код на почту. Попробуйте позже.");
+        }
+    }
+
+    /**
+     * @return true if the message was sent successfully
+     */
+    public boolean trySendOtp(String toEmail, String code, int ttlMinutes) {
         if (!mailProperties.isEnabled()) {
-            throw new BadRequestException("Отправка кодов на почту отключена");
+            log.warn("Verification OTP email skipped: app.mail.enabled=false");
+            return false;
         }
         String from = mailProperties.getFrom();
         if (from == null || from.isBlank()) {
-            throw new BadRequestException("Почтовый отправитель не настроен");
+            log.warn("Verification OTP email skipped: app.mail.from is not configured");
+            return false;
         }
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -36,10 +47,19 @@ public class VerificationOtpMailer {
             helper.setText(buildBody(code, ttlMinutes), false);
             mailSender.send(message);
             log.info("Verification OTP email sent to {}", maskEmail(toEmail));
+            return true;
         } catch (Exception ex) {
-            log.warn("Failed to send verification OTP to {}: {}", maskEmail(toEmail), ex.getMessage());
-            throw new BadRequestException("Не удалось отправить код на почту. Попробуйте позже.");
+            log.warn("Failed to send verification OTP to {}: {}", maskEmail(toEmail), describeMailError(ex));
+            return false;
         }
+    }
+
+    private static String describeMailError(Exception ex) {
+        Throwable root = ex;
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+        return root.getClass().getSimpleName() + ": " + root.getMessage();
     }
 
     private static String buildBody(String code, int ttlMinutes) {
