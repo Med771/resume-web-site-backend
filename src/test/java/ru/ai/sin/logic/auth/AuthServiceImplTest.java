@@ -18,13 +18,21 @@ import ru.ai.sin.exception.models.ForbiddenException;
 import ru.ai.sin.helper.AuthRoleGuard;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.helper.SecurityHelper;
+import ru.ai.sin.logic.auth.dto.AuthMeDTO;
 import ru.ai.sin.logic.auth.dto.LoginRequest;
 import ru.ai.sin.logic.auth.dto.TokenPair;
 import ru.ai.sin.logic.registration.RegistrationPasswordPolicy;
+import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import ru.ai.sin.models.enums.AccountStatus;
+import ru.ai.sin.models.enums.RoleEnum;
+
 import jakarta.servlet.http.Cookie;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -148,6 +156,24 @@ class AuthServiceImplTest {
 
         assertThat(authService.adminRefresh(request)).isEqualTo("new-access");
         verify(authRoleGuard).requireAdmin(userDetails);
+    }
+
+    @Test
+    void getCurrentSession_includesUserId() {
+        UUID userId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UserEnt user = new UserEnt(RoleEnum.STUDENT, "Alice", "alice", "hash");
+        user.setId(userId);
+        user.setAccountStatus(AccountStatus.APPROVED);
+
+        when(securityHelper.getCurrentUsernameOptional()).thenReturn(Optional.of("alice"));
+        when(securityHelper.getCurrentRoleOptional()).thenReturn(Optional.of("STUDENT"));
+        when(userRepo.findByUsername("alice")).thenReturn(Optional.of(user));
+
+        AuthMeDTO me = authService.getCurrentSession();
+
+        assertThat(me.id()).isEqualTo(userId);
+        assertThat(me.username()).isEqualTo("alice");
+        assertThat(me.role()).isEqualTo("STUDENT");
     }
 
     private void stubAuthentication(UserDetails userDetails) {
