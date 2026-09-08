@@ -82,7 +82,7 @@ public class ProfileCommunicationGateService {
             missing.add("speciality");
         }
 
-        Set<SkillEnt> skills = studentRepo.findSkillsByStudentId(student.getId());
+        List<SkillEnt> skills = studentRepo.findSkillsByStudentId(student.getId());
         if (skills == null || skills.isEmpty()) {
             missing.add("skills");
         }

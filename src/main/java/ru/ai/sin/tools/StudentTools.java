@@ -38,7 +38,10 @@ public class StudentTools {
 
     public StudentDTO mapToDTO(StudentEnt studentEnt) {
         List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
-                .stream().map(skillMapper::toDTO).toList();
+                .stream()
+                
+                .map(skillMapper::toDTO)
+                .toList();
 
         return studentMapper.toDTO(studentEnt, skillDTOList);
     }
@@ -46,7 +49,10 @@ public class StudentTools {
     @Transactional
     public StudentCardDTO mapToCardDTO(StudentEnt studentEnt) {
         List<SkillDTO> skillDTOList = studentRepo.findSkillsByStudentId(studentEnt.getId())
-                .stream().map(skillMapper::toDTO).toList();
+                .stream()
+
+                .map(skillMapper::toDTO)
+                .toList();
 
         return studentMapper.toCardDTO(studentEnt, skillDTOList);
     }

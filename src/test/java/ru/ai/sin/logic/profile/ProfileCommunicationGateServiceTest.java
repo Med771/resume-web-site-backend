@@ -18,7 +18,6 @@ import ru.ai.sin.tools.UserTools;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +43,7 @@ class ProfileCommunicationGateServiceTest {
         UserEnt user = studentUser(student);
 
         when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.of(user));
-        when(studentRepo.findSkillsByStudentId(studentId)).thenReturn(Set.of(new SkillEnt("Java")));
+        when(studentRepo.findSkillsByStudentId(studentId)).thenReturn(List.of(new SkillEnt("Java")));
         when(portfolioRepo.findAllByStudent_Id(studentId)).thenReturn(List.of());
 
         var res = service.evaluateForCurrentUser();
@@ -89,7 +88,7 @@ class ProfileCommunicationGateServiceTest {
         UserEnt user = studentUser(student);
 
         when(userTools.findCurrentUserFetchingLinks()).thenReturn(Optional.of(user));
-        when(studentRepo.findSkillsByStudentId(studentId)).thenReturn(Set.of(new SkillEnt("Java")));
+        when(studentRepo.findSkillsByStudentId(studentId)).thenReturn(List.of(new SkillEnt("Java")));
         when(portfolioRepo.findAllByStudent_Id(studentId)).thenReturn(List.of());
 
         var res = service.evaluateForCurrentUser();

@@ -18,7 +18,7 @@ import ru.ai.sin.logic.skill.SkillEnt;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -34,8 +34,13 @@ public interface StudentRepo extends
     @EntityGraph(attributePaths = {"speciality", "skills"}, type = EntityGraph.EntityGraphType.LOAD)
     Page<StudentEnt> findAll(Specification<StudentEnt> specification, @NonNull Pageable pageable);
 
-    @Query("SELECT s.skills FROM StudentEnt s WHERE s.id = :studentId")
-    Set<SkillEnt> findSkillsByStudentId(UUID studentId);
+    @Query("""
+        SELECT sk FROM StudentEnt s
+        JOIN s.skills sk
+        WHERE s.id = :studentId
+        ORDER BY sk.timestamps.createdAt
+        """)
+    List<SkillEnt> findSkillsByStudentId(UUID studentId);
 
     Optional<StudentEnt> findByContactInformationTelegramUserId(String telegramUserId);
 
