@@ -33,7 +33,7 @@ public class StudentOnboardingController {
 
     private final StudentResumeOnboardingService studentResumeOnboardingService;
 
-    @Operation(summary = "Создать резюме после регистрации", description = "Только STUDENT без привязанной карточки.")
+    @Operation(summary = "Завершить резюме после регистрации", description = "Только STUDENT. Дополняет черновик карточки, созданный при регистрации.")
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/resume")
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,7 +41,7 @@ public class StudentOnboardingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentResumeOnboardingService.completeResume(req));
     }
 
-    @Operation(summary = "Получить резюме для редактирования", description = "Только STUDENT с привязанной карточкой.")
+    @Operation(summary = "Получить резюме для редактирования", description = "Только STUDENT. Возвращает черновик или заполненную карточку.")
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/resume")
     public ResponseEntity<StudentResumeEditRes> getResumeForEdit() {
@@ -55,7 +55,7 @@ public class StudentOnboardingController {
         return ResponseEntity.ok(studentResumeOnboardingService.updateResume(req));
     }
 
-    @Operation(summary = "Статус онбординга резюме")
+    @Operation(summary = "Статус онбординга резюме", description = "completed=true, если заполнены курс, дата рождения, специальность, имя и фамилия.")
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/status")
     public ResponseEntity<OnboardingStatusRes> status() {

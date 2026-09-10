@@ -76,7 +76,7 @@ public record PatchStudentReq(
         @Schema(
                 description = """
                         Разрешение показывать **укороченную** карточку на публичной витрине (`/public/students/...`) без JWT.
-                        Не влияет на выдачу для рекрутеров по `POST /student/...` — там действуют отдельные правила (в т.ч. курс NEW).
+                        Не влияет на выдачу для рекрутеров по `POST /student/...` — там действуют отдельные правила (в т.ч. `catalogVisible`).
 
                         `null` — не менять текущее значение в БД.""")
         Boolean publicProfileConsent,

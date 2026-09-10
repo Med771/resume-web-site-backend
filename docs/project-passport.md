@@ -166,15 +166,15 @@ ru.ai.sin
 ### 8.1. Студенты (`/student` + публичное `/public/students`)
 
 - **Сущность** `StudentEnt`: вложенные `UserInformation`, `ContactInformation`, `TimeStamped`, связь со специальностью, M:N навыки, курс (`CourseEnum`), флаг **`public_profileConsent`**, денормализованный **`profileTextScore`**, опциональный **`manualSortOrder`** (ручной приоритет в каталоге).
-- **Фильтрация:** `StudentSpecifications.byFilters` + `FilterStudentReq`; курс **`NEW`** скрыт от не-админов в выдачах и в `GET /student/{id}` (404).
+- **Фильтрация:** `StudentSpecifications.byFilters` + `FilterStudentReq`; карточки с **`catalogVisible=false`** скрыты от не-админов в выдачах и в `GET /student/{id}` (404).
 - **Сортировка:** только из тела `FilterStudentReq` (`StudentSortResolver`); query `sort` у `Pageable` **не** используется. Режим релевантности: **`manualSortOrder` ASC** (NULL в конце на PostgreSQL), затем `imagePath` ASC, `profileTextScore` DESC, дата создания DESC; можно сортировать только по **`MANUAL_SORT_ORDER`**. **Важно:** нельзя использовать `Sort.Order.nullsLast()` вместе с `findAll(Specification, …)` — Spring Data JPA с Criteria не поддерживает null precedence (на PostgreSQL для ASC NULL по умолчанию в конце).
-- **Публичная витрина:** только `publicProfileConsent = true` и курс не `NEW`; укороченный `StudentCardDTO` без расширения PII (поле `manualSortOrder` в ответе — для прозрачности порядка).
+- **Публичная витрина:** только `publicProfileConsent = true` и `catalogVisible = true`; укороченный `StudentCardDTO` без расширения PII (поле `manualSortOrder` в ответе — для прозрачности порядка).
 - **Согласие и ручной порядок:** **`publicProfileConsent`** и **`manualSortOrder`** — при **`POST /student`** и **`POST /student/extended`** (опционально в теле), иначе у **`PUT`/`PATCH /student/{id}`**; сброс номера — `clearManualSortOrder: true`. Если при создании не передать — согласие **false**, ручной номер **не задан** (`NULL`).
 
 ### 8.2. Заявки (`/request`)
 
 - Связь рекрутер + студент + чат (`app_chat_id`), результат (`ResultEnum`), этапы согласования.
-- Студент **не** создаёт заявки; скрытие студента `NEW` для рекрутера при создании заявки (404).
+- Студент **не** создаёт заявки; скрытие студента с `catalogVisible=false` для рекрутера при создании заявки (404).
 - Админ: просмотр, фильтр, удаление.
 
 ### 8.3. Чаты (`/chat` + WebSocket)
@@ -189,7 +189,7 @@ ru.ai.sin
 
 ### 8.5. Регистрация
 
-- **Студент:** `POST /auth/register-student` + лимиты, пароль, связь карточки с курсом `NEW` до модерации.
+- **Студент:** `POST /auth/register-student` + лимиты, пароль; сразу создаётся черновик карточки (`catalogVisible=false`, `PENDING_APPROVAL`) до модерации.
 - **Работодатель:** заявка в БД, одобрение админом (`/admin/recruiter-registration-requests`).
 
 ### 8.6. Лента проектов (`site_projects`)
@@ -284,14 +284,14 @@ ru.ai.sin
 
 - Регистрация студента / заявка на регистрацию рекрутера.
 - Справочники `/public/registration/...`.
-- **`GET /public/students/{id}`**, **`POST /public/students/cards`** — только согласие + не `NEW`.
+- **`GET /public/students/{id}`**, **`POST /public/students/cards`** — только согласие + `catalogVisible`.
 - **`GET /public/projects`**, **`POST /public/analytics/events`**.
 - Swagger, `/main/status`, фото по пути.
 
 ### 14.2. Рекрутер (`GUEST` / `USER`)
 
 - Логин, refresh, logout.
-- Каталог: **`POST /student/cardsFilter`**, **`POST /student/filter`**, **`GET /student/{id}`** (с правилами `NEW`).
+- Каталог: **`POST /student/cardsFilter`**, **`POST /student/filter`**, **`GET /student/{id}`** (с правилами `catalogVisible`).
 - Заявка **`POST /request`**, чаты, **`GET /recruiter/me`**, WebSocket `/topic/chats/{id}` после принятия — полная переписка в REST/WS по правилам gated-логики.
 
 ### 14.3. Студент (`STUDENT`)

@@ -73,7 +73,7 @@ public class StudentController {
             description = """
                     **STUDENT**, **RECRUITER** или **ADMIN** с одобренным аккаунтом. Полная карточка `StudentDTO`.
 
-                    Студенты с курсом **NEW** для не-админов возвращают **404** (как при отсутствии id).
+                    Карточки с `catalogVisible=false` для не-админов возвращают **404** (как при отсутствии id).
 
                     Требуется аутентификация по cookie/JWT и статус аккаунта **APPROVED** (кроме ADMIN).""")
     @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
@@ -89,7 +89,7 @@ public class StudentController {
             description = """
                     Постраничная выдача `StudentCardDTO` по фильтрам из тела.
 
-                    **Видимость курса NEW:** в списке только для **ADMIN**; для остальных ролей такие карточки отфильтровываются.
+                    **Скрытые карточки** (`catalogVisible=false`): в списке только для **ADMIN**; для остальных ролей отфильтровываются.
 
                     **Пагинация:** `page`, `size` в query. **Сортировка:** только из JSON (`sortBy`, `sortDirection`, `useDefaultRanking`), не из `sort=`.
 
@@ -111,7 +111,7 @@ public class StudentController {
             description = """
                     Как `POST /student/cardsFilter`, но элементы страницы — полные `StudentDTO` (включая `publicProfileConsent`, `profileTextScore`).
 
-                    Правила **NEW**, пагинации и сортировки — те же. Требуется **APPROVED** (кроме ADMIN).""")
+                    Правила видимости, пагинации и сортировки — те же. Требуется **APPROVED** (кроме ADMIN).""")
     @PreAuthorize("hasAnyRole('STUDENT', 'RECRUITER', 'ADMIN')")
     @PostMapping(path = "/filter")
     public ResponseEntity<PageResponse<StudentDTO>> getAllByFilters(

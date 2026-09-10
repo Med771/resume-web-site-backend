@@ -199,8 +199,26 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
     public boolean hasResumeForCurrentUser() {
         return userTools.findCurrentUserFetchingLinks()
                 .filter(u -> u.getRole() == RoleEnum.STUDENT)
-                .map(u -> u.getStudent() != null)
+                .map(this::isResumeComplete)
                 .orElse(false);
+    }
+
+    private boolean isResumeComplete(UserEnt user) {
+        StudentEnt student = user.getStudent();
+        if (student == null) {
+            return false;
+        }
+        UserInformation userInfo = student.getUserInformation();
+        return student.getCourse() != null
+                && student.getBirthDate() != null
+                && student.getSpeciality() != null
+                && userInfo != null
+                && isNotBlank(userInfo.getFirstName())
+                && isNotBlank(userInfo.getLastName());
+    }
+
+    private static boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
     }
 
     private UserEnt requireStudentUser() {
@@ -261,7 +279,7 @@ public class StudentResumeOnboardingServiceImpl implements StudentResumeOnboardi
     }
 
     private static void validateCourse(CourseEnum course) {
-        if (course == null || course == CourseEnum.NEW) {
+        if (course == null) {
             throw new BadRequestException("Укажите курс обучения (1–4)");
         }
     }

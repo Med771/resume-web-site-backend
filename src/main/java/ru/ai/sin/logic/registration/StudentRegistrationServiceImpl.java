@@ -16,9 +16,13 @@ import ru.ai.sin.exception.models.BadRequestException;
 import ru.ai.sin.helper.JwtHelper;
 import ru.ai.sin.logic.auth.dto.TokenPair;
 import ru.ai.sin.logic.registration.dto.StudentAccountRegistrationReq;
+import ru.ai.sin.logic.student.StudentEnt;
+import ru.ai.sin.logic.student.StudentRepo;
 import ru.ai.sin.logic.user.UserEnt;
 import ru.ai.sin.logic.user.UserRepo;
 import ru.ai.sin.logic.verification.PhoneVerificationService;
+import ru.ai.sin.models.embeddables.ContactInformation;
+import ru.ai.sin.models.embeddables.UserInformation;
 import ru.ai.sin.models.enums.AccountStatus;
 import ru.ai.sin.models.enums.RoleEnum;
 
@@ -36,6 +40,7 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
     private final PhoneVerificationService phoneVerificationService;
 
     private final UserRepo userRepo;
+    private final StudentRepo studentRepo;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtHelper jwtHelper;
@@ -72,6 +77,8 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
             }
         }
 
+        StudentEnt student = studentRepo.save(createDraftStudent(req, phone));
+
         UserEnt user = new UserEnt(
                 RoleEnum.STUDENT,
                 buildDisplayName(req),
@@ -82,6 +89,7 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
         user.setAccountStatus(AccountStatus.PENDING_APPROVAL);
         user.setRegistrationPhone(phone);
         user.setRegistrationEmail(emptyToNull(req.email()));
+        user.setStudent(student);
 
         try {
             userRepo.save(user);
@@ -95,8 +103,29 @@ public class StudentRegistrationServiceImpl implements StudentRegistrationServic
         UserDetails principal = (UserDetails) auth.getPrincipal();
         String access = jwtHelper.generateAccessToken(principal.getUsername());
         String refresh = jwtHelper.generateRefreshToken(principal.getUsername());
-        log.info("Student account registered: username={} (resume via onboarding)", username);
+        log.info("Student account registered: username={} studentId={}", username, student.getId());
         return new TokenPair(access, refresh);
+    }
+
+    private static StudentEnt createDraftStudent(StudentAccountRegistrationReq req, String phone) {
+        StudentEnt student = new StudentEnt();
+        student.setCity(emptyToNull(req.city()));
+        student.setBirthDate(req.birthDate());
+        student.setCourse(req.course());
+        student.setCatalogVisible(false);
+        student.setPublicProfileConsent(false);
+
+        UserInformation userInfo = new UserInformation();
+        userInfo.setFirstName(emptyToNull(req.firstName()));
+        userInfo.setLastName(emptyToNull(req.lastName()));
+        userInfo.setEmail(emptyToNull(req.email()));
+        student.setUserInformation(userInfo);
+
+        ContactInformation contact = new ContactInformation();
+        contact.setPhoneNumber(phone);
+        student.setContactInformation(contact);
+
+        return student;
     }
 
     private static BadRequestException conflict() {

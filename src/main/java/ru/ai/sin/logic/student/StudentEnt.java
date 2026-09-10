@@ -44,7 +44,7 @@ public class StudentEnt {
 
     private String hhLink;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @Column(columnDefinition = "TEXT")

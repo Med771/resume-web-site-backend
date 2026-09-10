@@ -14,7 +14,7 @@
 | Метод | Путь | Назначение |
 |-------|------|------------|
 | POST | `/auth/register-recruiter` | Заявка на регистрацию работодателя; **204**, cookie не выдаются |
-| POST | `/auth/register-student` | Саморегистрация студента; **204** + Set-Cookie (см. `app.registration`) |
+| POST | `/auth/register-student` | Саморегистрация студента + черновик карточки; **204** + Set-Cookie (см. `app.registration`) |
 | POST | `/auth/login` | Вход; **204** + Set-Cookie |
 | POST | `/auth/refresh` | Новый access; **204** + Set-Cookie |
 | POST | `/auth/logout` | Очистка cookie; **204** |
@@ -40,7 +40,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | Метод | Путь | Ответ | Примечание |
 |-------|------|-------|------------|
 | POST | `/auth/register-recruiter` | 204 | Тело `RecruiterSelfRegistrationReq` |
-| POST | `/auth/register-student` | 204 | Тело `StudentSelfRegistrationReq`; cookie как после login |
+| POST | `/auth/register-student` | 204 | Тело `StudentAccountRegistrationReq`; создаёт черновик карточки (`catalogVisible=false`); cookie как после login |
 | POST | `/auth/login` | 204 | `LoginRequest` |
 | POST | `/auth/refresh` | 204 | Refresh из cookie |
 | POST | `/auth/logout` | 204 | Очистка обеих cookie |
@@ -73,7 +73,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| GET | `/public/vitrina/home` | `PublicHomeVitrinaDTO`: топ карточек студентов (`publicProfileConsent`, курс ≠ `NEW`) и проектов (`visibleToAnonymous` + окно публикации); лимиты — `app.vitrina.home` |
+| GET | `/public/vitrina/home` | `PublicHomeVitrinaDTO`: топ карточек студентов (`publicProfileConsent`, `catalogVisible`) и проектов (`visibleToAnonymous` + окно публикации); лимиты — `app.vitrina.home` |
 
 ---
 
@@ -105,7 +105,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | POST | `/vacancies/{id}/submit-for-review` | владелец | → **PENDING_REVIEW** |
 | POST | `/vacancies/{id}/close` | владелец | **PUBLISHED** → **CLOSED** |
 | DELETE | `/vacancies/{id}` | владелец / **ADMIN** | **ARCHIVED** или удаление пустого **DRAFT** |
-| POST | `/vacancies/{id}/applications` | **STUDENT** | Отклик; курс **NEW** запрещён; **201** |
+| POST | `/vacancies/{id}/applications` | **STUDENT** | Отклик; `catalogVisible=false` запрещён; **201** |
 | GET | `/vacancies/applications/mine` | **STUDENT** | Мои отклики |
 | POST | `/vacancies/applications/{applicationId}/withdraw` | **STUDENT** | **204**; только **SUBMITTED** |
 | GET | `/vacancies/{id}/applications` | владелец | Отклики на вакансию |
@@ -142,8 +142,8 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 | Метод | Путь | Роли | Описание |
 |-------|------|------|----------|
 | GET | `/student/me` | **STUDENT** | Своя карточка `StudentDTO`; **404** если нет привязки |
-| GET | `/student/{id}` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | Полный `StudentDTO`; курс **NEW** для не-админа → **404**; требуется **APPROVED** (кроме ADMIN) |
-| POST | `/student/cardsFilter` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentCardDTO>`; тело `FilterStudentReq`; **NEW** только в выдаче у админа; **APPROVED** обязателен (кроме ADMIN) |
+| GET | `/student/{id}` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | Полный `StudentDTO`; `catalogVisible=false` для не-админа → **404**; требуется **APPROVED** (кроме ADMIN) |
+| POST | `/student/cardsFilter` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentCardDTO>`; тело `FilterStudentReq`; скрытые карточки только у админа; **APPROVED** обязателен (кроме ADMIN) |
 | POST | `/student/filter` | **STUDENT**, **GUEST**, **USER**, **ADMIN** | `PageResponse<StudentDTO>`; те же правила |
 | POST | `/student/photo/{id}` | **ADMIN** | `multipart/form-data`, часть **`avatarFile`**; **204** |
 | POST | `/student` | **ADMIN** | Создание; **201**; опционально **`publicProfileConsent`**, **`manualSortOrder`** в теле `AddStudentReq` |
@@ -162,7 +162,7 @@ WebSocket handshake: **`/ws/**`** также `permitAll` на уровне HTTP 
 |-------|------|------|----------|
 | GET | `/request/{id}` | **ADMIN** | `RequestDTO` |
 | POST | `/request/filter` | **ADMIN** | Страница заявок по `FilterRequestReq` |
-| POST | `/request` | **GUEST**, **USER**, **ADMIN** | Создание заявки рекрутером; **STUDENT** — **403**; **201**; студент **NEW** для не-админа — **404** |
+| POST | `/request` | **GUEST**, **USER**, **ADMIN** | Создание заявки рекрутером; **STUDENT** — **403**; **201**; студент с `catalogVisible=false` для не-админа — **404** |
 | POST | `/request/{id}/student-decision` | **STUDENT** | Тело `StudentRequestDecisionReq`; **204** |
 | DELETE | `/request/{id}` | **ADMIN** | **204** |
 

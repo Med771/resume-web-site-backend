@@ -119,7 +119,7 @@
 
 - Колонки `students.public_profile_consent`, `students.profile_text_score` (Flyway `V0033`). Score пересчитывается при создании/обновлении карточки и саморегистрации.
 - **Сортировка:** `POST /student/cardsFilter` и `POST /student/filter` **игнорируют** произвольный `sort` из query; порядок задаётся полями в `FilterStudentReq`: `sortBy` (`StudentSortField`, в т.ч. `MANUAL_SORT_ORDER`), `sortDirection`, `useDefaultRanking` (по умолчанию: ручной номер `manualSortOrder` → аватар → `profileTextScore` → дата создания).
-- **Публичные студенты:** `GET /public/students/{id}`, `POST /public/students/cards` — только записи с `public_profile_consent = true` и **не** курс `NEW`; в `SecurityConfig` — `permitAll`.
+- **Публичные студенты:** `GET /public/students/{id}`, `POST /public/students/cards` — только записи с `public_profile_consent = true` и `catalog_visible = true`; в `SecurityConfig` — `permitAll`.
 
 ## Лента проектов
 
